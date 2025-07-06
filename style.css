@@ -11,6 +11,7 @@ body {
     flex-direction: column;
     user-select: none;
     gap: 20px;
+    overflow: hidden;
 }
 
 * {
@@ -23,8 +24,8 @@ h1 {
 
 .container {
     padding: 10px;
-    background: linear-gradient(45deg, #ffffff8a, #ffffff59);
-    border-radius: 12px;
+    background: linear-gradient(45deg, #ffffffbf, #ffffffa3);
+    border-radius: 22px;
     filter: drop-shadow(2px 4px 6px black);
     box-shadow: inset 0px 0px 8px 1px #ffffff1a;
     border: 1px solid hsla(0deg, 0%, 100%, 10%);
@@ -32,6 +33,7 @@ h1 {
     flex-direction: column;
     gap: 10px;
     backdrop-filter: blur(5px);
+    overflow: auto;
 
     main {
         display: flex;
