@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord.js";
-import config from "./config.json" with { type: "json" };
+import config from "../config.json" with { type: "json" };
 import "dotenv/config";
 
 export function getFiles(dir) {

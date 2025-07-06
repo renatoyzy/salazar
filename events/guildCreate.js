@@ -1,4 +1,4 @@
-import deploy_commands from "../deploy_commands.js";
+import deploy_commands from "../src/deploy_commands.js";
 import client from "../src/client.js";
 
 export default {
