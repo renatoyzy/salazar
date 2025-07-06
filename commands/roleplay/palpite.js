@@ -1,4 +1,10 @@
-import Discord from "discord.js";
+import { 
+    CommandInteraction, 
+    SlashCommandBuilder, 
+    SlashCommandStringOption, 
+    Colors, MessageFlags, 
+    EmbedBuilder 
+} from "discord.js";
 import config from "../../config.json" with { type: "json" };
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
@@ -8,31 +14,33 @@ const ai = new GoogleGenAI({
 });
 
 export default {
-    data: new Discord.SlashCommandBuilder()
+    data: new SlashCommandBuilder()
         .setName("palpite")
         .setDescription("[Administrativo] Peça palpites do roleplay ao Salazar.")
         .addStringOption(
-            new Discord.SlashCommandStringOption()
+            new SlashCommandStringOption()
                 .setName("prompt")
                 .setDescription("O que será perguntado")
                 .setRequired(true)
         ),
-
+    
+    /**
+     * @param {CommandInteraction} interaction 
+     */
     async execute(interaction) {
         if (!config.server.roles.adm.some(roleId => interaction.member.roles.cache.has(roleId))) {
             return interaction.reply({
                 content: "Este comando não foi feito para que __você__ o use. Apenas administradores.",
-                flags: [Discord.MessageFlags.Ephemeral]
+                flags: [MessageFlags.Ephemeral]
             });
         }
 
         interaction.reply({
             embeds: [
-                new Discord.EmbedBuilder()
+                new EmbedBuilder()
                     .setColor("DarkGrey")
                     .setDescription("Gerando seu palpite...")
             ],
-            //flags: [Discord.MessageFlags.Ephemeral]
         }).then(async (msg) => {
             let acao_contexto = (await interaction.guild.channels.cache.get(config.server.channels.context).messages.fetch())
                 .sort()
@@ -56,8 +64,8 @@ export default {
 
             msg.edit({
                 embeds: [
-                    new Discord.EmbedBuilder()
-                        .setColor(Discord.Colors.Blurple)
+                    new EmbedBuilder()
+                        .setColor(Colors.Blurple)
                         .setTitle('Palpites do Salazar')
                         .setDescription(response.text)
                 ]

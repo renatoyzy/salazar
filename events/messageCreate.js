@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import Discord, { Message } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
@@ -10,6 +10,9 @@ const ai = new GoogleGenAI({
 export default {
     name: 'messageCreate',
 
+    /**
+     * @param {Message} message 
+     */
     async execute(message) {
         if (message.author.bot || message.author.id === config.bot.id) return;
 

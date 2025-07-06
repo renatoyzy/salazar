@@ -1,29 +1,40 @@
-import Discord from "discord.js";
+import { 
+    SlashCommandBuilder, 
+    SlashCommandSubcommandBuilder, 
+    SlashCommandAttachmentOption, 
+    SlashCommandStringOption, 
+    PermissionFlagsBits, 
+    EmbedBuilder,
+    CommandInteraction
+} from "discord.js";
 import Canvas from "canvas";
 import config from "../../config.json" with { type: "json" };
 
 export default {
-    data: new Discord.SlashCommandBuilder()
+    data: new SlashCommandBuilder()
         .setName("gerar")
         .setDescription("gerar")
         .addSubcommand(
-            new Discord.SlashCommandSubcommandBuilder()
+            new SlashCommandSubcommandBuilder()
                 .setName("bandeira")
                 .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
                 .addAttachmentOption(
-                    new Discord.SlashCommandAttachmentOption()
+                    new SlashCommandAttachmentOption()
                         .setName("imagem")
                         .setDescription("Imagem da bandeira que será adicionada")
                         .setRequired(true)
                 )
                 .addStringOption(
-                    new Discord.SlashCommandStringOption()
+                    new SlashCommandStringOption()
                         .setName("nome")
                         .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
                         .setRequired(true)
                 )
         ),
 
+    /**
+     * @param {CommandInteraction} interaction 
+     */
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => config.server.roles.narrador.includes(r.id))) {
             return interaction.reply({
@@ -33,7 +44,7 @@ export default {
         }
 
         if (interaction.options.getSubcommand() === "bandeira") {
-            if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
+            if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
                 return interaction.reply({
                     content: `Você precisa ser um administrador para utilizar esse comando.`,
                     ephemeral: true
@@ -41,7 +52,7 @@ export default {
             }
 
             interaction.reply({
-                embeds: [new Discord.EmbedBuilder().setColor("Greyple").setDescription(`Carregando...`)]
+                embeds: [new EmbedBuilder().setColor("Greyple").setDescription(`Carregando...`)]
             }).then(async () => {
                 const canvas = Canvas.createCanvas(72 * 2, 52 * 2);
                 const ctx = canvas.getContext('2d');
@@ -78,7 +89,7 @@ export default {
                 }).then(emo => {
                     interaction.editReply({
                         embeds: [
-                            new Discord.EmbedBuilder()
+                            new EmbedBuilder()
                                 .setColor("Green")
                                 .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
                                 .setImage(img.url)
@@ -87,7 +98,7 @@ export default {
                 }).catch(err => {
                     interaction.editReply({
                         embeds: [
-                            new Discord.EmbedBuilder()
+                            new EmbedBuilder()
                                 .setColor("Red")
                                 .setDescription(`**Erro:** ${err}`)
                         ]

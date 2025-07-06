@@ -1,4 +1,10 @@
-import Discord from "discord.js";
+import Discord, { 
+    CommandInteraction, 
+    SlashCommandBuilder, 
+    SlashCommandStringOption, 
+    EmbedBuilder, 
+    MessageFlags 
+} from "discord.js";
 import Canvas from "canvas";
 import fs from "node:fs";
 import path from "node:path";
@@ -13,32 +19,35 @@ const ai = new GoogleGenAI({
 });
 
 export default {
-    data: new Discord.SlashCommandBuilder()
+    data: new SlashCommandBuilder()
         .setName("eval")
         .setDescription("[Desenvolvedor] Executa um código JavaScript diretamente do discord")
         .addStringOption(
-            new Discord.SlashCommandStringOption()
+            new SlashCommandStringOption()
                 .setName("código")
                 .setDescription("Código a ser executado")
                 .setRequired(true)
         ),
 
+    /**
+     * @param {CommandInteraction} interaction 
+     */
     async execute(interaction) {
         if (!config.bot.owners.includes(interaction.user.id)) {
             return interaction.reply({
                 content: "Este comando não foi feito para que __você__ o use.",
-                flags: [Discord.MessageFlags.Ephemeral]
+                flags: [MessageFlags.Ephemeral]
             });
         }
 
         async function _evalCode(code, interaction) {
             await interaction.editReply({
                 embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                         .setColor("DarkGrey")
                         .setDescription("Carregando.")
                 ],
-                flags: [Discord.MessageFlags.Ephemeral]
+                flags: [MessageFlags.Ephemeral]
             }).catch(() => {});
 
             let replyColor;
@@ -57,7 +66,7 @@ export default {
 
             await interaction.editReply({
                 embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                         .setTitle(replyTitle)
                         .addFields([
                             {
@@ -76,20 +85,20 @@ export default {
 
         interaction.reply({
             embeds: [
-                new Discord.EmbedBuilder()
+                new EmbedBuilder()
                     .setColor("DarkGrey")
                     .setDescription("Carregando...")
             ],
-            flags: [Discord.MessageFlags.Ephemeral]
+            flags: [MessageFlags.Ephemeral]
         }).then(async () => {
             _evalCode(interaction.options.get("código").value, interaction).catch(err => {
                 interaction.editReply({
                     embeds: [
-                        new Discord.EmbedBuilder()
+                        new EmbedBuilder()
                             .setColor("Red")
                             .setDescription(`${err}`)
                     ],
-                    flags: [Discord.MessageFlags.Ephemeral]
+                    flags: [MessageFlags.Ephemeral]
                 }).catch(() => {});
             });
         }).catch(() => {});

@@ -1,7 +1,7 @@
-import Discord from "discord.js";
+import Discord, { BaseInteraction } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath } from "url";
 import config from "../config.json" with { type: "json" };
 import client from "../src/client.js";
 
@@ -13,7 +13,10 @@ client.commands = await getCommands(path.join(__dirname, "../commands"));
 
 export default {
     name: 'interactionCreate',
-
+    
+    /**
+     * @param {BaseInteraction} interaction 
+     */
     async execute(interaction) {
 
         if (interaction.isChatInputCommand()) {
@@ -22,11 +25,15 @@ export default {
         else if (interaction.isButton()) {
             await handleButton(interaction);
         }
+
     }
 };
 
 // Funções auxiliares
 
+/**
+ * @param {Interaction} interaction 
+ */
 async function handleChatInput(interaction) {
     const logChannel = interaction.guild.channels.cache.get(config.server.channels.logs);
     const interactionContent = interaction.options._hoistedOptions.length > 0
@@ -69,6 +76,9 @@ async function handleChatInput(interaction) {
     }
 }
 
+/**
+ * @param {Interaction} interaction 
+ */
 async function handleButton(interaction) {
     const logChannel = interaction.guild.channels.cache.get(config.server.channels.logs);
 
@@ -107,6 +117,9 @@ async function handleButton(interaction) {
     await buttonHandler.execute(interaction);
 }
 
+/**
+ * @param {string} dir 
+ */
 async function getCommands(dir) {
     const commands = new Discord.Collection();
     const commandFiles = getFiles(dir);
@@ -119,6 +132,9 @@ async function getCommands(dir) {
     return commands;
 }
 
+/**
+ * @param {string} dir 
+ */
 function getFiles(dir) {
     const files = fs.readdirSync(dir, { withFileTypes: true });
     let commandFiles = [];
@@ -137,10 +153,16 @@ function getFiles(dir) {
     return commandFiles;
 }
 
+/**
+ * @param {string} str 
+ */
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+/**
+ * @param {Date} date 
+ */
 function formatDate(date) {
     return `${date.getHours().toString().padStart(2, '0')}:` +
            `${date.getMinutes().toString().padStart(2, '0')}:` +
