@@ -41,6 +41,11 @@ export default {
     async execute(interaction) {
         const server_config = await config(interaction.guildId);
 
+        if(!server_config) return interaction.editReply({
+            content: `Esse servidor não está configurado corretamente. Contate um administrador.`,
+            flags: [MessageFlags.Ephemeral]
+        });
+
         if(!server_config?.server_tier >= 2) return interaction.editReply({
             content: `Este servidor não possui o tier necessário para usar esse comando.`,
             flags: [MessageFlags.Ephemeral]

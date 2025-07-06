@@ -29,6 +29,8 @@ export default async function config(serverId) {
 
         return plainObject || undefined;
 
+    } catch(err) {
+        return undefined;
     } finally {
         await client.close();
     }

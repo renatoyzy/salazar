@@ -31,15 +31,16 @@ export default {
             .setRequired(true)
         ),
 
+    ephemeral: true,
+
     /**
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
 
         if (!bot_config.owners.includes(interaction.user.id)) {
-            return interaction.reply({
-                content: "Esse é um comando de desenvolvimento que você não tem acesso.",
-                flags: [MessageFlags.Ephemeral]
+            return interaction.editReply({
+                content: "Esse é um comando de desenvolvimento que você não tem acesso."
             });
         }
 
@@ -49,8 +50,7 @@ export default {
                     new EmbedBuilder()
                     .setColor(Colors.DarkGrey)
                     .setDescription("Carregando.")
-                ],
-                flags: [MessageFlags.Ephemeral]
+                ]
             }).catch(() => {});
 
             let replyColor;
@@ -91,8 +91,7 @@ export default {
                 new EmbedBuilder()
                 .setColor(Colors.DarkGrey)
                 .setDescription("Carregando...")
-            ],
-            flags: [MessageFlags.Ephemeral]
+            ]
         }).then(async () => {
             _evalCode(interaction.options.get("código").value, interaction).catch(err => {
                 interaction.editReply({
@@ -100,8 +99,7 @@ export default {
                         new EmbedBuilder()
                         .setColor(Colors.Red)
                         .setDescription(`${err}`)
-                    ],
-                    flags: [MessageFlags.Ephemeral]
+                    ]
                 }).catch(() => {});
             });
         }).catch(() => {});

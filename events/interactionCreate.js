@@ -54,7 +54,18 @@ async function handleChatInput(interaction) {
 
     const subcom = interaction.options.getSubcommand(false) ? ` ${interaction.options.getSubcommand()}` : "";
 
-    await interaction.deferReply();
+    const command = client.commands.get(interaction.commandName);
+    await interaction.deferReply(command.ephemeral && {flags: [MessageFlags.Ephemeral]});
+
+    console.log(`- ${interaction.member.user.displayName} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.url})`);
+
+    try {
+        if (!interaction.replied) {
+            await command.execute(interaction).catch(() => {});
+        }
+    } catch (error) {
+        console.error(error);
+    }
 
     if (logChannel) {
         const fields = [
@@ -76,17 +87,6 @@ async function handleChatInput(interaction) {
                 .setTimestamp(interaction.createdAt)
             ]
         });
-    }
-
-    console.log(`- ${interaction.member.user.displayName} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.url})`);
-
-    const command = client.commands.get(interaction.commandName);
-    try {
-        if (!interaction.replied) {
-            await command.execute(interaction).catch(() => {});
-        }
-    } catch (error) {
-        console.error(error);
     }
 }
 
