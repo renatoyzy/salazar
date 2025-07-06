@@ -158,6 +158,7 @@ export default {
             }];
 
             array_options.includes(option) && embed_fields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
+            option == "name" && embed_fields.push({name: 'Dica pro nome do servidor', value: 'Se você colocar "{ano}" em alguma parte do nome, toda vez que o ano mudar, o nome do servidor será atualizado!'})
 
             await interaction.editReply({embeds: [
                 new EmbedBuilder()
