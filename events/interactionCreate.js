@@ -3,13 +3,16 @@ import {
     EmbedBuilder,
     Colors,
     Collection,
-    MessageFlags
+    MessageFlags,
+    ButtonInteraction
 } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import config from "../config.json" with { type: "json" };
+import bot_config from "../config.json" with { type: "json" };
+import config from "../src/config.js";
 import client from "../src/client.js";
+import { inspect } from "util";
 
 // Simular __dirname e __filename no ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -38,10 +41,12 @@ export default {
 // Funções auxiliares
 
 /**
- * @param {Interaction} interaction 
+ * @param {BaseInteraction} interaction 
  */
 async function handleChatInput(interaction) {
-    const logChannel = interaction.guild.channels.cache.get(config.server.channels.logs);
+    const server_config = await config(interaction.guildId);
+
+    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
     const interactionContent = interaction.options._hoistedOptions.length > 0
         ? interaction.options._hoistedOptions.map(x => `**${capitalize(x.name)}:** \`\`\`${x.value}\`\`\``)
         : "";
@@ -54,20 +59,18 @@ async function handleChatInput(interaction) {
             { name: `🤖  Comando`, value: `${interaction.commandName}${subcom}` }
         ];
 
-        if (interactionContent) {
-            fields.push({ name: `🔖  Conteúdo`, value: `${interactionContent.join("\n")}` });
-        }
+        interactionContent && fields.push({ name: `🔖  Conteúdo`, value: `${interactionContent.join("\n")}` });
 
         fields.push({ name: `💬  Canal`, value: `<#${interaction.channelId}> (${interaction.channel.id})` });
 
         await logChannel.send({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle(`🤖  Registro de comando`)
-                    .setFields(fields)
-                    .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
-                    .setColor(Colors.Blurple)
-                    .setFooter({ text: formatDate(interaction.createdAt) })
+                .setTitle(`🤖  Registro de comando`)
+                .setFields(fields)
+                .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
+                .setColor(Colors.Blurple)
+                .setTimestamp(interaction.createdAt)
             ]
         });
     }
@@ -83,24 +86,26 @@ async function handleChatInput(interaction) {
 }
 
 /**
- * @param {Interaction} interaction 
+ * @param {ButtonInteraction} interaction 
  */
 async function handleButton(interaction) {
-    const logChannel = interaction.guild.channels.cache.get(config.server.channels.logs);
+    const server_config = await config(interaction.guildId);
+
+    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
 
     if (logChannel) {
         await logChannel.send({
             embeds: [
                 new EmbedBuilder()
-                    .setTitle(`🤖  Registro de uso de botão`)
-                    .setFields([
-                        { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
-                        { name: `🤖  Informações`, value: `${interaction.customId}` },
-                        { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
-                    ])
-                    .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
-                    .setColor(Colors.Yellow)
-                    .setFooter({ text: formatDate(interaction.createdAt) })
+                .setTitle(`🤖  Registro de uso de botão`)
+                .setFields([
+                    { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
+                ])
+                .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
+                .setColor(Colors.Yellow)
+                .setTimestamp(interaction.createdAt)
             ]
         });
     }
@@ -164,17 +169,4 @@ function getFiles(dir) {
  */
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * @param {Date} date 
- */
-function formatDate(date) {
-    return `${date.getHours().toString().padStart(2, '0')}:` +
-           `${date.getMinutes().toString().padStart(2, '0')}:` +
-           `${date.getSeconds().toString().padStart(2, '0')}.` +
-           `${date.getMilliseconds()} ` +
-           `${date.getDate().toString().padStart(2, '0')}/` +
-           `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
-           `${date.getFullYear()}`;
 }

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import bot_config from "../config.json" with { type: "json" };
 import "dotenv/config";
 
 /**
@@ -46,7 +46,7 @@ export default async function deploy_commands(serverId) {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
     rest.put(
-        Routes.applicationGuildCommands(config.bot.id, serverId),
+        Routes.applicationGuildCommands(bot_config.id, serverId),
         { body: commands }
     )
     .then(() => console.log(`Comandos de aplicação registrados com sucesso em ${serverId}.`))

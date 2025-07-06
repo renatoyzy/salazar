@@ -1,5 +1,6 @@
 import Discord, { Message } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import bot_config from "../config.json" with { type: "json" };
+import config from "../src/config.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
 
@@ -14,11 +15,12 @@ export default {
      * @param {Message} message 
      */
     async execute(message) {
-        if (message.author.bot || message.author.id === config.bot.id) return;
+        if (message.author.bot || message.author.id === bot_config.id) return;
+        const server_config = await config(message.guildId);
 
         // Ações secretas
-        if (message.channelId === config.server.channels.acoes_secretas) {
-            message.guild.channels.cache.get(config.server.channels.acoes_secretas_staff)?.send({
+        if (message.channelId === server_config?.server?.channels.acoes_secretas) {
+            message.guild.channels.cache.get(server_config?.server?.channels.acoes_secretas_staff)?.send({
                 embeds: [
                     new Discord.EmbedBuilder()
                         .setTitle(`Nova ação secreta de ${message.author.displayName}`)
@@ -33,16 +35,16 @@ export default {
         }
 
         // Narração de IA
-        else if (message.cleanContent.length >= 500 && config.server.channels.actions.includes(message.channelId)) {
+        else if (message.cleanContent.length >= 500 && server_config?.server?.channels?.actions?.includes(message.channelId)) {
             message.reply('-# Gerando narração...').then(async (msg) => {
-                const acao_jogador = message.author.username;
-                const acao_contexto = (await message.guild.channels.cache.get(config.server.channels.context).messages.fetch())
-                    .sort()
-                    .map(msg => msg.content)
-                    .join('\n\n');
+                const acao_jogador = message.author.displayName;
+                const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
+                    ?.sort()
+                    ?.map(msg => msg.content)
+                    ?.join('\n\n');
                 const acao = message.cleanContent;
 
-                const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico ambientado no século XIX chamado ${message.guild.name}. Com base na história a seguir e na nova ação do jogador ${acao_jogador}, continue a narrativa de forma realista.
+                const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}. Com base na história a seguir e na nova ação do jogador ${acao_jogador}, continue a narrativa de forma realista.
                 
                 - REGRAS:
                 1. Se a dita ação aparentar irrelevante para o roleplay ou mal feita, responda APENAS com exatamente o texto 'IRRELEVANTE!!!'
@@ -67,7 +69,7 @@ export default {
                 - NARRAÇÃO:`;
 
                 const response = await ai.models.generateContent({
-                    model: "gemini-2.0-flash",
+                    model: bot_config.model,
                     contents: prompt
                 });
 
@@ -83,12 +85,12 @@ export default {
                 }
 
                 chunks.forEach(chunk => {
-                    message.guild.channels.cache.get(config.server.channels.narrations)?.send(chunk);
+                    message.guild.channels.cache.get(server_config?.server?.channels?.narrations)?.send(chunk);
                 });
 
                 const novo_contexto = await ai.models.generateContent({
-                    model: "gemini-2.0-flash",
-                    contents: `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name} ambientado no século XIX.
+                    model: bot_config.model,
+                    contents: `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
                     
                     - REGRAS:
                     1. Menos de 2000 caracteres
@@ -103,7 +105,7 @@ export default {
                     Com base no que foi apresentado, gere um breve resumo do acontecimento geral (ação e reação) que possa ser usado por você como contexto para as próximas narrações, para que possa acessar futuramente seus resultados.`
                 });
 
-                message.guild.channels.cache.get(config.server.channels.context)?.send(novo_contexto.text).then(() => {
+                message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
                     msg.delete();
                 });
             });
@@ -113,16 +115,16 @@ export default {
         else if (
             message.cleanContent.length >= 300 &&
             !message.author.bot &&
-            message.author.id !== config.bot.id &&
-            (config.server.channels.events.includes(message.channelId) ||
-                config.server.channels.events.includes(message.channel.parentId))
+            message.author.id !== bot_config.id &&
+            (server_config?.server?.channels?.events?.includes(message.channelId) ||
+                server_config?.server?.channels?.events?.includes(message.channel.parentId))
         ) {
-            const acao_contexto = (await message.guild.channels.cache.get(config.server.channels.context).messages.fetch())
-                .sort()
-                .map(msg => msg.content)
-                .join('\n\n');
+            const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
+                ?.sort()
+                ?.map(msg => msg.content)
+                ?.join('\n\n');
 
-            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico ambientado no século XIX chamado ${message.guild.name}.
+            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
             
             - REGRAS:
             1. Se for uma ação, apenas faça o contexto breve
@@ -134,34 +136,34 @@ export default {
 
             - CONTEXTO HISTÓRICO DO RP: ${acao_contexto}
 
-            - ${message.author.username} postou em ${message.channel.name}: ${message.cleanContent}
+            - ${message.author.displayName} postou em ${message.channel.name}: ${message.cleanContent}
 
             Com base no que foi apresentado, gere um breve resumo que possa ser usado por você como contexto DESSE ACONTECIMENTO para que o possa usar nas próximas narrações, para que possa acessar futuramente seus resultados.`;
 
             const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
+                model: bot_config.model,
                 contents: prompt
             });
 
             if (response.text === "IRRELEVANTE!!!") return;
 
-            message.guild.channels.cache.get(config.server.channels.context)?.send(response.text);
+            message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(response.text);
         }
 
         // Passagem de ano
-        else if (message.channelId === config.server.channels.time) {
+        else if (message.channelId === server_config?.server?.channels?.time) {
             const ano = parseInt(message.cleanContent.match(/\d+/)?.[0]);
             const ano_atual = parseInt(message.guild.name.match(/\d+/)?.[0]);
             if (!ano) return;
 
-            await message.guild.setName(`${config.server.name}${ano}`);
+            await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
-            const acao_contexto = (await message.guild.channels.cache.get(config.server.channels.context).messages.fetch())
-                .sort()
-                .map(msg => msg.content)
-                .join('\n\n');
+            const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
+                ?.sort()
+                ?.map(msg => msg.content)
+                ?.join('\n\n');
 
-            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico ambientado no século XIX chamado ${message.guild.name}.
+            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
                 
             - REGRAS:
             1. NUNCA ultrapasse os 2000 caracteres no seu resumo.
@@ -172,11 +174,11 @@ export default {
             Com base nisso, produza o contexto histórico generalizado do ano passado no roleplay.`;
 
             const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
+                model: bot_config.model,
                 contents: prompt
             });
 
-            const contextChannel = message.guild.channels.cache.get(config.server.channels.context);
+            const contextChannel = message.guild.channels.cache.get(server_config?.server?.channels?.context);
             if (!contextChannel) return;
 
             const max_length = 2000;
@@ -188,8 +190,8 @@ export default {
 
             const msgs = await contextChannel.messages.fetch();
             msgs.filter(msg => 
-                msg.author.id === config.bot.id &&
-                (message.createdTimestamp - msg.createdTimestamp <= 2 * 24 * 60 * 60 * 1000) &&
+                msg.author.id === bot_config.id &&
+                (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
                 !msg.content.includes('# Resumo geral ')
             ).forEach(msg => msg.delete());
 

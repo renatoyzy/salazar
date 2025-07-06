@@ -3,14 +3,15 @@ import Discord, {
     SlashCommandBuilder, 
     SlashCommandStringOption, 
     EmbedBuilder, 
-    MessageFlags 
+    MessageFlags, 
+    Colors
 } from "discord.js";
 import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
 import { inspect } from "node:util";
-import config from "../../config.json" with { type: "json" };
-import mongo_config from "../../src/config.js";
+import bot_config from "../../config.json" with { type: "json" };
+import config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
@@ -25,16 +26,16 @@ export default {
         .setDescription("[Desenvolvedor] Executa um código JavaScript diretamente do discord")
         .addStringOption(
             new SlashCommandStringOption()
-                .setName("código")
-                .setDescription("Código a ser executado")
-                .setRequired(true)
+            .setName("código")
+            .setDescription("Código a ser executado")
+            .setRequired(true)
         ),
 
     /**
      * @param {CommandInteraction} interaction 
      */
     async execute(interaction) {
-        if (!config.bot.owners.includes(interaction.user.id)) {
+        if (!bot_config.owners.includes(interaction.user.id)) {
             return interaction.reply({
                 content: "Este comando não foi feito para que __você__ o use.",
                 flags: [MessageFlags.Ephemeral]
@@ -45,8 +46,8 @@ export default {
             await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setColor("DarkGrey")
-                        .setDescription("Carregando.")
+                    .setColor(Colors.DarkGrey)
+                    .setDescription("Carregando.")
                 ],
                 flags: [MessageFlags.Ephemeral]
             }).catch(() => {});
@@ -57,11 +58,11 @@ export default {
 
             try {
                 output = await eval(code);
-                replyColor = "Blurple";
+                replyColor = Colors.Blurple;
                 replyTitle = "Código executado!";
             } catch (error) {
                 output = error.toString();
-                replyColor = "Red";
+                replyColor = Colors.Red;
                 replyTitle = "Código não executado";
             }
 
@@ -87,7 +88,7 @@ export default {
         interaction.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setColor("DarkGrey")
+                    .setColor(Colors.DarkGrey)
                     .setDescription("Carregando...")
             ],
             flags: [MessageFlags.Ephemeral]
@@ -96,7 +97,7 @@ export default {
                 interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                            .setColor("Red")
+                            .setColor(Colors.Red)
                             .setDescription(`${err}`)
                     ],
                     flags: [MessageFlags.Ephemeral]

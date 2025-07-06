@@ -5,54 +5,57 @@ import {
     SlashCommandStringOption, 
     PermissionFlagsBits, 
     EmbedBuilder,
-    CommandInteraction
+    CommandInteraction,
+    MessageFlags,
+    Colors
 } from "discord.js";
 import Canvas from "canvas";
-import config from "../../config.json" with { type: "json" };
+import config from "../../src/config.js";
 
 export default {
+
     data: new SlashCommandBuilder()
-        .setName("gerar")
-        .setDescription("gerar")
-        .addSubcommand(
-            new SlashCommandSubcommandBuilder()
-                .setName("bandeira")
-                .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
-                .addAttachmentOption(
-                    new SlashCommandAttachmentOption()
-                        .setName("imagem")
-                        .setDescription("Imagem da bandeira que será adicionada")
-                        .setRequired(true)
-                )
-                .addStringOption(
-                    new SlashCommandStringOption()
-                        .setName("nome")
-                        .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
-                        .setRequired(true)
-                )
-        ),
+    .setName("gerar")
+    .setDescription("gerar")
+    .addSubcommand(
+        new SlashCommandSubcommandBuilder()
+            .setName("bandeira")
+            .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
+            .addAttachmentOption(
+                new SlashCommandAttachmentOption()
+                    .setName("imagem")
+                    .setDescription("Imagem da bandeira que será adicionada")
+                    .setRequired(true)
+            )
+            .addStringOption(
+                new SlashCommandStringOption()
+                    .setName("nome")
+                    .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
+                    .setRequired(true)
+            )
+    ),
 
     /**
      * @param {CommandInteraction} interaction 
      */
     async execute(interaction) {
-        if (!interaction.member.roles.cache.some(r => config.server.roles.narrador.includes(r.id))) {
-            return interaction.reply({
-                content: `Você precisa ser um administrador para utilizar esse comando.`,
-                ephemeral: true
-            });
-        }
+        const server_config = await config(interaction.guildId);
+
+        if(!server_config?.server_tier >= 2) return interaction.reply({
+            content: `Este servidor não possui o tier necessário para usar esse comando.`,
+            flags: [MessageFlags.Ephemeral]
+        });
 
         if (interaction.options.getSubcommand() === "bandeira") {
-            if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            if (!interaction.member.permissions.has(PermissionFlagsBits.CreateGuildExpressions)) {
                 return interaction.reply({
                     content: `Você precisa ser um administrador para utilizar esse comando.`,
-                    ephemeral: true
+                    flags: [MessageFlags.Ephemeral]
                 });
             }
 
             interaction.reply({
-                embeds: [new EmbedBuilder().setColor("Greyple").setDescription(`Carregando...`)]
+                embeds: [new EmbedBuilder().setColor(Colors.Greyple).setDescription(`Carregando...`)]
             }).then(async () => {
                 const canvas = Canvas.createCanvas(72 * 2, 52 * 2);
                 const ctx = canvas.getContext('2d');
@@ -86,21 +89,21 @@ export default {
                 interaction.guild.emojis.create({
                     name: `flag_${interaction.options.get("nome").value}`,
                     attachment: buffer
-                }).then(emo => {
+                }).then(() => {
                     interaction.editReply({
                         embeds: [
                             new EmbedBuilder()
-                                .setColor("Green")
-                                .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
-                                .setImage(img.url)
+                            .setColor(Colors.Green)
+                            .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
+                            .setImage(img.url)
                         ]
                     }).catch(() => {});
                 }).catch(err => {
                     interaction.editReply({
                         embeds: [
                             new EmbedBuilder()
-                                .setColor("Red")
-                                .setDescription(`**Erro:** ${err}`)
+                            .setColor(Colors.Red)
+                            .setDescription(`**Erro:** ${err}`)
                         ]
                     });
                 });

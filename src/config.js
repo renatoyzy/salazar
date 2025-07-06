@@ -12,7 +12,7 @@ const client = new MongoClient(process.env.DB_URI, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 /**
@@ -20,16 +20,16 @@ const client = new MongoClient(process.env.DB_URI, {
  * @param {SnowflakeUtil} serverId 
  * @returns {{} | undefined} Objeto das configurações do servidor (ou undefined se não existirem)
  */
-export default function config(serverId) {
-    return (async () => {try {
+export default async function config(serverId) {
+    try {
         await client.connect();
 
         const server_config = await client.db('Salazar').collection('configuration').findOne({ server_id: serverId });
-        const plainObject = server_config ? JSON.parse(JSON.stringify(server_config.server)) : undefined;
+        const plainObject = server_config ? JSON.parse(JSON.stringify(server_config)) : undefined;
 
         return plainObject || undefined;
 
     } finally {
         await client.close();
-    }})();
+    }
 }
