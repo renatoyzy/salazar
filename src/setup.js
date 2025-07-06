@@ -7,20 +7,20 @@ import {
 } from "mongodb";
 import "dotenv/config";
 
-const client = new MongoClient(process.env.DB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
-
 /**
  * Retorna o setup do servidor no banco de dados (ou undefined)
  * @param {SnowflakeUtil} serverId 
  * @returns {{} | undefined} Objeto do setup do servidor (ou undefined se não existirem)
  */
 export default async function setup(serverId) {
+    const client = new MongoClient(process.env.DB_URI, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        },
+    });
+
     try {
         await client.connect();
 
