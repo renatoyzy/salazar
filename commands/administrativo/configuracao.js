@@ -114,6 +114,11 @@ export default {
             const collection = mongo_client.db('Salazar').collection('configuration');
             let updateQuery;
             let action;
+            let fake_value;
+
+            if (option.split('.')[0] == "name") fake_value = value;
+            else if (option.split('.')[0] == "channels") fake_value = "<#"+value+">";
+            else if (option.split('.')[0] == "roles") fake_value = "<@&"+value+">";
 
             if (array_options.includes(option)) {
                 // Verifica se o valor já existe no array
@@ -122,17 +127,17 @@ export default {
                 if (current.includes(value)) {
                     // Valor já existe → remove
                     updateQuery = { $pull: { [`server.${option}`]: value } };
-                    action = 'removido de';
+                    action = `${fake_value} removido de ${option_labels[option] || option}`;
                 } else {
                     // Valor não existe → adiciona
                     updateQuery = { $push: { [`server.${option}`]: value } };
-                    action = 'adicionado em';
+                    action = `${fake_value} adicionado de ${option_labels[option] || option}`;
                 }
 
             } else {
                 // Campo simples → apenas set
                 updateQuery = { $set: { [`server.${option}`]: value } };
-                action = 'atualizado para';
+                action = `${option_labels[option] || option} redefinido para ${fake_value}`;
             }
 
             const reply_config = await collection.findOneAndUpdate(
@@ -152,13 +157,13 @@ export default {
                 value: response_code
             }];
 
-            array_options.includes(option) && embed_fields.unshift({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
+            array_options.includes(option) && embed_fields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
 
             await interaction.editReply({embeds: [
                 new EmbedBuilder()
                 .setTitle(`Configuração alterada com sucesso!`)
                 .setColor(Colors.Green)
-                .setDescription(`**${option_labels[option] || option}** ${action} **${value}**.`)
+                .setDescription(action)
                 .addFields(embed_fields)
                 .setTimestamp(interaction.createdAt)
             ]})
