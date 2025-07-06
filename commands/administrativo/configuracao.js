@@ -12,12 +12,13 @@ import {
     ServerApiVersion
 } from "mongodb";
 import config from "../../src/config.js";
+import bot_config from "../../config.json" with { type: "json" };
 import { inspect } from "util";
 
 export default {
     data: new SlashCommandBuilder()
         .setName('configuração')
-        .setDescription('Configure o funcionamento do Salazar no seu servidor')
+        .setDescription(`[Administrativo] Configure o funcionamento do ${bot_config.name} no seu servidor`)
         .addStringOption(
             new SlashCommandStringOption()
             .setName(`opção`)
