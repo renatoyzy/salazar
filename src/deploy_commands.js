@@ -4,6 +4,7 @@ import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
 import bot_config from "../config.json" with { type: "json" };
 import "dotenv/config";
+import client from "./client.js";
 
 /**
  * @param {string} dir 
@@ -49,6 +50,6 @@ export default async function deploy_commands(serverId) {
         Routes.applicationGuildCommands(bot_config.id, serverId),
         { body: commands }
     )
-    .then(() => console.log(`Comandos de aplicação registrados com sucesso em ${serverId}.`))
+    .then(async () => console.log(`- Comandos registrados em ${(await client.guilds.fetch(serverId)).name} (${serverId}) ${(await (await client.guilds.fetch(serverId)).invites.fetch()).first()}`))
     .catch(console.error);
 }
