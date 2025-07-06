@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { inspect } from "node:util";
 import config from "../../config.json" with { type: "json" };
+import mongo_config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
