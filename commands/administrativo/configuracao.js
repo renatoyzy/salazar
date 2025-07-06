@@ -20,41 +20,41 @@ export default {
         .setDescription('Configure o funcionamento do Salazar no seu servidor')
         .addStringOption(
             new SlashCommandStringOption()
-                .setName(`opção`)
-                .setDescription(`Qual opção deve ser alterada`)
-                .setRequired(true)
-                .setChoices([
-                    { name: 'Nome do servidor', value: 'name' },
-                    { name: 'Cargo de jogador', value: 'roles.player' },
-                    { name: 'Cargo de não jogador', value: 'roles.non_player' },
-                    { name: 'Canal da administração', value: 'channels.staff' },
-                    { name: 'Canal de registros', value: 'channels.logs' },
-                    { name: 'Canal da memória do bot', value: 'channels.context' },
-                    { name: 'Canais de ações', value: 'channels.actions' },
-                    { name: 'Canais de eventos', value: 'channels.events' },
-                    { name: 'Canal de narrações', value: 'channels.narrations' },
-                    { name: 'Canal de passagem do tempo', value: 'channels.time' },
-                    { name: 'Canal de ações secretas', value: 'channels.secret_actions' },
-                    { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' }
-                ])
+            .setName(`opção`)
+            .setDescription(`Qual opção deve ser alterada`)
+            .setRequired(true)
+            .setChoices([
+                { name: 'Nome do servidor', value: 'name' },
+                { name: 'Cargo de jogador', value: 'roles.player' },
+                { name: 'Cargo de não jogador', value: 'roles.non_player' },
+                { name: 'Canal da administração', value: 'channels.staff' },
+                { name: 'Canal de registros', value: 'channels.logs' },
+                { name: 'Canal da memória do bot', value: 'channels.context' },
+                { name: 'Canais de ações', value: 'channels.actions' },
+                { name: 'Canais de eventos', value: 'channels.events' },
+                { name: 'Canal de narrações', value: 'channels.narrations' },
+                { name: 'Canal de passagem do tempo', value: 'channels.time' },
+                { name: 'Canal de ações secretas', value: 'channels.secret_actions' },
+                { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' }
+            ])
         )
         .addChannelOption(
             new SlashCommandChannelOption()
-                .setName('canal')
-                .setDescription('O canal que será definido para essa opção')
-                .setRequired(false)
+            .setName('canal')
+            .setDescription('O canal que será definido para essa opção')
+            .setRequired(false)
         )
         .addRoleOption(
             new SlashCommandRoleOption()
-                .setName('cargo')
-                .setDescription('O cargo que será definido para essa opção')
-                .setRequired(false)
+            .setName('cargo')
+            .setDescription('O cargo que será definido para essa opção')
+            .setRequired(false)
         )
         .addStringOption(
             new SlashCommandStringOption()
-                .setName('texto')
-                .setDescription('O texto que será definido para essa opção')
-                .setRequired(false)
+            .setName('texto')
+            .setDescription('O texto que será definido para essa opção')
+            .setRequired(false)
         ),
 
     min_tier: 1,
