@@ -8,6 +8,7 @@ export default {
         .setName('setup')
         .setDescription('discord frescuras'),
 
+    setup_step: 0,
     ephemeral: true,
 
     /**

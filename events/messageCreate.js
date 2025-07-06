@@ -78,7 +78,7 @@ export default {
         };
 
         // Ações secretas
-        if (message.member?.roles.has(server_config?.server?.roles?.player) && message.channelId == server_config?.server?.channels?.secret_actions) {
+        if (message.member?.roles?.cache.has(server_config?.server?.roles?.player) && message.channelId == server_config?.server?.channels?.secret_actions) {
             message.guild.channels.cache.get(server_config?.server?.channels?.secret_actions_log)?.send({
                 embeds: [
                     new EmbedBuilder()

@@ -21,10 +21,12 @@ export default {
         .setDescription(`[Administrativo] Peça palpites do roleplay ao ${bot_config.name}.`)
         .addStringOption(
             new SlashCommandStringOption()
-                .setName("prompt")
-                .setDescription("O que será perguntado")
-                .setRequired(true)
+            .setName("prompt")
+            .setDescription("O que será perguntado")
+            .setRequired(true)
         ),
+
+    min_tier: 2,
     
     /**
      * @param {ChatInputCommandInteraction} interaction 

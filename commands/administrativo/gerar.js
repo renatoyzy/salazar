@@ -35,6 +35,8 @@ export default {
         )
     ),
 
+    min_tier: 2,
+
     /**
      * @param {CommandInteraction} interaction 
      */

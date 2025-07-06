@@ -30,7 +30,8 @@ export default {
             .setDescription("Código a ser executado")
             .setRequired(true)
         ),
-
+    
+    setup_step: -1,
     ephemeral: true,
 
     /**

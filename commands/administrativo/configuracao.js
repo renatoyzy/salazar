@@ -10,6 +10,8 @@ export default {
 
     ephemeral: true,
 
+    min_tier: 1,
+
     /**
      * @param {ChatInputCommandInteraction} interaction 
      */

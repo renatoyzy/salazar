@@ -3,6 +3,8 @@ import path from "path";
 import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
 import bot_config from "../config.json" with { type: "json" };
+import config from "./config.js";
+import setup from "./setup.js";
 import "dotenv/config";
 import client from "./client.js";
 
@@ -35,13 +37,27 @@ export function getFiles(dir) {
  * @param {SnowflakeUtil} serverId - Id do servidor que receberá os comandos
  */
 export default async function deploy_commands(serverId) {
+
+    const server_config = await config(serverId);
+    const server_setup = !server_config && await setup(serverId);
+
     let commands = [];
     const commandFiles = getFiles("./commands");
 
     for (const file of commandFiles) {
         // Use import dinâmico em ES module
         const command = (await import(path.resolve(file))).default;
-        commands.push(command.data.toJSON());
+        if((
+            command.min_tier<=server_config?.server_tier || 
+            !command.min_tier
+        ) && (
+            command.setup_step<=server_setup?.server_setup_step || 
+            !command.setup_step && command.setup_step!==0 && !server_setup && server_config || 
+            command.setup_step<0 || 
+            command.setup_step===0 && !server_setup && !server_config
+        )) {
+            commands.push(command.data.toJSON());
+        }
     }
 
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);

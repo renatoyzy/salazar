@@ -11,7 +11,7 @@ export default {
      * @param {Client} client 
      */
     async execute(client) {
-        console.warn(`O ${bot_config.name} ${project_package.version} está ligado e operando.`);
+        console.warn(`O ${bot_config.name} ${project_package.version} está ligado e operando em ${(await client.guilds.fetch()).size} servidores.`);
 
         (await client.guilds.fetch()).forEach(guild => {
             deploy_commands(guild.id);
