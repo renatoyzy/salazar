@@ -1,4 +1,10 @@
-import Discord, { BaseInteraction } from "discord.js";
+import { 
+    BaseInteraction,
+    EmbedBuilder,
+    Colors,
+    Collection,
+    MessageFlags
+} from "discord.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -56,11 +62,11 @@ async function handleChatInput(interaction) {
 
         await logChannel.send({
             embeds: [
-                new Discord.EmbedBuilder()
+                new EmbedBuilder()
                     .setTitle(`🤖  Registro de comando`)
                     .setFields(fields)
                     .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
-                    .setColor(Discord.Colors.Blurple)
+                    .setColor(Colors.Blurple)
                     .setFooter({ text: formatDate(interaction.createdAt) })
             ]
         });
@@ -85,7 +91,7 @@ async function handleButton(interaction) {
     if (logChannel) {
         await logChannel.send({
             embeds: [
-                new Discord.EmbedBuilder()
+                new EmbedBuilder()
                     .setTitle(`🤖  Registro de uso de botão`)
                     .setFields([
                         { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
@@ -93,13 +99,13 @@ async function handleButton(interaction) {
                         { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
                     ])
                     .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
-                    .setColor(Discord.Colors.Yellow)
+                    .setColor(Colors.Yellow)
                     .setFooter({ text: formatDate(interaction.createdAt) })
             ]
         });
     }
 
-    client.buttons = new Discord.Collection();
+    client.buttons = new Collection();
     const buttonsPath = path.join(__dirname, "./buttons");
     const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith(".js"));
 
@@ -111,7 +117,7 @@ async function handleButton(interaction) {
 
     const buttonHandler = client.buttons.get(interaction.customId);
     if (!buttonHandler) {
-        return interaction.reply({ content: `Botão desconhecido.`, flags: [Discord.MessageFlags.Ephemeral] });
+        return interaction.reply({ content: `Botão desconhecido.`, flags: [MessageFlags.Ephemeral] });
     }
 
     await buttonHandler.execute(interaction);
@@ -121,7 +127,7 @@ async function handleButton(interaction) {
  * @param {string} dir 
  */
 async function getCommands(dir) {
-    const commands = new Discord.Collection();
+    const commands = new Collection();
     const commandFiles = getFiles(dir);
 
     for (const commandFile of commandFiles) {

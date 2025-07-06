@@ -6,8 +6,8 @@ import Discord, {
     MessageFlags 
 } from "discord.js";
 import Canvas from "canvas";
-import fs from "node:fs";
-import path from "node:path";
+import fs from "fs";
+import path from "path";
 import { inspect } from "node:util";
 import config from "../../config.json" with { type: "json" };
 import mongo_config from "../../src/config.js";

@@ -5,9 +5,8 @@ import { fileURLToPath } from "url";
 import config from "./config.json" with { type: "json" };
 import client from "./src/client.js";
 import "dotenv/config";
-import deploy_commands from "./src/deploy_commands.js";
 
-// Simular __dirname em ES module
+// Simular __dirname e __filename no ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
