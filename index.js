@@ -68,8 +68,6 @@ process.on('unhandledRejection', async (reason, promise) => {
     }
 });
 
-deploy_commands();
-
 // Logar o cliente
 client.login(process.env.DISCORD_TOKEN);
 

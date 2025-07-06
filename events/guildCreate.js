@@ -11,6 +11,6 @@ export default {
     async execute(guild) {
         const fetchedGuild = await client.guilds.fetch(guild.id);
         fetchedGuild.systemChannel?.send('Oi!!!');
-        deploy_commands();
+        deploy_commands(guild.id);
     }
 };
