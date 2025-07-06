@@ -21,5 +21,6 @@
   "devDependencies": {
     "node": "^16.13.2"
   },
-  "description": ""
+  "description": "",
+  "type": "module"
 }

@@ -1,49 +1,60 @@
-const Discord = require("discord.js");
-const Canvas = require('canvas');
-const config = require("../../config.json");
+import Discord from "discord.js";
+import Canvas from "canvas";
+import config from "../../config.json" with { type: "json" };
 
-module.exports = {
-
+export default {
     data: new Discord.SlashCommandBuilder()
-    .setName("gerar")
-    .setDescription("gerar")
-    .addSubcommand( // bandeira
-        new Discord.SlashCommandSubcommandBuilder()
-        .setName("bandeira")
-        .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
-        .addAttachmentOption(
-            new Discord.SlashCommandAttachmentOption()
-            .setName("imagem")
-            .setDescription("Imagem da bandeira que será adicionada")
-            .setRequired(true)
-        )
-        .addStringOption(
-            new Discord.SlashCommandStringOption()
-            .setName("nome")
-            .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
-            .setRequired(true)
+        .setName("gerar")
+        .setDescription("gerar")
+        .addSubcommand(
+            new Discord.SlashCommandSubcommandBuilder()
+                .setName("bandeira")
+                .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
+                .addAttachmentOption(
+                    new Discord.SlashCommandAttachmentOption()
+                        .setName("imagem")
+                        .setDescription("Imagem da bandeira que será adicionada")
+                        .setRequired(true)
+                )
+                .addStringOption(
+                    new Discord.SlashCommandStringOption()
+                        .setName("nome")
+                        .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
+                        .setRequired(true)
+                )
         ),
-    ),
 
     async execute(interaction) {
+        if (!interaction.member.roles.cache.some(r => config.server.roles.narrador.includes(r.id))) {
+            return interaction.reply({
+                content: `Você precisa ser um administrador para utilizar esse comando.`,
+                ephemeral: true
+            });
+        }
 
-        if(!interaction.member.roles.cache.some(r => config.server.roles.narrador.includes(r.id))) return interaction.reply({content:`Você precisa ser um administrador para utilizar esse comando.`,ephemeral:true}) 
-        if(interaction.options.getSubcommand() === "bandeira") {
-            if(!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) return interaction.reply({content:`Você precisa ser um administrador para utilizar esse comando.`,ephemeral:true});
-            interaction.reply({embeds: [new Discord.EmbedBuilder().setColor("Greyple").setDescription(`Carregando...`)]}).then(async () => {
+        if (interaction.options.getSubcommand() === "bandeira") {
+            if (!interaction.member.permissions.has(Discord.PermissionFlagsBits.Administrator)) {
+                return interaction.reply({
+                    content: `Você precisa ser um administrador para utilizar esse comando.`,
+                    ephemeral: true
+                });
+            }
 
-                const canvas = Canvas.createCanvas(72*2, 52*2)
+            interaction.reply({
+                embeds: [new Discord.EmbedBuilder().setColor("Greyple").setDescription(`Carregando...`)]
+            }).then(async () => {
+                const canvas = Canvas.createCanvas(72 * 2, 52 * 2);
                 const ctx = canvas.getContext('2d');
-                let img = interaction.options.get("imagem").attachment;
-                let imagin = Canvas.loadImage(img.url);
+                const img = interaction.options.get("imagem").attachment;
+                const imageObj = await Canvas.loadImage(img.url);
 
-                // draw a rounded rectangle
+                // Desenhar retângulo arredondado
+                const x = 0;
+                const y = 0;
+                const width = 72 * 2;
+                const height = 52 * 2;
+                const radius = 10 * 2;
 
-                let x = 0;
-                let y = 0;
-                let width = 72*2;
-                let height = 52*2;
-                let radius = 10*2;
                 ctx.beginPath();
                 ctx.moveTo(x + radius, y);
                 ctx.lineTo(x + width - radius, y);
@@ -57,39 +68,32 @@ module.exports = {
                 ctx.closePath();
 
                 ctx.clip();
+                ctx.drawImage(imageObj, x, y, width, height);
 
-                ctx.drawImage((await imagin),x,y,width,height);
-
-                const imagem = new Discord.AttachmentBuilder(canvas.toBuffer(), "image.png");
+                const buffer = canvas.toBuffer("image/png");
 
                 interaction.guild.emojis.create({
                     name: `flag_${interaction.options.get("nome").value}`,
-                    attachment: imagem.attachment
-                }).catch((err) => {
-
+                    attachment: buffer
+                }).then(emo => {
                     interaction.editReply({
                         embeds: [
                             new Discord.EmbedBuilder()
-                            .setColor("Red")
-                            .setDescription(`**Erro:** ${err}`)
-                        ]
-                    });
-
-                }).then((emo) => {
-
-                    interaction.editReply({
-                        embeds: [
-                            new Discord.EmbedBuilder()
-                            .setColor("Green")
-                            .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
-                            .setImage(img.url)
+                                .setColor("Green")
+                                .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
+                                .setImage(img.url)
                         ]
                     }).catch(() => {});
-
+                }).catch(err => {
+                    interaction.editReply({
+                        embeds: [
+                            new Discord.EmbedBuilder()
+                                .setColor("Red")
+                                .setDescription(`**Erro:** ${err}`)
+                        ]
+                    });
                 });
-
             });
-        };
+        }
     }
-
 };

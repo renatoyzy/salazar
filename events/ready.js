@@ -1,17 +1,10 @@
-const package = require("../package.json");
-const fs = require("node:fs");
-const path = require("node:path");
-const { REST } = require("@discordjs/rest");
-const { Routes } = require("discord.js");
-const config = require("../config.json");
+import project_package from "../package.json" with { type: "json" };
 
-module.exports = {
-
+export default {
     name: 'ready',
     once: true,
 
     async execute(client) {
-        console.log(`O Salazar ${package.version} está ligado e operando.`);
+        console.log(`O Salazar ${project_package.version} está ligado e operando.`);
     }
-
 };
