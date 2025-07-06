@@ -1,10 +1,10 @@
 import { 
-    CommandInteraction, 
     SlashCommandBuilder, 
     SlashCommandStringOption, 
     Colors, MessageFlags, 
     EmbedBuilder, 
-    PermissionsBitField
+    PermissionsBitField,
+    ChatInputCommandInteraction
 } from "discord.js";
 import bot_config from "../../config.json" with { type: "json" };
 import config from "../../src/config.js";
@@ -27,9 +27,10 @@ export default {
         ),
     
     /**
-     * @param {CommandInteraction} interaction 
+     * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
+
         const server_config = await config(interaction.guildId);
         
         if(!server_config?.server_tier >= 2) return interaction.reply({
@@ -42,19 +43,19 @@ export default {
             flags: [MessageFlags.Ephemeral]
         });
 
-        interaction.reply({
+        interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                 .setColor(Colors.DarkGrey)
                 .setDescription("Gerando seu palpite...")
             ],
-        }).then(async (msg) => {
+        }).then(async () => {
             let acao_contexto = (await interaction.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
                 ?.sort()
                 ?.map(msg => msg.content)
                 ?.join('\n\n');
 
-            if(!acao_contexto) return msg.edit({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
+            if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
             const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${interaction.guild.name}, que está dialogando com um jogador sobre o roleplay.
             - REGRAS:
@@ -71,7 +72,7 @@ export default {
                 contents: prompt
             });
 
-            msg.edit({
+            interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Blurple)

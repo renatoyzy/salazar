@@ -4,7 +4,8 @@ import {
     Colors,
     Collection,
     MessageFlags,
-    ButtonInteraction
+    ButtonInteraction,
+    ChatInputCommandInteraction
 } from "discord.js";
 import fs from "fs";
 import path from "path";
@@ -41,7 +42,7 @@ export default {
 // Funções auxiliares
 
 /**
- * @param {BaseInteraction} interaction 
+ * @param {ChatInputCommandInteraction} interaction 
  */
 async function handleChatInput(interaction) {
     const server_config = await config(interaction.guildId);
@@ -52,6 +53,8 @@ async function handleChatInput(interaction) {
         : "";
 
     const subcom = interaction.options.getSubcommand(false) ? ` ${interaction.options.getSubcommand()}` : "";
+
+    await interaction.deferReply();
 
     if (logChannel) {
         const fields = [
@@ -74,6 +77,8 @@ async function handleChatInput(interaction) {
             ]
         });
     }
+
+    console.log(`- ${interaction.member.user.displayName} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.url})`);
 
     const command = client.commands.get(interaction.commandName);
     try {

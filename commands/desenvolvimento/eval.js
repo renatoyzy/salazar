@@ -1,15 +1,15 @@
 import Discord, { 
-    CommandInteraction, 
     SlashCommandBuilder, 
     SlashCommandStringOption, 
     EmbedBuilder, 
     MessageFlags, 
-    Colors
+    Colors,
+    ChatInputCommandInteraction
 } from "discord.js";
 import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
-import { inspect } from "node:util";
+import { inspect } from "util";
 import bot_config from "../../config.json" with { type: "json" };
 import config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
@@ -32,12 +32,13 @@ export default {
         ),
 
     /**
-     * @param {CommandInteraction} interaction 
+     * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
+
         if (!bot_config.owners.includes(interaction.user.id)) {
             return interaction.reply({
-                content: "Este comando não foi feito para que __você__ o use.",
+                content: "Esse é um comando de desenvolvimento que você não tem acesso.",
                 flags: [MessageFlags.Ephemeral]
             });
         }
@@ -69,27 +70,27 @@ export default {
             await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                        .setTitle(replyTitle)
-                        .addFields([
-                            {
-                                name: "Entrada",
-                                value: `\`\`\`js\n${code}\n\`\`\``
-                            },
-                            {
-                                name: "Saída",
-                                value: `\`\`\`js\n${inspect(output, { depth: 0 }).slice(0, 990)}\n\`\`\``
-                            }
-                        ])
-                        .setColor(replyColor)
+                    .setTitle(replyTitle)
+                    .addFields([
+                        {
+                            name: "Entrada",
+                            value: `\`\`\`js\n${code}\n\`\`\``
+                        },
+                        {
+                            name: "Saída",
+                            value: `\`\`\`js\n${inspect(output, { depth: 0 }).slice(0, 990)}\n\`\`\``
+                        }
+                    ])
+                    .setColor(replyColor)
                 ]
             }).catch(() => {});
         }
 
-        interaction.reply({
+        interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setColor(Colors.DarkGrey)
-                    .setDescription("Carregando...")
+                .setColor(Colors.DarkGrey)
+                .setDescription("Carregando...")
             ],
             flags: [MessageFlags.Ephemeral]
         }).then(async () => {
@@ -97,8 +98,8 @@ export default {
                 interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setDescription(`${err}`)
+                        .setColor(Colors.Red)
+                        .setDescription(`${err}`)
                     ],
                     flags: [MessageFlags.Ephemeral]
                 }).catch(() => {});
@@ -106,12 +107,3 @@ export default {
         }).catch(() => {});
     }
 };
-
-// Funções auxiliares
-function roundTwo(n) {
-    return `${(+(Math.round(n + "e+2") + "e-2")).toLocaleString()}`;
-}
-
-function roundTwoOg(n) {
-    return +(Math.round(n + "e+2") + "e-2");
-}

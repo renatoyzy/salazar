@@ -19,20 +19,20 @@ export default {
     .setDescription("gerar")
     .addSubcommand(
         new SlashCommandSubcommandBuilder()
-            .setName("bandeira")
-            .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
-            .addAttachmentOption(
-                new SlashCommandAttachmentOption()
-                    .setName("imagem")
-                    .setDescription("Imagem da bandeira que será adicionada")
-                    .setRequired(true)
-            )
-            .addStringOption(
-                new SlashCommandStringOption()
-                    .setName("nome")
-                    .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
-                    .setRequired(true)
-            )
+        .setName("bandeira")
+        .setDescription("[Administrativo] Arredonda, escala e adiciona como emojis bandeiras de países.")
+        .addAttachmentOption(
+            new SlashCommandAttachmentOption()
+            .setName("imagem")
+            .setDescription("Imagem da bandeira que será adicionada")
+            .setRequired(true)
+        )
+        .addStringOption(
+            new SlashCommandStringOption()
+            .setName("nome")
+            .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
+            .setRequired(true)
+        )
     ),
 
     /**
@@ -41,20 +41,20 @@ export default {
     async execute(interaction) {
         const server_config = await config(interaction.guildId);
 
-        if(!server_config?.server_tier >= 2) return interaction.reply({
+        if(!server_config?.server_tier >= 2) return interaction.editReply({
             content: `Este servidor não possui o tier necessário para usar esse comando.`,
             flags: [MessageFlags.Ephemeral]
         });
 
         if (interaction.options.getSubcommand() === "bandeira") {
             if (!interaction.member.permissions.has(PermissionFlagsBits.CreateGuildExpressions)) {
-                return interaction.reply({
+                return interaction.editReply({
                     content: `Você precisa ser um administrador para utilizar esse comando.`,
                     flags: [MessageFlags.Ephemeral]
                 });
             }
 
-            interaction.reply({
+            interaction.editReply({
                 embeds: [new EmbedBuilder().setColor(Colors.Greyple).setDescription(`Carregando...`)]
             }).then(async () => {
                 const canvas = Canvas.createCanvas(72 * 2, 52 * 2);

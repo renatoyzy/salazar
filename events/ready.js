@@ -9,6 +9,6 @@ export default {
      * @param {Client} client 
      */
     async execute(client) {
-        console.log(`O Salazar ${project_package.version} está ligado e operando.`);
+        console.warn(`O Salazar ${project_package.version} está ligado e operando.`);
     }
 };

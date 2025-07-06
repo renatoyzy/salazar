@@ -9,8 +9,7 @@ export default {
      * @param {Guild} guild 
      */
     async execute(guild) {
-        const fetchedGuild = await client.guilds.fetch(guild.id);
-        fetchedGuild.systemChannel?.send('Oi!!!');
+        (await guild.channels.fetch()).sorted().first().send(`Oiii`)
         deploy_commands(guild.id);
     }
 };
