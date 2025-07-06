@@ -94,11 +94,10 @@ export default {
         }
 
         // Narração de IA
-        else if (
-            message.cleanContent.length >= 500 && 
-            (server_config?.server?.channels?.actions?.includes(message.channelId) ||
-                server_config?.server?.channels?.actions?.includes(message.channel?.parentId))
-        ) {
+        else if (message.cleanContent.length >= 500 && (
+            server_config?.server?.channels?.actions?.includes(message.channelId) ||
+            server_config?.server?.channels?.actions?.includes(message.channel?.parentId)
+        )) {
             message.reply('-# Gerando narração...').then(async (msg) => {
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
