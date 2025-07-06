@@ -45,7 +45,7 @@ export default {
 
                 let defaultMessage = [
                     '# Obrigado por me adicionar!',
-                    'Configure o Salazar para iniciar os trabalhos!',
+                    `Configure o ${bot_config.name} para iniciar os trabalhos!`,
                     '## Narração automatizada',
                     'Não perca tempo com o trabalho difícil que é narrar um roleplay. Agora, você tem uma IA a sua disposição para isso!',
                     '## Features secundárias',
@@ -56,10 +56,10 @@ export default {
                 ].join('\n');
 
                 if(server_setup && server_setup.server_tier>0 && server_setup.server_setup_step==0) { // pago ja
-                    message.reply(`${defaultMessage}\n-# Como você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o Salazar está operando no seu servidor!   `);
+                    message.reply(`${defaultMessage}\n-# Como você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o ${bot_config.name} está operando no seu servidor!   `);
                 } else if(server_setup && server_setup.server_tier==0 && server_setup.server_setup_step==0 || !server_setup) { // n pago nao
-                    message.reply(`${defaultMessage}\n-# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o Salazar.`);
-                    (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO Salazar foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await message.guild.invites.create(message.channel).catch())?.url || (await message.guild.invites.fetch()).first().url || `Não achei o URL de convite, o ID do servidor é ${message.guildId}`}`);
+                    message.reply(`${defaultMessage}\n-# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o ${bot_config.name}.`);
+                    (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await message.guild.invites.create(message.channel).catch())?.url || (await message.guild.invites.fetch()).first().url || `Não achei o URL de convite, o ID do servidor é ${message.guildId}`}`);
                 }
 
                 server_setup ? 
@@ -78,8 +78,8 @@ export default {
         };
 
         // Ações secretas
-        if (message.channelId === server_config?.server?.channels.secret_actions) {
-            message.guild.channels.cache.get(server_config?.server?.channels.secret_actions_log)?.send({
+        if (message.member?.roles.has(server_config?.server?.roles?.player) && message.channelId == server_config?.server?.channels?.secret_actions) {
+            message.guild.channels.cache.get(server_config?.server?.channels?.secret_actions_log)?.send({
                 embeds: [
                     new EmbedBuilder()
                     .setTitle(`Nova ação secreta de ${message.author.displayName}`)
@@ -94,7 +94,11 @@ export default {
         }
 
         // Narração de IA
-        else if (message.cleanContent.length >= 500 && server_config?.server?.channels?.actions?.includes(message.channelId)) {
+        else if (
+            message.cleanContent.length >= 500 && 
+            (server_config?.server?.channels?.actions?.includes(message.channelId) ||
+                server_config?.server?.channels?.actions?.includes(message.channel?.parentId))
+        ) {
             message.reply('-# Gerando narração...').then(async (msg) => {
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
@@ -103,7 +107,7 @@ export default {
                     ?.join('\n\n');
                 const acao = message.cleanContent;
 
-                const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}. Com base na história a seguir e na nova ação do jogador ${acao_jogador}, continue a narrativa de forma realista.
+                const prompt = `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}. Com base na história a seguir e na nova ação do jogador ${acao_jogador}, continue a narrativa de forma realista.
                 
                 - REGRAS:
                 1. Se a dita ação aparentar irrelevante para o roleplay ou mal feita, responda APENAS com exatamente o texto 'IRRELEVANTE!!!'
@@ -149,7 +153,7 @@ export default {
 
                 const novo_contexto = await ai.models.generateContent({
                     model: bot_config.model,
-                    contents: `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
+                    contents: `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
                     
                     - REGRAS:
                     1. Menos de 2000 caracteres
@@ -176,14 +180,14 @@ export default {
             !message.author.bot &&
             message.author.id !== bot_config.id &&
             (server_config?.server?.channels?.events?.includes(message.channelId) ||
-                server_config?.server?.channels?.events?.includes(message.channel.parentId))
+                server_config?.server?.channels?.events?.includes(message.channel?.parentId))
         ) {
             const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
                 ?.sort()
                 ?.map(msg => msg.content)
                 ?.join('\n\n');
 
-            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
+            const prompt = `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
             
             - REGRAS:
             1. Se for uma ação, apenas faça o contexto breve
@@ -222,7 +226,7 @@ export default {
                 ?.map(msg => msg.content)
                 ?.join('\n\n');
 
-            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
+            const prompt = `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${message.guild.name}.
                 
             - REGRAS:
             1. NUNCA ultrapasse os 2000 caracteres no seu resumo.

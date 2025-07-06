@@ -30,7 +30,7 @@ export function getFiles(dir) {
 }
 
 /**
- * Adiciona os comandos do Salazar em um servidor
+ * Adiciona os comandos do bot em um servidor
  * @param {SnowflakeUtil} serverId - Id do servidor que receberá os comandos
  */
 export default async function deploy_commands(serverId) {

@@ -18,7 +18,7 @@ const ai = new GoogleGenAI({
 export default {
     data: new SlashCommandBuilder()
         .setName("palpite")
-        .setDescription("[Administrativo] Peça palpites do roleplay ao Salazar.")
+        .setDescription(`[Administrativo] Peça palpites do roleplay ao ${bot_config.name}.`)
         .addStringOption(
             new SlashCommandStringOption()
                 .setName("prompt")
@@ -59,7 +59,7 @@ export default {
 
             if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
-            const prompt = `Você é o Salazar, um bot narrador imparcial de um roleplay geopolítico chamado ${interaction.guild.name}, que está dialogando com um jogador sobre o roleplay.
+            const prompt = `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${interaction.guild.name}, que está dialogando com um jogador sobre o roleplay.
             - REGRAS:
             1. Use fatos históricos relevantes, fatos do contexto do roleplay para gerar uma narração de peso e relevante.
             2. Não considere fatos citados pelo jogador se você não tiver como conferir eles no contexto histórico e eles não forem verdade.
@@ -78,7 +78,7 @@ export default {
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Blurple)
-                    .setTitle('Palpites do Salazar')
+                    .setTitle(`Palpites do ${bot_config.name}`)
                     .setDescription(response.text)
                 ]
             }).catch(() => {});
