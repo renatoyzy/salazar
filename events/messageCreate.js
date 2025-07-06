@@ -1,6 +1,17 @@
-import Discord, { Message } from "discord.js";
+import { 
+    Message, 
+    EmbedBuilder, 
+    Colors, 
+    PermissionsBitField 
+} from "discord.js";
+import { 
+    MongoClient, 
+    ServerApiVersion 
+} from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
 import config from "../src/config.js";
+import setup from "../src/setup.js";
+import client from "../src/client.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
 
@@ -17,16 +28,71 @@ export default {
     async execute(message) {
         if (message.author.bot || message.author.id === bot_config.id) return;
         const server_config = await config(message.guildId);
+        const server_setup = !server_config && await setup(message.guildId);
+
+        // Aviso de servidor não configurado
+        if(message.member.permissions.has(PermissionsBitField.Flags.Administrator) && !server_config) {
+            const mongoClient = new MongoClient(process.env.DB_URI, {
+                serverApi: {
+                    version: ServerApiVersion.v1,
+                    strict: true,
+                    deprecationErrors: true,
+                },
+            });
+
+            try {
+                await mongoClient.connect();
+
+                let defaultMessage = `
+                    \n# Obrigado por me adicionar!
+                    \n## Narração automatizada
+                    \nNão perca tempo com o trabalho difícil que é narrar um roleplay. Agora, você tem uma IA a sua disposição para isso!
+                    \n## Features secundárias
+                    \n- Adicione bandeiras arredondadas automaticamente com o **/gerar bandeira**
+                    \n- Defina um canal de ações secretas, para que somente a staff possa narrar, sem outros jogadores bisbilhotarem
+                    \n## Preço baixo
+                `;
+
+                if(server_setup) { // pago ja
+                    message.reply(`
+                        ${defaultMessage}
+                        -# Se você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o Salazar está operando no seu servidor!   
+                    `);
+                } else { // n pago nao
+                    message.reply(`
+                        ${defaultMessage}
+                        -# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o Salazar.
+                    `);
+                    (await client.users.fetch(bot_config.owners[0])).send(`
+                        # Entra aí pra dar uma olhada.
+                        O Salazar foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.
+                        > ${(await message.guild.invites.create(message.channel).catch())?.url || (await message.guild.invites.fetch()).first().url || `Não achei o URL de convite, o ID do servidor é ${message.guildId}`}
+                    `);
+                }
+
+                mongoClient.db('Salazar').collection('setup').insertOne({
+                    server_id: message.guildId,
+                    server_tier: 0,
+                    server_setup_step: 0,
+                    server: {}
+                });
+
+            } catch(err) {
+                return undefined;
+            } finally {
+                await mongoClient.close();
+            }
+        };
 
         // Ações secretas
-        if (message.channelId === server_config?.server?.channels.acoes_secretas) {
-            message.guild.channels.cache.get(server_config?.server?.channels.acoes_secretas_staff)?.send({
+        if (message.channelId === server_config?.server?.channels.secret_actions) {
+            message.guild.channels.cache.get(server_config?.server?.channels.secret_actions_log)?.send({
                 embeds: [
-                    new Discord.EmbedBuilder()
+                    new EmbedBuilder()
                         .setTitle(`Nova ação secreta de ${message.author.displayName}`)
                         .setThumbnail(message.author.avatarURL())
                         .setDescription(message.content)
-                        .setColor(Discord.Colors.Blurple)
+                        .setColor(Colors.Blurple)
                         .setTimestamp(Date.now())
                 ]
             }).then(() => {

@@ -2,19 +2,19 @@ import Discord, {
     SlashCommandBuilder, 
     SlashCommandStringOption, 
     EmbedBuilder, 
-    MessageFlags, 
     Colors,
     ChatInputCommandInteraction
 } from "discord.js";
+import { inspect } from "util";
+import bot_config from "../../config.json" with { type: "json" };
+import { GoogleGenAI } from "@google/genai";
+import 'dotenv/config';
 import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
-import { inspect } from "util";
-import bot_config from "../../config.json" with { type: "json" };
 import config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
-import { GoogleGenAI } from "@google/genai";
-import 'dotenv/config';
+import deploy_commands from "../../src/deploy_commands.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY

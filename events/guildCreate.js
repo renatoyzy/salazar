@@ -9,7 +9,6 @@ export default {
      * @param {Guild} guild 
      */
     async execute(guild) {
-        (await guild.channels.fetch()).sorted().first().send(`Oiii`)
         deploy_commands(guild.id);
     }
 };
