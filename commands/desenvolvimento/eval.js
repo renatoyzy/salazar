@@ -13,9 +13,11 @@ import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
 import config from "../../src/config.js";
+import setup from "../../src/setup.js";
 import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import client from "../../src/client.js";
+import server_paid from "../../src/server_paid.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
