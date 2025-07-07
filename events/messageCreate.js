@@ -218,7 +218,7 @@ export default {
             const ano_atual = parseInt(message.guild.name.match(/\d+/)?.[0]);
             if (!ano) return;
 
-            await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
+            server_config?.server?.name?.contains('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
             const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
                 ?.sort()
