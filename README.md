@@ -7,6 +7,6 @@ O trabalho árduo e cansativo de narrar as ações dos jogadores? Então... Ele 
 ## Emojis mais bonitos
 Não quer adicionar um emoji de bandeira quadradão? O Salazar faz o trabalho de arredondar, deixando no mesmo nível dos emojis de bandeira padrões.
 # Inteligência Artificial
-Para lidar com os sistemas complexos e tudo que pode influenciar os resultados no roleplay, o Gemini 2.5 Pro (Preview) é usado.
+Para lidar com os sistemas complexos e tudo que pode influenciar os resultados no roleplay, o Gemini 2.0 Flash é usado.
 # [Adicione o Salazar](https://discord.com/oauth2/authorize?client_id=767858186676994070)
 Apesar do uso não ser gratuito, o Salazar é público, e pode ser adicionado em qualquer servidor.
