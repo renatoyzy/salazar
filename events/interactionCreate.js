@@ -55,7 +55,7 @@ async function handleChatInput(interaction) {
     const subcom = interaction.options.getSubcommand(false) ? ` ${interaction.options.getSubcommand()}` : "";
 
     const command = client.commands.get(interaction.commandName);
-    await interaction.deferReply(command.ephemeral && {flags: [MessageFlags.Ephemeral]});
+    !command.disable_defer && await interaction.deferReply(command.ephemeral && {flags: [MessageFlags.Ephemeral]});
 
     console.log(`- ${interaction.member.user.displayName} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.url})`);
 
