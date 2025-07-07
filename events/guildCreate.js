@@ -3,7 +3,7 @@ import client from "../src/client.js";
 import config from "../src/config.js";
 import setup from "../src/setup.js";
 import { Guild } from "discord.js";
-import { MongoClient } from "mongodb";
+import { MongoClient, ServerApiVersion } from "mongodb";
 import 'dotenv/config';
 
 export default {
