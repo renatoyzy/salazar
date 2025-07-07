@@ -15,7 +15,6 @@ import path from "path";
 import config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
-import server_paid from "../../src/server_paid.js";
 import client from "../../src/client.js";
 
 const ai = new GoogleGenAI({
@@ -26,7 +25,6 @@ const ai = new GoogleGenAI({
 const DANGEROUS_KEYWORDS = [
     'process.exit',
     'require(',
-    'import(',
     'eval(',
     'Function(',
     'child_process',
@@ -64,7 +62,7 @@ export default {
                     embeds: [
                         new EmbedBuilder()
                         .setColor(Colors.Red)
-                        .setTitle("❌ Acesso negado")
+                        .setTitle("❌ Acesso Negado")
                         .setDescription("Você não tem permissão para usar este comando de desenvolvimento.")
                     ]
                 });
@@ -77,8 +75,8 @@ export default {
                 return await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
-                        .setColor(Colors.Yellow)
-                        .setTitle("⚠️ Código perigoso")
+                        .setColor(Colors.Red)
+                        .setTitle("⚠️ Código Perigoso Detectado")
                         .setDescription("O código contém comandos potencialmente perigosos e foi bloqueado.")
                     ]
                 });
@@ -92,8 +90,8 @@ export default {
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Red)
-                    .setTitle("❌ Erro")
-                    .setDescription("Ocorreu um erro inesperado ao executar o comando. "+error)
+                    .setTitle("❌ Erro Interno")
+                    .setDescription("Ocorreu um erro inesperado ao executar o comando.")
                 ]
             }).catch(() => {});
         }
@@ -171,35 +169,25 @@ export default {
         
         // Constrói embed de resposta
         const responseEmbed = new EmbedBuilder()
-            .setTitle(replyTitle)
-            .setColor(replyColor)
-            .addFields([
-                {
-                    name: "📝 Entrada",
-                    value: `\`\`\`js\n${code.slice(0, 800)}${code.length > 800 ? '\n...' : ''}\n\`\`\``,
-                    inline: false
-                },
-                {
-                    name: "📤 Saída",
-                    value: `\`\`\`js\n${formattedOutput}\n\`\`\``,
-                    inline: false
-                },
-                {
-                    name: "⏱️ Tempo de execução",
-                    value: `${executionTime}ms`,
-                    inline: true
-                },
-                {
-                    name: "📊 Tipo",
-                    value: `\`${typeof output}\``,
-                    inline: true
-                }
-            ])
-            .setTimestamp()
-            .setFooter({ 
-                text: `Executado por ${interaction.user.tag}`, 
-                iconURL: interaction.user.displayAvatarURL() 
-            });
+        .setTitle(replyTitle)
+        .setColor(replyColor)
+        .addFields([
+            {
+                name: "📝 Entrada",
+                value: `\`\`\`js\n${code.slice(0, 400)}${code.length > 400 ? '\n...' : ''}\n\`\`\``,
+                inline: false
+            },
+            {
+                name: "📤 Saída",
+                value: `\`\`\`js\n${formattedOutput}\n\`\`\``,
+                inline: false
+            }
+        ])
+        .setTimestamp()
+        .setFooter({ 
+            text: `⏱️ ${executionTime}ms | ${typeof output} | ${interaction.user.tag}`, 
+            iconURL: interaction.user.displayAvatarURL() 
+        });
 
         await interaction.editReply({
             embeds: [responseEmbed]
@@ -225,22 +213,23 @@ export default {
                 formatted = output.toString();
             } else {
                 formatted = inspect(output, { 
-                    depth: 2, 
+                    depth: 1, 
                     colors: false, 
-                    maxArrayLength: 10,
-                    maxStringLength: 200,
-                    breakLength: 80
+                    maxArrayLength: 5,
+                    maxStringLength: 100,
+                    breakLength: 40,
+                    compact: true
                 });
             }
 
-            // Limita o tamanho da saída
-            if (formatted.length > 1000) {
-                formatted = formatted.slice(0, 1000) + "\n... (saída truncada)";
+            // Limita o tamanho da saída para Discord (máximo 900 caracteres para segurança)
+            if (formatted.length > 900) {
+                formatted = formatted.slice(0, 900) + "\n... (truncado)";
             }
 
             return formatted;
         } catch (error) {
-            return `Erro ao formatar saída: ${error.message}`;
+            return `Erro ao formatar: ${error.message}`;
         }
     }
 };
