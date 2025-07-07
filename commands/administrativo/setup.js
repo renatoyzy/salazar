@@ -43,6 +43,7 @@ export default {
             server: {}
         };
 
+        if(!setup_data.server) setup_data.server = {};
         setup_data.server.channels = {};
         setup_data.server.roles = {};
 
