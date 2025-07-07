@@ -1,5 +1,7 @@
 import deploy_commands from "../src/deploy_commands.js";
 import client from "../src/client.js";
+import config from "../src/config.js";
+import setup from "../src/setup.js";
 import { Guild } from "discord.js";
 import { MongoClient } from "mongodb";
 import 'dotenv/config';
@@ -12,6 +14,9 @@ export default {
      */
     async execute(guild) {
         deploy_commands(guild.id);
+
+        const server_config = await config(guild.id);
+        const server_setup = !server_config && await setup(guild.id);
 
         const mongoClient = new MongoClient(process.env.DB_URI, {
             serverApi: {
@@ -33,6 +38,10 @@ export default {
 
         } catch {} finally {
             await mongoClient.close();
+        }
+
+        if((!server_config && (!server_setup || server_setup.server_tier==0)) || server_config.server_tier==0) {
+            (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await guild.invites.create((await guild.channels.fetch()).first()).catch())?.url || (await guild.invites.fetch()).first().url || `Não achei o URL de convite, o ID do servidor é ${guild.id}`}`);
         }
     }
 };
