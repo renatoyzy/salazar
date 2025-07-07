@@ -4,6 +4,7 @@ import config from "../src/config.js";
 import setup from "../src/setup.js";
 import { Guild } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
+import bot_config from "../config.json" with { type: "json" };
 import 'dotenv/config';
 
 export default {
