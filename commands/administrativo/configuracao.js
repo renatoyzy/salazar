@@ -23,7 +23,7 @@ export default {
             new SlashCommandStringOption()
             .setName(`opção`)
             .setDescription(`Qual opção deve ser alterada`)
-            .setRequired(true)
+            .setRequired(false)
             .setChoices([
                 { name: 'Nome do servidor', value: 'name' },
                 { name: 'Cargo de jogador', value: 'roles.player' },
@@ -93,26 +93,48 @@ export default {
             "channels.secret_actions_log": "Canal administrativo de ações secretas"
         };
 
-        const value = interaction.options.get(options_alike[option.split('.')[0]])?.value;
-
-        if (!value) return interaction.editReply({embeds: [
-            new EmbedBuilder()
-            .setDescription(`Para alterar o **${option_labels[option] || option}**, você precisa definir o argumento de **${options_alike[option.split('.')[0]]}** no comando, e não o que você definiu.`)
-            .setColor(Colors.Red)
-        ]});
-
         const mongo_client = new MongoClient(process.env.DB_URI, {
             serverApi: {
                 version: ServerApiVersion.v1,
                 strict: true,
                 deprecationErrors: true,
             },
-        });
+        });        
 
         try {
             await mongo_client.connect();
 
             const collection = mongo_client.db('Salazar').collection('configuration');
+
+            // Exibir configuração atual
+            if(!option) {
+                const reply_config = await collection.findOne(
+                    { server_id: interaction.guildId }
+                );
+
+                let response_code = `\`\`\`json\n${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
+
+                Object.keys(option_labels).reverse().forEach(key => {
+                    response_code = response_code.replace(`${key.includes('.') ? key.split('.')[1] : key}`, option_labels[key]);
+                });
+
+                return await interaction.editReply({embeds: [
+                    new EmbedBuilder()
+                    .setTitle(`Configuração atual do servidor`)
+                    .setColor(Colors.Blurple)
+                    .setDescription(response_code)
+                    .setTimestamp(interaction.createdAt)
+                ]})
+            }
+
+            const value = interaction.options.get(options_alike[option.split('.')[0]])?.value;
+
+            if (!value) return interaction.editReply({embeds: [
+                new EmbedBuilder()
+                .setDescription(`Para alterar o **${option_labels[option] || option}**, você precisa definir o argumento de **${options_alike[option.split('.')[0]]}** no comando, e não o que você definiu.`)
+                .setColor(Colors.Red)
+            ]});
+
             let updateQuery;
             let action;
             let fake_value;

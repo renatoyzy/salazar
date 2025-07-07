@@ -2,7 +2,7 @@ import deploy_commands from "../src/deploy_commands.js";
 import client from "../src/client.js";
 import config from "../src/config.js";
 import setup from "../src/setup.js";
-import { Guild } from "discord.js";
+import { ChannelType, Guild } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
 import 'dotenv/config';
@@ -42,7 +42,7 @@ export default {
         }
 
         if((!server_config && (!server_setup || server_setup.server_tier==0)) || server_config.server_tier==0) {
-            (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await guild.invites.create((await guild.channels.fetch()).first()).catch())?.url || (await guild.invites.fetch()).first().url || `Não achei o URL de convite, o ID do servidor é ${guild.id}`}`);
+            (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await guild.invites.fetch()).first().url || guild.invites.create((await guild.channels.fetch()).find(c => c.type === ChannelType.GuildText)).url || `Não achei o URL de convite, o ID do servidor é ${guild.id}`}`);
         }
     }
 };
