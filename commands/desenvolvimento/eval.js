@@ -16,6 +16,7 @@ import config from "../../src/config.js";
 import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import server_paid from "../../src/server_paid.js";
+import client from "../../src/client.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
