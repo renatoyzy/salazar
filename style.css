@@ -10,8 +10,9 @@ body {
     justify-content: center;
     flex-direction: column;
     user-select: none;
-    gap: 20px;
     overflow: hidden;
+    font-family: monospace;
+    padding: 10px;
 }
 
 * {
@@ -20,6 +21,8 @@ body {
 
 h1 {
     color: white;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .container {
@@ -46,7 +49,7 @@ a {
     text-decoration: none;
     color: white;
     padding: 10px;
-    background: linear-gradient(45deg, #142092e6, #007aff9e);
+    background: #f0f0f84a;
     border-radius: 12px;
     box-shadow: inset 0px 0px 8px 1px #ffffff1a;
     border: 1px solid hsla(0deg, 0%, 100%, 10%);
@@ -54,4 +57,10 @@ a {
     gap: 10px;
     backdrop-filter: blur(5px);
     visibility: visible;
+    text-align: center;
+    justify-content: center;
+    transition: all .3s ease;
+}
+a:hover {
+    scale: 1.05;
 }
