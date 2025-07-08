@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../../config.json" with { type: "json" };
-import setup from "../../src/setup.js";
+import { setup } from "../../src/server_info.js";
 import deploy_commands from "../../src/deploy_commands.js";
 
 export default {
