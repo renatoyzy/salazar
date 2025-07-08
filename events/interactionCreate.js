@@ -11,7 +11,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import bot_config from "../config.json" with { type: "json" };
-import config from "../src/config.js";
+import { config } from "../src/server_info.js";
 import client from "../src/client.js";
 import { inspect } from "util";
 

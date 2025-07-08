@@ -11,7 +11,7 @@ import {
     MongoClient,
     ServerApiVersion
 } from "mongodb";
-import config from "../../src/config.js";
+import { config } from "../../src/server_info.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { inspect } from "util";
 

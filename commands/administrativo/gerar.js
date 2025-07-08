@@ -10,7 +10,7 @@ import {
     Colors
 } from "discord.js";
 import Canvas from "canvas";
-import config from "../../src/config.js";
+import { config } from "../../src/server_info.js";
 
 export default {
 

@@ -3,8 +3,7 @@ import path from "path";
 import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
 import bot_config from "../config.json" with { type: "json" };
-import config from "./config.js";
-import setup from "./setup.js";
+import { config, setup } from "./server_info.js";
 import "dotenv/config";
 import client from "./client.js";
 

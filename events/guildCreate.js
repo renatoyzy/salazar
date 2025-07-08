@@ -1,8 +1,7 @@
 import deploy_commands from "../src/deploy_commands.js";
 import client from "../src/client.js";
-import config from "../src/config.js";
-import setup from "../src/setup.js";
-import { ChannelType, Guild } from "discord.js";
+import { config, setup } from "../src/server_info.js";
+import { Guild } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
 import 'dotenv/config';

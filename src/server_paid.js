@@ -5,8 +5,7 @@ import {
     MongoClient, 
     ServerApiVersion 
 } from "mongodb";
-import config from "./config.js";
-import setup from "./setup.js";
+import { config, setup } from "./server_info.js";
 import "dotenv/config";
 
 /**

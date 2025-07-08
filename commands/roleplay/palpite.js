@@ -7,7 +7,7 @@ import {
     ChatInputCommandInteraction
 } from "discord.js";
 import bot_config from "../../config.json" with { type: "json" };
-import config from "../../src/config.js";
+import { config } from "../../src/server_info.js";
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 
@@ -39,12 +39,12 @@ export default {
             content: `Esse servidor não está configurado corretamente. Contate um administrador.`
         });
         
-        if(!server_config?.server_tier >= 2) return interaction.reply({
+        if(!server_config?.server_tier >= 2) return interaction.editReply({
             content: `Este servidor não possui o tier necessário para usar esse comando.`
         });
 
-        if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({
-            content: "Este comando é apenas para administradores."
+        if (server_config.server_tier<4 && !interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.editReply({
+            content: "No plano atual deste servidor, este comando é apenas para administradores."
         });
 
         interaction.editReply({

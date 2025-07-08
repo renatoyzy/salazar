@@ -9,8 +9,7 @@ import {
     ServerApiVersion 
 } from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
-import config from "../src/config.js";
-import setup from "../src/setup.js";
+import { config, setup } from "../src/server_info.js";
 import client from "../src/client.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
