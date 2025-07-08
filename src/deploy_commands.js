@@ -104,9 +104,9 @@ function compareCommands(currentCommands, newCommands) {
 
         // Compara usando JSON.stringify após normalização
         if (JSON.stringify(current) !== JSON.stringify(newCmd)) {
-            console.log(`- Comando ${current.name} é diferente:`);
-            console.log('  Atual:', JSON.stringify(current, null, 2));
-            console.log('  Novo:', JSON.stringify(newCmd, null, 2));
+            //console.log(`- Comando ${current.name} é diferente:`);
+            //console.log('  Atual:', JSON.stringify(current, null, 2));
+            //console.log('  Novo:', JSON.stringify(newCmd, null, 2));
             return false;
         }
     }

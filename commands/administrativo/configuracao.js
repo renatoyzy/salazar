@@ -18,7 +18,7 @@ import { inspect } from "util";
 export default {
     data: new SlashCommandBuilder()
         .setName('configuração')
-        .setDescription(`[Administrativo] Configure o funcionamento do ${bot_config.name} no seu servidor`)
+        .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${bot_config.name} no seu servidor`)
         .addStringOption(
             new SlashCommandStringOption()
             .setName(`opção`)
