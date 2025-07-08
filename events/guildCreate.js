@@ -42,7 +42,9 @@ export default {
         }
 
         if((!server_config && (!server_setup || server_setup.server_tier==0)) || server_config.server_tier==0) {
-            (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${(await guild.invites.fetch()).first().url || guild.invites.create((await guild.channels.fetch()).find(c => c.type === ChannelType.GuildText)).url || `Não achei o URL de convite, o ID do servidor é ${guild.id}`}`);
+            const channel = guild.systemChannel || guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has("CREATE_INSTANT_INVITE"));
+            const invite = (await guild.invites.fetch())?.first()?.url || (await channel?.createInvite({ maxAge: 0, maxUses: 1 }))?.url || `Não achei um convite do servidor, mas o ID é ${guild.id}`;
+            (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${invite}`);
         }
     }
 };
