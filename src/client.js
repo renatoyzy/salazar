@@ -1,4 +1,8 @@
-import Discord, { Client } from "discord.js";
+import Discord, { 
+    Client, 
+    EmbedBuilder,
+    Colors 
+} from "discord.js";
 
 const client = new Client({
     intents: [
@@ -37,3 +41,37 @@ const client = new Client({
  * @returns Cliente do bot
  */
 export default client;
+
+/**
+ * Envia uma mensagem de anúncio para todos os servidores do bot
+ * @param {Object} properties
+ * @param {string} properties.title Título da mensagem
+ * @param {string} properties.message Mensagem a ser enviada 
+ */
+export function announce({
+    title = 'Anúncio do Bot',
+    message,
+    description,
+    color = Colors.Green,
+}) {
+    const embed = new EmbedBuilder()
+    .setColor(color)
+    .setTitle(title)
+    .setDescription(message || description || "Nenhuma mensagem foi definida.");
+
+    client.guilds.cache.forEach(async (guild) => {
+        if (guild.systemChannel) { 
+            guild.systemChannel.send({ embeds: [embed] }) 
+        } else if (guild.publicUpdatesChannel) { 
+            guild.publicUpdatesChannel.send({ embeds: [embed] }) 
+        } else { 
+            try { 
+                (await guild.fetchOwner()).user.send({ 
+                    embeds: [
+                        embed.setFooter(`Se você, dono(a) do ${guild.name} não quiser mais receber notificações assim no seu privado, por favor defina um canal do sistema ou um canal de atualizações públicas no seu servidor.`)
+                    ] 
+                }) 
+            } catch (err) { } 
+        } 
+    })
+}

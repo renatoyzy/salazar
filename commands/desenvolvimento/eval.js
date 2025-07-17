@@ -15,7 +15,7 @@ import path from "path";
 import { config, setup } from "../../src/server_info.js";
 import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
-import client from "../../src/client.js";
+import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
 
 const ai = new GoogleGenAI({
