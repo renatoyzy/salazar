@@ -189,18 +189,19 @@ export default {
             const contextChannel = message.guild.channels.cache.get(server_config?.server?.channels?.context);
             if (!contextChannel) return;
 
-            const max_length = 2000;
+            const max_length = 1989; // 2000 - 11 (para o "-# RG-2023" no final)
             let finaltext = `# Resumo geral de ${ano_atual}\n${response.text}`;
             const chunks = [];
             for (let i = 0; i < finaltext.length; i += max_length) {
-                chunks.push(finaltext.slice(i, i + max_length));
+                chunks.push(finaltext.slice(i, i + max_length) + `\n-# RG-${ano_atual}`);
             }
 
             const msgs = await contextChannel.messages.fetch();
             msgs.filter(msg => 
                 msg.author.id === bot_config.id &&
                 (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
-                !msg.content.includes('# Resumo geral ')
+                !msg.content.includes('-# RG') &&
+                !msg.content.includes('# Resumo geral de')
             ).forEach(msg => msg.delete());
 
             chunks.forEach(chunk => contextChannel.send(chunk));
