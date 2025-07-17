@@ -92,50 +92,60 @@ export default {
         }
 
         // Narração de IA
-        else if (message.cleanContent.length >= 500 && (
+        else if ((message.cleanContent.length >= 500 || message.content.startsWith("Ação: ")) && (
             server_config?.server?.channels?.actions?.includes(message.channelId) ||
             server_config?.server?.channels?.actions?.includes(message.channel?.parentId)
         )) {
             message.reply('-# Gerando narração...').then(async (msg) => {
+                const filter = msg => msg.author.id == message.author.id;
+                const collector = message.channel.createMessageCollector({ filter, time: 10_000 });
+
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
                     ?.sort()
                     ?.map(msg => msg.content)
                     ?.join('\n\n');
-                const acao = message.cleanContent;
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
-                const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
+                collector.on('collect', msg => msg.react('📝'));
 
-                const response = await ai.models.generateContent({
-                    model: bot_config.model,
-                    contents: prompt
-                });
+                collector.on('end', async (collected) => {
 
-                if (response.text === "IRRELEVANTE!!!") {
-                    return msg.delete();
-                }
+                    const acao = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
 
-                const max_length = 2000;
-                let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${response.text}\n-# Gerado por Inteligência Artificial`;
-                const chunks = [];
-                for (let i = 0; i < finaltext.length; i += max_length) {
-                    chunks.push(finaltext.slice(i, i + max_length));
-                }
+                    const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
 
-                chunks.forEach(chunk => {
-                    message.guild.channels.cache.get(server_config?.server?.channels?.narrations)?.send(chunk);
-                });
+                    const response = await ai.models.generateContent({
+                        model: bot_config.model,
+                        contents: prompt
+                    });
 
-                const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
+                    if (response.text === "IRRELEVANTE!!!") {
+                        return msg.delete();
+                    }
 
-                const novo_contexto = await ai.models.generateContent({
-                    model: bot_config.model,
-                    contents: contexto_prompt
-                });
+                    const max_length = 2000;
+                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${response.text}\n-# Gerado por Inteligência Artificial`;
+                    const chunks = [];
+                    for (let i = 0; i < finaltext.length; i += max_length) {
+                        chunks.push(finaltext.slice(i, i + max_length));
+                    }
 
-                message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
-                    msg.delete();
+                    chunks.forEach(chunk => {
+                        message.guild.channels.cache.get(server_config?.server?.channels?.narrations)?.send(chunk);
+                    });
+
+                    const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
+
+                    const novo_contexto = await ai.models.generateContent({
+                        model: bot_config.model,
+                        contents: contexto_prompt
+                    });
+
+                    message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
+                        msg.delete();
+                    });
+
                 });
             });
         }
