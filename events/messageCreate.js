@@ -103,6 +103,7 @@ export default {
                     ?.map(msg => msg.content)
                     ?.join('\n\n');
                 const acao = message.cleanContent;
+                const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
                 const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
 
@@ -151,6 +152,7 @@ export default {
                 ?.sort()
                 ?.map(msg => msg.content)
                 ?.join('\n\n');
+            const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
 

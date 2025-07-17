@@ -61,15 +61,7 @@ export default {
 
             if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
-            const prompt = `Você é o ${bot_config.name}, um bot narrador imparcial de um roleplay geopolítico chamado ${interaction.guild.name}, que está dialogando com um jogador sobre o roleplay.
-            - REGRAS:
-            1. Use fatos históricos relevantes, fatos do contexto do roleplay para gerar uma narração de peso e relevante.
-            2. Não considere fatos citados pelo jogador se você não tiver como conferir eles no contexto histórico e eles não forem verdade.
-            3. Nunca escreva mais de 2000 caracteres
-
-            - HISTÓRICO DO ROLEPLAY: ${acao_contexto}
-            
-            - Agora, o ${interaction.member.user.displayName} te mencionou dizendo '${interaction.options.get("prompt").value}'. Responda exatamente a melhor resposta possível para isso.`;
+            const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
 
             const response = await ai.models.generateContent({
                 model: bot_config.model,
