@@ -117,7 +117,7 @@ export default {
                 }
 
                 const max_length = 2000;
-                let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n# Narração\n${response.text}\n-# Gerado por Inteligência Artificial`;
+                let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${response.text}\n-# Gerado por Inteligência Artificial`;
                 const chunks = [];
                 for (let i = 0; i < finaltext.length; i += max_length) {
                     chunks.push(finaltext.slice(i, i + max_length));
