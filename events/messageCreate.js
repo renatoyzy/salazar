@@ -18,6 +18,8 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
+const collectingUsers = new Set();
+
 export default {
     name: 'messageCreate',
 
@@ -26,6 +28,7 @@ export default {
      */
     async execute(message) {
         if (message.author.bot || message.author.id === bot_config.id) return;
+
         const server_config = await config(message.guildId);
         const server_setup = !server_config && await setup(message.guildId);
 
@@ -92,26 +95,37 @@ export default {
         }
 
         // Narração de IA
-        else if ((message.cleanContent.length >= 500 || message.content.startsWith("Ação: ")) && (
+        else if ((message.cleanContent.length >= 500 || message.content.toLowerCase().includes("ação: ")) &&
+            !collectingUsers.has(message.author.id) && (
             server_config?.server?.channels?.actions?.includes(message.channelId) ||
             server_config?.server?.channels?.actions?.includes(message.channel?.parentId)
         )) {
-            message.reply('-# Gerando narração...').then(async (msg) => {
-                const filter = msg => msg.author.id == message.author.id;
-                const collector = message.channel.createMessageCollector({ filter, time: 10_000 });
+            collectingUsers.add(message.author.id);
+            
+            const filter = msg => msg.author.id == message.author.id;
+            const collector = await message.channel.createMessageCollector({ filter, time: 15_000 });
 
+            message.react('📝').catch(() => {});
+
+            message.reply('-# Envie todas as partes da sua ação em até 15 segundos.').then(async (msg) => {
+                setTimeout(() => {
+                    msg.delete().catch(() => {});
+                }, 15_000);
+            
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
                     ?.sort()
-                    ?.map(msg => msg.content)
+                    ?.map(msg2 => msg2.content)
                     ?.join('\n\n');
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
                 collector.on('collect', msg => msg.react('📝'));
 
                 collector.on('end', async (collected) => {
-
+                    collectingUsers.delete(message.author.id);
                     const acao = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
+
+                    msg.edit('-# Gerando narração...');
 
                     const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
 
@@ -147,6 +161,7 @@ export default {
                     });
 
                 });
+
             });
         }
 
