@@ -8,7 +8,9 @@ import {
     RoleSelectMenuBuilder,
     ModalBuilder,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
+    ButtonBuilder,
+    ButtonStyle
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../../config.json" with { type: "json" };
@@ -254,12 +256,19 @@ export default {
                     await i.update({
                         content: `Agora selecione o **canal de registro de ações secretas**. Esse é o canal administrativo em que o bot vai reenviar as ações secretas, para serem narradas discretamente.`,
                         components: [
-                            new ActionRowBuilder().addComponents(
+                            new ActionRowBuilder()
+                            .addComponents(
                                 new ChannelSelectMenuBuilder()
                                 .setCustomId("setup_secret_actions_log_channel")
                                 .setPlaceholder("Escolha o registro de ações secretas")
                                 .setMinValues(1)
                                 .setMaxValues(1)
+                            )
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setCustomId("setup_skip_secret_actions_log_channel")
+                                .setLabel("Pular (não quero ações secretas)")
+                                .setStyle(ButtonStyle.Secondary)
                             )
                         ]
                     });
@@ -285,10 +294,78 @@ export default {
                         ]
                     });
                     break;
+                
+                case "setup_skip_secret_actions_log_channel":
+                    setup_data.server.channels.secret_actions_log = null;
+                    setup_data.server.channels.secret_actions_log_channel = null;
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
+                        content: `Agora selecione os **canais de eventos**. Esses canais são canais como de notícias, guerras, etc. Qualquer mensagem (que tenha um mínimo de 300 caracteres) enviada nesses canais será considerada um evento real, e o bot irá registrar no resumo do RP (sua memória) e considerar para narrações.\n-# Selecione de 1-15 canais. Pode incluir categorias também. Nesse caso, todos os canais dentro da categoria serão considerados.`,
+                        components: [
+                            new ActionRowBuilder().addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_events_channels")
+                                .setPlaceholder("Todos os canais de eventos")
+                                .setMinValues(1)
+                                .setMaxValues(15)
+                            )
+                        ]
+                    });
+                    break;
 
                 case "setup_events_channels":
                     setup_data.server.channels.events = i.values;
 
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
+                        content: `Agora selecione a **categoria dos canais de países**. Essa categoria é a que contém os canais específicos de país onde os jogadores podem gerenciar seus países, e o bot irá monitorar as mensagens para registrar ações e eventos relacionados aos países.\n-# Selecione a categoria que contenha os canais de países.`,
+                        components: [
+                            new ActionRowBuilder()
+                            .addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_countries_category")
+                                .setPlaceholder("Categoria dos canais de países")
+                                .setMinValues(1)
+                                .setMaxValues(1)
+                            )
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setCustomId("setup_skip_countries_category")
+                                .setLabel("Pular (meu servidor não tem chats privados de países)")
+                                .setStyle(ButtonStyle.Secondary)
+                            )
+                        ]
+                    });
+                    break;
+                
+                case "setup_skip_countries_category":
+                    setup_data.server.channels.countries_category = null;
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
+                        content: `Agora selecione os **canais de ações**. Estes são os canais em que os jogadores jogam, basicamente. Qualquer mensagem de mais de 500 caracteres enviada por um jogador em um destes chats será considerada uma ação, e seus resultados serão narrados. \n-# Selecione de 1-15 canais. Pode incluir categorias também. Nesse caso, todos os canais dentro da categoria serão considerados.`,
+                        components: [
+                            new ActionRowBuilder().addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_actions_channels")
+                                .setPlaceholder("Todos os canais de ações")
+                                .setMinValues(1)
+                                .setMaxValues(15)
+                            )
+                        ]
+                    });
+                    break;
+
+                case "setup_countries_category":
+                    setup_data.server.channels.countries_category = i.values[0];
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []

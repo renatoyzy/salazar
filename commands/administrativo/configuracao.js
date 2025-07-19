@@ -36,13 +36,14 @@ export default {
                 { name: 'Canal de narrações', value: 'channels.narrations' },
                 { name: 'Canal de passagem do tempo', value: 'channels.time' },
                 { name: 'Canal de ações secretas', value: 'channels.secret_actions' },
-                { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' }
+                { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' },
+                { name: 'Categoria de chat dos países ', value: 'channels.country_category' },
             ])
         )
         .addChannelOption(
             new SlashCommandChannelOption()
             .setName('canal')
-            .setDescription('O canal que será definido para essa opção')
+            .setDescription('O canal ou categoria que será definido para essa opção')
             .setRequired(false)
         )
         .addRoleOption(
@@ -90,7 +91,8 @@ export default {
             "channels.narrations": "Canal de narrações",
             "channels.time": "Canal de passagem do tempo",
             "channels.secret_actions": "Canal de ações secretas",
-            "channels.secret_actions_log": "Canal administrativo de ações secretas"
+            "channels.secret_actions_log": "Canal administrativo de ações secretas",
+            "channels.country_category": "Categoria de chat dos países"
         };
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
@@ -158,9 +160,15 @@ export default {
                 }
 
             } else {
-                // Campo simples → apenas set
-                updateQuery = { $set: { [`server.${option}`]: value } };
-                action = `${option_labels[option] || option} redefinido para ${fake_value}`;
+                // Campo simples → apenas set, mas se o valor já for igual ao atual, deixa undefined
+                const currentValue = server_config?.server?.[option.split('.')[0]]?.[option.split('.')[1]] ?? server_config?.server?.[option];
+                if (currentValue === value) {
+                    updateQuery = { $set: { [`server.${option}`]: undefined } };
+                    action = `${option_labels[option] || option} já estava definido como ${fake_value}, valor removido (undefined)`;
+                } else {
+                    updateQuery = { $set: { [`server.${option}`]: value } };
+                    action = `${option_labels[option] || option} redefinido para ${fake_value}`;
+                }
             }
 
             const reply_config = await collection.findOneAndUpdate(

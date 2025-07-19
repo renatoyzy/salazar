@@ -97,9 +97,13 @@ export default {
         // Narração de IA
         else if ((message.cleanContent.length >= 500 || message.content.toLowerCase().includes("ação: ")) &&
             !collectingUsers.has(message.author.id) && (
-            server_config?.server?.channels?.actions?.includes(message.channelId) ||
-            server_config?.server?.channels?.actions?.includes(message.channel?.parentId)
-        )) {
+                server_config?.server?.channels?.actions?.includes(message.channelId) ||
+                server_config?.server?.channels?.actions?.includes(message.channel?.parentId) ||
+                server_config?.server?.channels?.countries_category?.includes(message.channelId) ||
+                server_config?.server?.channels?.countries_category?.includes(message.channel?.parentId) ||
+                server_config?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
+            )
+        ) {
             collectingUsers.add(message.author.id);
             
             const filter = msg => msg.author.id == message.author.id;
