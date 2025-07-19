@@ -33,7 +33,6 @@ const DANGEROUS_KEYWORDS = [
     'fs.rmdir',
     'fs.rm',
     'rm -rf',
-    'delete',
     'DROP TABLE',
     'DELETE FROM'
 ];
