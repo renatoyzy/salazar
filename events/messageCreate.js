@@ -106,6 +106,9 @@ export default {
             const collector = await message.channel.createMessageCollector({ filter, time: 15_000 });
 
             message.react('📝').catch(() => {});
+            setTimeout(() => {
+               message.reactions.removeAll().catch(() => {}); 
+            }, 15_000);
 
             message.reply('-# Envie todas as partes da sua ação em até 15 segundos.').then(async (msg) => {
                 setTimeout(() => {
@@ -119,7 +122,12 @@ export default {
                     ?.join('\n\n');
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
-                collector.on('collect', msg => msg.react('📝'));
+                collector.on('collect', msg => {
+                    msg.react('📝');
+                    setTimeout(() => {
+                        msg.reactions.removeAll().catch(() => {});
+                    }, 15_000);
+                });
 
                 collector.on('end', async (collected) => {
                     collectingUsers.delete(message.author.id);
