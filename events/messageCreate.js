@@ -160,12 +160,13 @@ export default {
                     }
 
                     const max_length = 2000;
-                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}\n-# Gerado por Inteligência Artificial`;
+                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
                     const chunks = [];
                     for (let i = 0; i < finaltext.length; i += max_length) {
                         chunks.push(finaltext.slice(i, i + max_length));
                     }
                     if (diffChunk) chunks.push(diffChunk);
+                    chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${bot_config.site})`);
 
                     const narrationsChannel = message.guild.channels.cache.get(server_config?.server?.channels?.narrations);
                     chunks.forEach(chunk => {
