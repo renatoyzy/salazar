@@ -150,15 +150,26 @@ export default {
                         return msg.delete();
                     }
 
+                    // Se houver bloco diff, ele fica em um chunk separado
+                    const diffStart = response.text.indexOf('```diff');
+                    let mainText = response.text;
+                    let diffChunk = null;
+                    if (diffStart !== -1) {
+                        mainText = response.text.slice(0, diffStart);
+                        diffChunk = response.text.slice(diffStart);
+                    }
+
                     const max_length = 2000;
-                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${response.text}\n-# Gerado por Inteligência Artificial`;
+                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}\n-# Gerado por Inteligência Artificial`;
                     const chunks = [];
                     for (let i = 0; i < finaltext.length; i += max_length) {
                         chunks.push(finaltext.slice(i, i + max_length));
                     }
+                    if (diffChunk) chunks.push(diffChunk);
 
+                    const narrationsChannel = message.guild.channels.cache.get(server_config?.server?.channels?.narrations);
                     chunks.forEach(chunk => {
-                        message.guild.channels.cache.get(server_config?.server?.channels?.narrations)?.send(chunk);
+                        narrationsChannel?.send(chunk);
                     });
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
