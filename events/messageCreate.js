@@ -13,6 +13,7 @@ import { config, setup } from "../src/server_info.js";
 import client from "../src/client.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
+import { GetContext } from "../src/roleplay.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -120,10 +121,7 @@ export default {
                 }, 20_000);
             
                 const acao_jogador = message.author.displayName;
-                const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
-                    ?.sort()
-                    ?.map(msg2 => msg2.content)
-                    ?.join('\n\n');
+                const acao_contexto = await GetContext(message.guild);
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
                 collector.on('collect', msg => {
@@ -197,10 +195,7 @@ export default {
             (server_config?.server?.channels?.events?.includes(message.channelId) ||
                 server_config?.server?.channels?.events?.includes(message.channel?.parentId))
         ) {
-            const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
-                ?.sort()
-                ?.map(msg => msg.content)
-                ?.join('\n\n');
+            const acao_contexto = await GetContext(message.guild);
             const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
@@ -223,10 +218,7 @@ export default {
 
             server_config?.server?.name?.includes('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
-            const acao_contexto = (await message.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
-                ?.sort()
-                ?.map(msg => msg.content)
-                ?.join('\n\n');
+            const acao_contexto = await GetContext(message.guild);
 
             const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 

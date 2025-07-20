@@ -10,6 +10,7 @@ import bot_config from "../../config.json" with { type: "json" };
 import { config } from "../../src/server_info.js";
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
+import { GetContext } from "../../src/roleplay.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -54,10 +55,7 @@ export default {
                 .setDescription("Gerando seu palpite...")
             ],
         }).then(async () => {
-            let acao_contexto = (await interaction.guild.channels.cache.get(server_config?.server?.channels?.context)?.messages?.fetch())
-                ?.sort()
-                ?.map(msg => msg.content)
-                ?.join('\n\n');
+            let acao_contexto = await GetContext(interaction.guild);
 
             if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
