@@ -17,6 +17,7 @@ import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
+import { GetContext } from "../../src/roleplay.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
