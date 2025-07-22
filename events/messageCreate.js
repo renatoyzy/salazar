@@ -14,6 +14,7 @@ import client from "../src/client.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
 import { GetContext } from "../src/roleplay.js";
+import ai_generate from "../src/ai_generate.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -139,9 +140,8 @@ export default {
 
                     const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
 
-                    const response = await ai.models.generateContent({
-                        model: bot_config.model,
-                        contents: prompt
+                    const response = await ai_generate(prompt).catch(error => {
+                        console.error("Erro ao gerar narração:", error);
                     });
 
                     if (response.text === "IRRELEVANTE!!!") {
@@ -173,9 +173,8 @@ export default {
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
 
-                    const novo_contexto = await ai.models.generateContent({
-                        model: bot_config.model,
-                        contents: contexto_prompt
+                    const novo_contexto = await ai_generate(contexto_prompt).catch(error => {
+                        console.error("Erro ao gerar contexto:", error);
                     });
 
                     message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
@@ -200,9 +199,8 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
 
-            const response = await ai.models.generateContent({
-                model: bot_config.model,
-                contents: prompt
+            const response = await ai_generate(prompt).catch(error => {
+                console.error("Erro ao gerar contexto de evento:", error);
             });
 
             if (response.text === "IRRELEVANTE!!!") return;
@@ -216,22 +214,36 @@ export default {
             const ano_atual = parseInt(message.guild.name.match(/\d+/)?.[0]);
             if (!ano) return;
 
+            // Detecta se o período é um ano completo ou parcial
+            let periodoCompleto = false;
+            // Exemplo: se a mensagem contém "fim do ano" ou "final do ano" ou "ano completo"
+            if (/\b(fim|final) do ano\b|ano completo/i.test(message.cleanContent)) {
+                periodoCompleto = true;
+            } else if (ano_atual && ano !== ano_atual) {
+                // Se o ano mudou, provavelmente é um ano completo
+                periodoCompleto = true;
+            } else if (/\bsemestre|trimestre|bimestre|mes(es)?|período|parcial/i.test(message.cleanContent)) {
+                periodoCompleto = false;
+            }
+
             server_config?.server?.name?.includes('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
             const acao_contexto = await GetContext(message.guild);
 
             const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 
-            const response = await ai.models.generateContent({
-                model: bot_config.model,
-                contents: prompt
+            const response = await ai_generate(prompt).catch(error => {
+                console.error("Erro ao gerar resumo de período:", error);
             });
 
             const contextChannel = message.guild.channels.cache.get(server_config?.server?.channels?.context);
             if (!contextChannel) return;
 
             const max_length = 1989; // 2000 - 11 (para o "-# RG-2023" no final)
-            let finaltext = `# Resumo geral de ${ano_atual}\n${response.text}`;
+            let tituloResumo = periodoCompleto
+                ? `# Resumo geral do ano de ${ano_atual}`
+                : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
+            let finaltext = `${tituloResumo}\n${response.text}`;
             const chunks = [];
             for (let i = 0; i < finaltext.length; i += max_length) {
                 chunks.push(finaltext.slice(i, i + max_length) + `\n-# RG-${ano_atual}`);

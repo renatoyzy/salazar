@@ -11,6 +11,7 @@ import { config } from "../../src/server_info.js";
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 import { GetContext } from "../../src/roleplay.js";
+import ai_generate from "../../src/ai_generate.js";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -61,9 +62,8 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
 
-            const response = await ai.models.generateContent({
-                model: bot_config.model,
-                contents: prompt
+            const response = await ai_generate(prompt).catch(error => {
+                console.error("Erro ao gerar palpite:", error);
             });
 
             interaction.editReply({
