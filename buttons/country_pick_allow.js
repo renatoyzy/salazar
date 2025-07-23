@@ -137,7 +137,7 @@ export default {
                 }
             } else {
                 // Cria nova mensagem para o país
-                await pickedCountriesChannel.send(`## ${unfiltered_country}\n- <@${player.id}>`);
+                await pickedCountriesChannel.send(`## ${unfiltered_country.toUpperCase()}\n- <@${player.id}>`);
             }
         };
         
