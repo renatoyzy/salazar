@@ -116,7 +116,7 @@ async function handleButton(interaction) {
     }
 
     client.buttons = new Collection();
-    const buttonsPath = path.join(__dirname, "./buttons");
+    const buttonsPath = path.join(__dirname, "../buttons");
     const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith(".js"));
 
     for (const file of buttonFiles) {

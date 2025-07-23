@@ -2,7 +2,10 @@ import {
     Message, 
     EmbedBuilder, 
     Colors, 
-    PermissionsBitField 
+    PermissionsBitField, 
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
 } from "discord.js";
 import { 
     MongoClient, 
@@ -186,8 +189,10 @@ export default {
             message.cleanContent.length >= 300 &&
             !message.author.bot &&
             message.author.id !== bot_config.id &&
-            (server_config?.server?.channels?.events?.includes(message.channelId) ||
-                server_config?.server?.channels?.events?.includes(message.channel?.parentId))
+            (
+                server_config?.server?.channels?.events?.includes(message.channelId) ||
+                server_config?.server?.channels?.events?.includes(message.channel?.parentId)
+            )
         ) {
             const acao_contexto = await GetContext(message.guild);
             const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
@@ -254,6 +259,62 @@ export default {
 
             chunks.forEach(chunk => contextChannel.send(chunk));
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
+        }
+
+        // Seleção de país
+        else if (message.channelId === server_config?.server?.channels?.country_picking) {
+            const country = message.cleanContent.trim().toLowerCase();
+            if (!country) return;
+
+            const countryCategory = message.guild.channels.cache.get(server_config?.server?.channels?.country_category);
+            
+            const existingChannel = countryCategory?.children?.cache.find(c => c.name.toLowerCase() === country);
+            
+            message.reply({
+                embeds: [
+                    new EmbedBuilder()
+                    .setColor(Colors.Yellow)
+                    .setDescription("Será se você pode")
+                ],
+                components: [
+                    new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                        .setCustomId('country_select')
+                        .setLabel(`Escolher país: ${country}`)
+                        .setStyle(ButtonStyle.Primary)
+                    )
+                ]
+            });
+
+            /**
+             * 
+
+            
+
+            const existingChannel = countryCategory.children.find(c => c.name.toLowerCase() === country);
+            if (existingChannel) {
+                return message.reply(`O canal para o país **${country}** já existe: <#${existingChannel.id}>`);
+            }
+
+            const newChannel = await message.guild.channels.create({
+                name: country,
+                type: 0, // GUILD_TEXT
+                parent: server_config?.server?.channels?.country_category,
+                permissionOverwrites: [
+                    {
+                        id: message.guild.roles.everyone,
+                        deny: [PermissionsBitField.Flags.ViewChannel]
+                    },
+                    {
+                        id: bot_config.id,
+                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages]
+                    }
+                ]
+            });
+
+            message.reply(`Canal criado para o país **${country}**: <#${newChannel.id}>`);
+             */
         }
     }
 };
