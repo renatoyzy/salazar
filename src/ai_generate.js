@@ -42,6 +42,7 @@ export default async function ai_generate(prompt) {
     for (const model of models) {
         try {
             const response = await sendRequisition(prompt, model);
+            console.log(`- O Salazar está usando o modelo ${model}`);
             return response;
         } catch (error) {
             lastError = error;

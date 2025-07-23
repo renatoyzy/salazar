@@ -120,7 +120,7 @@ export default {
                 }, (server_config?.server?.action_timing * 1000) || 20_000);
             })
 
-            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((server_config?.server?.action_timing) || 20))/1000)}:R>`).then(async (msg) => {
+            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((server_config?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
                     msg.delete().catch(() => {});
                 }, (server_config?.server?.action_timing * 1000) || 20_000);
