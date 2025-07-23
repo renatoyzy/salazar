@@ -12,9 +12,7 @@ import { config } from "../../src/server_info.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { simplifyString } from "../../src/string_functions.js";
 import gis from "g-i-s";
-import fetch from "node-fetch";
-import Canvas from "canvas";
-import { getAverageColor } from "../../src/color_functions.js";
+import { getAverageColor } from "../../src/visual_functions.js";
 
 export default {
     data: new SlashCommandBuilder()

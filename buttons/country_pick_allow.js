@@ -8,6 +8,7 @@ import {
 } from 'discord.js';
 import { config } from '../src/server_info.js';
 import { simplifyString } from "../src/string_functions.js";
+import { getAverageColor, makeRoundFlag } from "../../src/visual_functions.js";
 
 export default {
 
@@ -96,6 +97,28 @@ export default {
                                 deny: [PermissionsBitField.Flags.ViewChannel],
                             }
                         ]
+                    });
+
+                    // Criar bandeira emoji
+                    const servidor_data_roleplay = (await (await interaction.guild.channels.fetch(server_config?.channels?.time)).messages.fetch()).first() || 'antiga';
+                    
+                    await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
+
+                        if (!error && results[0]?.url) {
+                            
+                            const buffer = await makeRoundFlag(results[0].url);
+
+                            interaction.guild.emojis.create({
+                                name: `flag_${simplifyString(unfiltered_country).replaceAll(' ', '')}`,
+                                attachment: buffer
+                            })
+                            // Calcula e seta a cor média
+                            try {
+                                const avgColor = await getAverageColor(results[0].url);
+                                avgColor && role.setColor(avgColor);
+                            } catch (e) {}
+                        }
+                        
                     });
                 }
             }).catch(() => {});

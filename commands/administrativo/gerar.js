@@ -5,12 +5,13 @@ import {
     SlashCommandStringOption, 
     PermissionFlagsBits, 
     EmbedBuilder,
-    CommandInteraction,
+    ChatInputCommandInteraction,
     MessageFlags,
     Colors
 } from "discord.js";
 import Canvas from "canvas";
 import { config } from "../../src/server_info.js";
+import { makeRoundFlag } from "../../src/visual_functions.js";
 
 export default {
 
@@ -38,7 +39,7 @@ export default {
     min_tier: 2,
 
     /**
-     * @param {CommandInteraction} interaction 
+     * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
         const server_config = await config(interaction.guildId);
@@ -64,34 +65,8 @@ export default {
             interaction.editReply({
                 embeds: [new EmbedBuilder().setColor(Colors.Greyple).setDescription(`Carregando...`)]
             }).then(async () => {
-                const canvas = Canvas.createCanvas(72 * 2, 52 * 2);
-                const ctx = canvas.getContext('2d');
-                const img = interaction.options.get("imagem").attachment;
-                const imageObj = await Canvas.loadImage(img.url);
 
-                // Desenhar retângulo arredondado
-                const x = 0;
-                const y = 0;
-                const width = 72 * 2;
-                const height = 52 * 2;
-                const radius = 10 * 2;
-
-                ctx.beginPath();
-                ctx.moveTo(x + radius, y);
-                ctx.lineTo(x + width - radius, y);
-                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-                ctx.lineTo(x + width, y + height - radius);
-                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                ctx.lineTo(x + radius, y + height);
-                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-                ctx.lineTo(x, y + radius);
-                ctx.quadraticCurveTo(x, y, x + radius, y);
-                ctx.closePath();
-
-                ctx.clip();
-                ctx.drawImage(imageObj, x, y, width, height);
-
-                const buffer = canvas.toBuffer("image/png");
+                const buffer = await makeRoundFlag(interaction.options.getAttachment('imagem').url);
 
                 interaction.guild.emojis.create({
                     name: `flag_${interaction.options.get("nome").value}`,
@@ -102,7 +77,7 @@ export default {
                             new EmbedBuilder()
                             .setColor(Colors.Green)
                             .setTitle(`Emoji da bandeira de ${interaction.options.get("nome").value} adicionado!`)
-                            .setImage(img.url)
+                            .setImage(interaction.options.getAttachment('imagem').url)
                         ]
                     }).catch(() => {});
                 }).catch(err => {
