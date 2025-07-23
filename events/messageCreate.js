@@ -11,14 +11,9 @@ import {
 import bot_config from "../config.json" with { type: "json" };
 import { config, setup } from "../src/server_info.js";
 import client from "../src/client.js";
-import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
 import { GetContext } from "../src/roleplay.js";
 import ai_generate from "../src/ai_generate.js";
-
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
-});
 
 const collectingUsers = new Set();
 
@@ -113,7 +108,7 @@ export default {
 
             message.react('📝').catch(() => {});
             setTimeout(() => {
-               message.reactions.removeAll().catch(() => {}); 
+               message?.reactions.removeAll().catch(() => {}); 
             }, 20_000);
 
             message.reply('-# Envie todas as partes da sua ação em até 20 segundos.').then(async (msg) => {
@@ -128,7 +123,7 @@ export default {
                 collector.on('collect', msg => {
                     msg.react('📝');
                     setTimeout(() => {
-                        msg.reactions.removeAll().catch(() => {});
+                        msg?.reactions.removeAll().catch(() => {});
                     }, 20_000);
                 });
 

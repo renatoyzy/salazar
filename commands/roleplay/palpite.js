@@ -8,14 +8,9 @@ import {
 } from "discord.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { config } from "../../src/server_info.js";
-import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 import { GetContext } from "../../src/roleplay.js";
 import ai_generate from "../../src/ai_generate.js";
-
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
-});
 
 export default {
     data: new SlashCommandBuilder()
