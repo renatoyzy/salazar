@@ -39,6 +39,7 @@ export default {
                 { name: 'Canal de ações secretas', value: 'channels.secret_actions' },
                 { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' },
                 { name: 'Canal de escolha de país', value: 'channels.country_picking' },
+                { name: 'Canal de países escolhidos', value: 'channels.picked_countries' },
                 { name: 'Categoria de chat dos países ', value: 'channels.country_category' },
             ])
         )
@@ -98,7 +99,8 @@ export default {
             "channels.secret_actions": "Canal de ações secretas",
             "channels.secret_actions_log": "Canal administrativo de ações secretas",
             "channels.country_category": "Categoria de chat dos países",
-            "channels.country_picking": "Canal de escolha de país"
+            "channels.country_picking": "Canal de escolha de país",
+            "channels.picked_countries": "Canal de países escolhidos"
         };
 
         const mongo_client = new MongoClient(process.env.DB_URI, {

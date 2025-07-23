@@ -401,7 +401,7 @@ export default {
                 
                 case "setup_skip_country_picking_channel":
                     setup_data.server.channels.country_picking = null;
-                    
+
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []
@@ -422,6 +422,27 @@ export default {
 
                 case "setup_country_picking_channel":
                     setup_data.server.channels.country_picking = i.values[0];
+
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
+                        content: `Agora selecione o **canal de países escolhidos**. Basicamente, o Salazar vai registrar nesse canal quais países foram escolhidos pelos jogadores.`,
+                        components: [
+                            new ActionRowBuilder().addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_picked_countries_channel")
+                                .setPlaceholder("Canal de países escolhidos")
+                                .setMinValues(1)
+                                .setMaxValues(1)
+                            )
+                        ]
+                    });
+                    break;
+                
+                case "setup_picked_countries_channel":
+                    setup_data.server.channels.picked_countries = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
