@@ -122,6 +122,7 @@ export default {
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = await GetContext(message.guild);
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const prompt_adicional = server_config?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
                     msg.react('📝');
@@ -271,18 +272,26 @@ export default {
             const existingChannel = countryCategory?.children?.cache.find(c => c.name.toLowerCase() === country);
             
             message.reply({
+                content: `@admin`,
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Yellow)
-                    .setDescription("Será se você pode")
+                    .setTitle(`${message.author.displayName} quer escolher o país ${country}`)
+                    .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
                 ],
                 components: [
                     new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
-                        .setCustomId('country_select')
-                        .setLabel(`Escolher país: ${country}`)
-                        .setStyle(ButtonStyle.Primary)
+                        .setCustomId('country_pick_deny')
+                        .setLabel(`Não permitir`)
+                        .setStyle(ButtonStyle.Secondary)
+                    )
+                    .addComponents(
+                        new ButtonBuilder()
+                        .setCustomId('country_pick_allow')
+                        .setLabel(`Permitir`)
+                        .setStyle(ButtonStyle.Success)
                     )
                 ]
             });

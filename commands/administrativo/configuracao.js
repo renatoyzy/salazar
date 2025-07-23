@@ -26,6 +26,7 @@ export default {
             .setRequired(false)
             .setChoices([
                 { name: 'Nome do servidor', value: 'name' },
+                { name: 'Prompt adicional', value: 'extra_prompt' },
                 { name: 'Cargo de jogador', value: 'roles.player' },
                 { name: 'Cargo de não jogador', value: 'roles.non_player' },
                 { name: 'Canal da administração', value: 'channels.staff' },
@@ -72,7 +73,9 @@ export default {
         const options_alike = {
             'channels': 'canal',
             'roles': 'cargo',
-            'name': 'texto'
+
+            'name': 'texto',
+            'extra_prompt': 'texto'
         };
         // Verifica se a opção é um campo de array
         const array_options = [
@@ -82,6 +85,7 @@ export default {
 
         const option_labels = {
             "name": "Nome do servidor",
+            "extra_prompt": "Prompt adicional",
             "roles.player": "Cargo de jogador",
             "roles.non_player": "Cargo de não jogador",
             "channels.staff": "Canal da administração",
