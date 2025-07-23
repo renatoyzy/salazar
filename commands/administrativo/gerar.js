@@ -12,6 +12,7 @@ import {
 import Canvas from "canvas";
 import { config } from "../../src/server_info.js";
 import { makeRoundFlag } from "../../src/visual_functions.js";
+import { simplifyString } from "../../src/string_functions.js";
 
 export default {
 
@@ -69,7 +70,7 @@ export default {
                 const buffer = await makeRoundFlag(interaction.options.getAttachment('imagem').url);
 
                 interaction.guild.emojis.create({
-                    name: `flag_${interaction.options.get("nome").value}`,
+                    name: `flag_${simplifyString(interaction.options.get("nome").value).replaceAll(' ', '')}`,
                     attachment: buffer
                 }).then(() => {
                     interaction.editReply({
