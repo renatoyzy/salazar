@@ -264,27 +264,41 @@ export default {
 
         // Seleção de país
         else if (message.channelId === server_config?.server?.channels?.country_picking) {
-            const country = message.cleanContent.trim().toLowerCase();
+            const country = message.cleanContent.trim();
             if (!country) return;
 
             const countryCategory = message.guild.channels.cache.get(server_config?.server?.channels?.country_category);
             
-            const existingChannel = countryCategory?.children?.cache.find(c => c.name.toLowerCase() === country);
+            const existingChannel = countryCategory?.children?.cache.find(c => c.name.replaceAll("-", " ").includes(country.toLowerCase()));
+            const existingRole = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(country.toLowerCase()));
             
+            let replyEmbed = new EmbedBuilder()
+            .setColor(Colors.Yellow)
+            .setTitle(`${message.author.displayName} quer escolher o país ${country}`)
+            .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."});
+
+            // Se já existe um canal para o país, avisa
+            existingChannel && replyEmbed.addFields([{ name: '⚠️ País já escolhido', value: `O canal para o país **${country}** já existe: <#${existingChannel.id}>` }]);
+            // Se já existe um cargo para o país, avisa
+            existingRole && replyEmbed.addFields([{ name: '⚠️ País já tem cargo', value: `O cargo para o país **${country}** já existe: <@&${existingRole.id}>` }]);
+            // Se não existir nada, avisar que vai criar novos
+            !existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ Nota para o administrador', value: `Nenhum canal ou cargo para o país **${country}** foi encontrado. Um novo canal e cargo serão criados. Se você acredita que isso é um erro, por favor, clique na opção de setar manualmente, e adicione o cargo existente a(o) jogador(a).` }]);
+
             message.reply({
                 content: `@admin`,
-                embeds: [
-                    new EmbedBuilder()
-                    .setColor(Colors.Yellow)
-                    .setTitle(`${message.author.displayName} quer escolher o país ${country}`)
-                    .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
-                ],
+                embeds: [replyEmbed],
                 components: [
                     new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
                         .setCustomId('country_pick_deny')
                         .setLabel(`Não permitir`)
+                        .setStyle(ButtonStyle.Secondary)
+                    )
+                    .addComponents(
+                        new ButtonBuilder()
+                        .setCustomId('country_pick_manual')
+                        .setLabel(`Vou setar manualmente`)
                         .setStyle(ButtonStyle.Secondary)
                     )
                     .addComponents(

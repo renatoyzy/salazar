@@ -19,13 +19,13 @@ export default {
         });
 
         interaction.reply({
-            content: `Você rejeitou a entrada dessa pessoa como esse país.`,
+            content: `Sinto muito. Você vai precisar adicionar o cargo do país (que já existe, segundo você) ao jogador manualmente.`,
             flags: [MessageFlags.Ephemeral]
         });
 
         let newEmbed = EmbedBuilder.from(interaction.message.embeds[0])
-        .setDescription("A escolha foi negada. Peça outro país, se quiser.")
-        .setColor(Colors.Red)
+        .setDescription("A escolha foi aprovada e um administrador deve setar suas permissões manualmente em breve.")
+        .setColor(Colors.Green)
         .setFields()
         .setFooter({
             text: `O(a) administrador(a) responsável foi ${interaction.member.displayName}.`
