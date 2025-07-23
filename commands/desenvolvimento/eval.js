@@ -19,6 +19,7 @@ import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
 import { GetContext } from "../../src/roleplay.js";
 import ai_generate from "../../src/ai_generate.js";
+import gis from "g-i-s";
 
 /**
  * Formata a saída para exibição

@@ -7,7 +7,7 @@ import { config } from "./server_info.js";
  * @returns {string | undefined} Contexto completo do roleplay 
  */
 export async function GetContext(guild) {
-    const server_config = await config(guild.id);
+    const server_config = await config(guild.id || guild);
     if (!server_config?.server?.channels?.context) return undefined;
     if (!guild.channels.cache.has(server_config.server.channels.context)) return undefined;
     
