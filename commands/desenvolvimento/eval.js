@@ -80,9 +80,9 @@ async function executeCode(code, interaction) {
     let output;
     let executionTime;
 
+    const startTime = Date.now();
+
     try {
-        const startTime = Date.now();
-        
         // Timeout para evitar códigos que travam
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error("Timeout: Código levou mais de 10 segundos para executar")), 10000);
@@ -94,13 +94,13 @@ async function executeCode(code, interaction) {
         executionTime = Date.now() - startTime;
         
         replyColor = Colors.Green;
-        replyTitle = "✅ Código executado com sucesso!";
+        replyTitle = "Código executado com sucesso!";
         
     } catch (error) {
         output = error.toString();
-        executionTime = Date.now() - (Date.now() - 10000); // Aproximação para timeout
+        executionTime = Date.now() - startTime; // Aproximação para timeout
         replyColor = Colors.Red;
-        replyTitle = "❌ Erro na execução";
+        replyTitle = "Erro na execução";
     }
 
     // Formata a saída
@@ -112,12 +112,12 @@ async function executeCode(code, interaction) {
     .setColor(replyColor)
     .addFields([
         {
-            name: "📝 Entrada",
+            name: "Entrada",
             value: `\`\`\`js\n${code.slice(0, 400)}${code.length > 400 ? '\n...' : ''}\n\`\`\``,
             inline: false
         },
         {
-            name: "📤 Saída",
+            name: "Saída",
             value: `\`\`\`js\n${formattedOutput}\n\`\`\``,
             inline: false
         }
@@ -167,7 +167,7 @@ export default {
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Red)
-                    .setTitle("❌ Erro interno")
+                    .setTitle("Erro interno")
                     .setDescription("Ocorreu um erro inesperado ao executar o comando.")
                     .addFields([
                         {
