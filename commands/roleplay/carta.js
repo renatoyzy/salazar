@@ -62,7 +62,7 @@ export default {
             .setTitle(`Carta enviada por ${senderName}`)
             .setDescription(interaction.options.get('conteudo').value);
 
-            if (!error && results[0]?.url && (await isImageSafe(results[0].url))) {
+            if (!error && results[0]?.url && isImageSafe(results[0].url)) {
                 responseEmbed.setThumbnail(results[0].url);
                 // Calcula e seta a cor média
                 try {
@@ -73,7 +73,7 @@ export default {
                 }
             }
 
-            if(interaction.options.getAttachment('imagem') && (await isImageSafe(interaction.options.getAttachment('imagem').url)) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
+            if(interaction.options.getAttachment('imagem') && isImageSafe(interaction.options.getAttachment('imagem').url) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
 
             try {
                 if(countryChat.type === ChannelType.GuildForum) {

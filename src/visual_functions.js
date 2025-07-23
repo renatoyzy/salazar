@@ -69,6 +69,6 @@ export async function makeRoundFlag(imageUrl) {
  * @param {string} imageUrl
  * @returns {Promise<boolean>} true se a imagem for segura, false se for imprópria
  */
-export async function isImageSafe(imageUrl) {
+export function isImageSafe(imageUrl) {
     return true;
 }

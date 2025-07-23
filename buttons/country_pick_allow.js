@@ -105,7 +105,7 @@ export default {
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
-                        if (!error && results[0]?.url && (await isImageSafe(results[0].url))) {
+                        if (!error && results[0]?.url && isImageSafe(results[0].url)) {
                             
                             const buffer = await makeRoundFlag(results[0].url);
 

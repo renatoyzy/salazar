@@ -68,7 +68,7 @@ export default {
             }).then(async () => {
 
                 const imageUrl = interaction.options.getAttachment('imagem').url;
-                if (!(await isImageSafe(imageUrl))) {
+                if (!isImageSafe(imageUrl)) {
                     return interaction.editReply({
                         embeds: [
                             new EmbedBuilder()
