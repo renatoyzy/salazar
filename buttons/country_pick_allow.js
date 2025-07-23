@@ -105,9 +105,14 @@ export default {
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
-                        if (!error && results[0]?.url && isImageSafe(results[0].url)) {
+                        const validResult = results.find(r =>
+                            r.url &&
+                            /\.(png|jpe?g)$/i.test(new URL(r.url).pathname)
+                        );
+
+                        if (!error && validResult?.url && isImageSafe(validResult.url)) {
                             
-                            const buffer = await makeRoundFlag(results[0].url);
+                            const buffer = await makeRoundFlag(validResult.url);
 
                             interaction.guild.emojis.create({
                                 name: `flag_${simplifyString(unfiltered_country).replaceAll(' ', '')}`,
@@ -115,7 +120,7 @@ export default {
                             })
                             // Calcula e seta a cor média
                             try {
-                                const avgColor = await getAverageColor(results[0].url);
+                                const avgColor = await getAverageColor(validResult.url);
                                 avgColor && role.setColor(avgColor);
                             } catch (e) {}
                         }

@@ -57,16 +57,21 @@ export default {
 
         await gis(`Bandeira ${senderName} ${servidor_data_roleplay}`, async (error, results) => {
 
+            const validResult = results.find(r =>
+                r.url &&
+                /\.(png|jpe?g)$/i.test(new URL(r.url).pathname)
+            );
+
             const responseContent = `@here`;
             let responseEmbed = new EmbedBuilder()
             .setTitle(`Carta enviada por ${senderName}`)
             .setDescription(interaction.options.get('conteudo').value);
 
-            if (!error && results[0]?.url && isImageSafe(results[0].url)) {
-                responseEmbed.setThumbnail(results[0].url);
+            if (!error && validResult?.url && isImageSafe(validResult.url)) {
+                responseEmbed.setThumbnail(validResult.url);
                 // Calcula e seta a cor média
                 try {
-                    const avgColor = await getAverageColor(results[0].url);
+                    const avgColor = await getAverageColor(validResult.url);
                     responseEmbed.setColor(avgColor);
                 } catch (e) {
                     responseEmbed.setColor(Colors.Blue); // fallback
