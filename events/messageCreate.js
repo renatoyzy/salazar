@@ -17,6 +17,7 @@ import client from "../src/client.js";
 import "dotenv/config";
 import { GetContext } from "../src/roleplay.js";
 import ai_generate from "../src/ai_generate.js";
+import { simplifyString } from "../src/string_functions.js";
 
 const collectingUsers = new Set();
 
@@ -104,6 +105,8 @@ export default {
                 server_config?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
             )
         ) {
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${bot_config.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
+
             collectingUsers.add(message.author.id);
             
             const filter = msg => msg.author.id == message.author.id;
@@ -264,20 +267,21 @@ export default {
 
         // Seleção de país
         else if (server_config.server_tier>=2 && message.channelId === server_config?.server?.channels?.country_picking) {
-            const country = message.cleanContent.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '');
+            const unfiltered_country = message.cleanContent.trim();
+            const country = simplifyString(message.cleanContent);
             if (!country) return;
 
             const countryCategory = message.guild.channels.cache.get(server_config?.server?.channels?.country_category);
             
-            const existingChannel = countryCategory?.children?.cache.find(c => c.name.replaceAll("-", " ").normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country.toLowerCase()));
-            const existingRole = message.guild.roles.cache.find(r => r.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country.toLowerCase()));
+            const existingChannel = countryCategory?.children?.cache.find(c => simplifyString(c.name).includes(country));
+            const existingRole = message.guild.roles.cache.find(r => simplifyString(r.name).includes(country));
             
             let replyEmbed = new EmbedBuilder()
             .setColor(Colors.Yellow)
-            .setTitle(`${message.author.displayName} escolheu o país ${message.cleanContent.trim()}`)
+            .setTitle(`${message.author.displayName} escolheu o país "${unfiltered_country}"`)
             .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
             .addFields([
-                { name: '🎌 País solicitado', value: message.cleanContent.trim(), inline: true },
+                { name: '🎌 País solicitado', value: unfiltered_country, inline: true },
             ]);
 
             existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ Tudo certo, administrador!', value: `Aparentemente o país já tem um cargo e canal, que serão setados se escolher Permitir. Administrador, apenas verifique se o país escolhido já não tem dono(a).` }]);

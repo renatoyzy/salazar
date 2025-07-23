@@ -15,6 +15,7 @@
     "canvas": "^3.1.2",
     "discord.js": "^14.21.0",
     "dotenv": "^16.6.1",
+    "g-i-s": "^2.1.7",
     "mongodb": "^6.17.0"
   },
   "devDependencies": {

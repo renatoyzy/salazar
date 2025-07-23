@@ -7,6 +7,7 @@ import {
     ChannelType
 } from 'discord.js';
 import { config } from '../src/server_info.js';
+import { simplifyString } from "../src/string_functions.js";
 
 export default {
 
@@ -28,29 +29,28 @@ export default {
         const server_config = (await config(interaction.guildId)).server;
 
         const unfiltered_country = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
-        const country = unfiltered_country.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
+        const country = simplifyString(unfiltered_country);
         const player = (await interaction.message.fetchReference()).member;
 
         // Busca todos os cargos de país baseados nos canais da categoria
         const countryCategory = await interaction.guild.channels.fetch(server_config?.channels?.country_category);
         const countryChannels = await countryCategory?.children?.cache;
-        const countryRoleNames = countryChannels?.map(c => c.name.replaceAll('-', ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '')) || [];
+        const countryRoleNames = countryChannels?.map(c => simplifyString(c.name)) || [];
 
         // Remove todos os cargos de país do usuário (que batem com os nomes dos canais)
         for (const role of player.roles.cache.values()) {
-            const normalizedRoleName = role.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '');
+            const normalizedRoleName = simplifyString(role.name);
             if (countryRoleNames.includes(normalizedRoleName)) {
                 await player.roles.remove(role.id).catch(() => {});
             }
         }
 
         // Busca o canal do país escolhido
-        const countryChannel = countryChannels?.find(c => c.name.replaceAll('-', ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country));
+        const countryChannel = countryChannels?.find(c => simplifyString(c.name).includes(country));
 
         // Adiciona o cargo do país escolhido
-        const countryRole = interaction.guild.roles.cache.find(r =>
-            r.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country.toLowerCase())
-        );
+        const countryRole = interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(country));
+
         if (countryRole) {
             await player.roles.add(countryRole).catch(() => {});
 
@@ -111,7 +111,7 @@ export default {
         if (pickedCountriesChannel && pickedCountriesChannel.isTextBased()) {
             // Busca todas as mensagens do canal
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });
-            const normalizedCountry = unfiltered_country.toUpperCase().normalize('NFD').replace(/[^A-Z ]/g, '');
+            const normalizedCountry = simplifyString(unfiltered_country).toUpperCase();
 
             // Remove o jogador de outros países (edita as mensagens)
             for (const msg of msgs.values()) {
@@ -133,7 +133,7 @@ export default {
             // Procura mensagem do país
             let countryMsg = msgs.find(msg =>
                 msg.author.id === interaction.client.user.id &&
-                msg.content.split('\n')[0].toUpperCase().normalize('NFD').replace(/[^A-Z ]/g, '').includes(normalizedCountry)
+                simplifyString(msg.content.split('\n')[0]).includes(normalizedCountry)
             );
 
             if (countryMsg) {

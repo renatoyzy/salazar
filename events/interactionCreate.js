@@ -5,7 +5,8 @@ import {
     Collection,
     MessageFlags,
     ButtonInteraction,
-    ChatInputCommandInteraction
+    ChatInputCommandInteraction,
+    AutocompleteInteraction
 } from "discord.js";
 import fs from "fs";
 import path from "path";
@@ -34,6 +35,9 @@ export default {
         } 
         else if (interaction.isButton()) {
             await handleButton(interaction);
+        }
+        else if (interaction.isAutocomplete()) {
+            await handleAutocomplete(interaction);
         }
 
     }
@@ -131,6 +135,16 @@ async function handleButton(interaction) {
     }
 
     await buttonHandler.execute(interaction);
+}
+
+/**
+ * @param {AutocompleteInteraction} interaction
+ */
+async function handleAutocomplete(interaction) {
+    const command = interaction.client.commands.get(interaction.commandName);
+    if (command && typeof command.autocomplete === 'function') {
+        await command.autocomplete(interaction);
+    }
 }
 
 /**
