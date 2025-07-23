@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { config } from '../src/server_info.js';
 import { simplifyString } from "../src/string_functions.js";
-import { getAverageColor, makeRoundFlag, isImageSafe } from "../src/visual_functions.js";
+import { getAverageColor, makeRoundFlag, isImageSafe, fetchImageAsPngBuffer } from "../src/visual_functions.js";
 import gis from "g-i-s";
 
 export default {
@@ -105,14 +105,11 @@ export default {
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
-                        const validResult = results.find(r =>
-                            r.url &&
-                            /\.(png|jpe?g)$/i.test(new URL(r.url).pathname)
-                        );
+                        const validResult = results[0];
 
                         if (!error && validResult?.url && isImageSafe(validResult.url)) {
                             
-                            const buffer = await makeRoundFlag(validResult.url);
+                            const buffer = await makeRoundFlag(await fetchImageAsPngBuffer(validResult.url));
 
                             interaction.guild.emojis.create({
                                 name: `flag_${simplifyString(unfiltered_country).replaceAll(' ', '')}`,

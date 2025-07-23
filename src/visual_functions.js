@@ -1,5 +1,6 @@
 import Canvas from "canvas";
 import fetch from "node-fetch";
+import sharp from "sharp";
 import "dotenv/config";
 
 /**
@@ -32,12 +33,12 @@ export async function getAverageColor(imageUrl) {
 
 /**
  * Bandeira arredondada
- * @param {string} imageUrl - Link da imagem a virar bandeira
+ * @param {string} imageUrlOrBuffer - Link ou buffer da imagem a virar bandeira
  */
-export async function makeRoundFlag(imageUrl) {
+export async function makeRoundFlag(imageUrlOrBuffer) {
     const canvas = Canvas.createCanvas(72 * 2, 52 * 2);
     const ctx = canvas.getContext('2d');
-    const imageObj = await Canvas.loadImage(imageUrl);
+    const imageObj = await Canvas.loadImage(imageUrlOrBuffer);
 
     // Desenhar retângulo arredondado
     const x = 0;
@@ -71,4 +72,26 @@ export async function makeRoundFlag(imageUrl) {
  */
 export function isImageSafe(imageUrl) {
     return true;
+}
+
+/**
+ * Baixa uma imagem (SVG, PNG, JPG) e retorna um buffer PNG.
+ * @param {string} imageUrl
+ * @returns {Promise<Buffer>}
+ */
+export async function fetchImageAsPngBuffer(imageUrl) {
+    const res = await fetch(imageUrl);
+    if (!res.ok) throw new Error("Falha ao baixar imagem");
+    const contentType = res.headers.get("content-type");
+    const buffer = await res.buffer();
+
+    if (contentType && contentType.includes("svg")) {
+        // Converte SVG para PNG
+        return await sharp(buffer).png().toBuffer();
+    } else if (contentType && (contentType.includes("png") || contentType.includes("jpeg") || contentType.includes("jpg"))) {
+        // Já é PNG/JPG, retorna buffer original
+        return buffer;
+    } else {
+        throw new Error("Formato de imagem não suportado");
+    }
 }

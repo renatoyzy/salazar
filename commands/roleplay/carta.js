@@ -1,4 +1,5 @@
 import {
+    AttachmentBuilder,
     AutocompleteInteraction,
     ChannelType,
     ChatInputCommandInteraction,
@@ -12,7 +13,7 @@ import { config } from "../../src/server_info.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { simplifyString } from "../../src/string_functions.js";
 import gis from "g-i-s";
-import { getAverageColor, isImageSafe } from "../../src/visual_functions.js";
+import { getAverageColor, isImageSafe, fetchImageAsPngBuffer } from "../../src/visual_functions.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -20,8 +21,8 @@ export default {
         .setDescription("Cria uma carta de roleplay para o jogador")
         .addStringOption(
             new SlashCommandStringOption()
-            .setName('pais')
-            .setDescription('O país destinatário que receberá a carta')
+            .setName('destinatario')
+            .setDescription('O destinatário que receberá a carta')
             .setAutocomplete(true)
             .setRequired(true)
         )
@@ -49,67 +50,128 @@ export default {
         if(!interaction.member.roles.cache.has((await server_config)?.server?.roles?.player)) return interaction.editReply(`Este comando é restrito para jogadores do RP (<@&${(await server_config)?.server?.roles?.player}>).`);
         if((interaction.channel.parentId != (await server_config)?.server?.channels?.country_category) && interaction.channel.parent.parentId != (await server_config)?.server?.channels?.country_category) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
 
-        const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('pais').value)));
+        const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('destinatario').value)));
         if(!countryChat) return interaction.editReply("Não encontrei o chat desse país.")
 
         const senderName = interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(interaction.channel.parent.name)) || simplifyString(r.name).includes(simplifyString(interaction.channel.name))).name;
         const servidor_data_roleplay = (await (await interaction.guild.channels.fetch((await server_config)?.server?.channels?.time)).messages.fetch()).first() || 'antiga';
 
         await gis(`Bandeira ${senderName} ${servidor_data_roleplay}`, async (error, results) => {
-
-            const validResult = results.find(r =>
-                r.url &&
-                /\.(png|jpe?g)$/i.test(new URL(r.url).pathname)
-            );
+            // Aceita SVG, PNG, JPG
+            const validResult = results[0];
 
             const responseContent = `@here`;
             let responseEmbed = new EmbedBuilder()
-            .setTitle(`Carta enviada por ${senderName}`)
-            .setDescription(interaction.options.get('conteudo').value);
+                .setTitle(`Carta enviada por ${senderName}`)
+                .setDescription(interaction.options.get('conteudo').value);
 
             if (!error && validResult?.url && isImageSafe(validResult.url)) {
-                responseEmbed.setThumbnail(validResult.url);
-                // Calcula e seta a cor média
                 try {
-                    const avgColor = await getAverageColor(validResult.url);
-                    responseEmbed.setColor(avgColor);
-                } catch (e) {
-                    responseEmbed.setColor(Colors.Blue); // fallback
-                }
-            }
+                    const buffer = await fetchImageAsPngBuffer(validResult.url);
+                    // Cria attachment e referencia por URL
+                    const attachment = new AttachmentBuilder(buffer, { name: 'flag.png' });
+                    responseEmbed.setThumbnail('attachment://flag.png');
 
-            if(interaction.options.getAttachment('imagem') && isImageSafe(interaction.options.getAttachment('imagem').url) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
-
-            try {
-                if(countryChat.type === ChannelType.GuildForum) {
-                    if(countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada'))) {
-                        countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada')).send({content: responseContent, embeds: [responseEmbed]})
-                    } else {
-                        countryChat.threads.create({
-                            name: `Caixa de Entrada`,
-                            message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
-                        }).then(inbox => {
-                            inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
-                            inbox.send({content: responseContent, embeds: [responseEmbed]});
-                        })
+                    // Calcula e seta a cor média
+                    try {
+                        const avgColor = await getAverageColor(validResult.url);
+                        responseEmbed.setColor(avgColor);
+                    } catch (e) {
+                        responseEmbed.setColor(Colors.Blue); // fallback
                     }
-                } else if(countryChat.isTextBased()) {
-                    countryChat.send({content: responseContent, embeds: [responseEmbed]})
-                };
+                    // Envio com attachment
+                    if(interaction.options.getAttachment('imagem') && isImageSafe(interaction.options.getAttachment('imagem').url) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) {
+                        responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
+                    }
+                    // Envio
+                    if(countryChat.type === ChannelType.GuildForum) {
+                        if(countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada'))) {
+                            countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada')).send({content: responseContent, embeds: [responseEmbed], files: [attachment]})
+                        } else {
+                            countryChat.threads.create({
+                                name: `Caixa de Entrada`,
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                            }).then(inbox => {
+                                inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
+                                inbox.send({content: responseContent, embeds: [responseEmbed], files: [attachment]});
+                            })
+                        }
+                    } else if(countryChat.isTextBased()) {
+                        countryChat.send({content: responseContent, embeds: [responseEmbed], files: [attachment]})
+                    };
 
-                interaction.editReply({embeds: [
-                    new EmbedBuilder()
-                    .setColor(Colors.Green)
-                    .setTitle('Carta enviada com sucesso!')
-                    .setDescription(`Sua carta foi enviada para ${countryChat.name.replaceAll('-', ' ').toUpperCase()}`)
-                ]});
-            } catch (error) {
-                interaction.editReply({embeds: [
-                    new EmbedBuilder()
-                    .setColor(Colors.Red)
-                    .setTitle("Ocorreu um erro ao tentar enviar a carta.")
-                    .setDescription(`${error.message || 'Erro desconhecido.'}`)
-                ]});
+                    interaction.editReply({embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Green)
+                        .setTitle('Carta enviada com sucesso!')
+                        .setDescription(`Sua carta foi enviada para ${countryChat.name.replaceAll('-', ' ').toUpperCase()}`)
+                    ]});
+                } catch (err) {
+                    // fallback para URL se buffer falhar
+                    responseEmbed.setThumbnail(validResult.url);
+                    try {
+                        const avgColor = await getAverageColor(validResult.url);
+                        responseEmbed.setColor(avgColor);
+                    } catch (e) {
+                        responseEmbed.setColor(Colors.Blue);
+                    }
+                    if(interaction.options.getAttachment('imagem') && isImageSafe(interaction.options.getAttachment('imagem').url) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
+                    if(countryChat.type === ChannelType.GuildForum) {
+                        if(countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada'))) {
+                            countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada')).send({content: responseContent, embeds: [responseEmbed]})
+                        } else {
+                            countryChat.threads.create({
+                                name: `Caixa de Entrada`,
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                            }).then(inbox => {
+                                inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
+                                inbox.send({content: responseContent, embeds: [responseEmbed]});
+                            })
+                        }
+                    } else if(countryChat.isTextBased()) {
+                        countryChat.send({content: responseContent, embeds: [responseEmbed]})
+                    };
+                    interaction.editReply({embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Green)
+                        .setTitle('Carta enviada com sucesso!')
+                        .setDescription(`Sua carta foi enviada para ${countryChat.name.replaceAll('-', ' ').toUpperCase()}`)
+                    ]});
+                }
+            } else {
+                // Caso não tenha imagem válida, segue fluxo antigo
+                if(interaction.options.getAttachment('imagem') && isImageSafe(interaction.options.getAttachment('imagem').url) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
+                try {
+                    if(countryChat.type === ChannelType.GuildForum) {
+                        if(countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada'))) {
+                            countryChat.threads.cache.find(t => t.name.toLowerCase().includes('caixa de entrada')).send({content: responseContent, embeds: [responseEmbed]})
+                        } else {
+                            countryChat.threads.create({
+                                name: `Caixa de Entrada`,
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                            }).then(inbox => {
+                                inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
+                                inbox.send({content: responseContent, embeds: [responseEmbed]});
+                            })
+                        }
+                    } else if(countryChat.isTextBased()) {
+                        countryChat.send({content: responseContent, embeds: [responseEmbed]})
+                    };
+
+                    interaction.editReply({embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Green)
+                        .setTitle('Carta enviada com sucesso!')
+                        .setDescription(`Sua carta foi enviada para ${countryChat.name.replaceAll('-', ' ').toUpperCase()}`)
+                    ]});
+                } catch (error) {
+                    interaction.editReply({embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setTitle("Ocorreu um erro ao tentar enviar a carta.")
+                        .setDescription(`${error.message || 'Erro desconhecido.'}`)
+                    ]});
+                }
             }
         });
     },
@@ -120,20 +182,20 @@ export default {
     async autocomplete(interaction) {
         const server_config = config(interaction.guildId);
         const focusedOption = interaction.options.getFocused(true);
-		let choices;
+        let choices;
 
         switch (focusedOption.name) {
-            case 'pais':
-                choices = interaction.guild.channels.cache.get((await server_config)?.server?.channels?.country_category).children.cache.map(c => c.name).slice(0, 25)
+            case 'destinatario':
+                choices = interaction.guild.channels.cache.get((await server_config)?.server?.channels?.country_category).children.cache.map(c => c.name);
                 break;
         
             default:
                 break;
         }
 
-		const filtered = choices.filter(choice => choice.includes(focusedOption.value.toLowerCase().replaceAll(' ', '-')));
-		await interaction.respond(
-			filtered.map(choice => ({ name: choice, value: choice })),
-		);
+        const filtered = choices.filter(choice => choice.includes(focusedOption.value.toLowerCase().replaceAll(' ', '-'))).slice(0, 25);
+        await interaction.respond(
+            filtered.sort().map(choice => ({ name: choice, value: choice })),
+        );
     }
 }
