@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import Canvas from "canvas";
 import { config } from "../../src/server_info.js";
-import { makeRoundFlag } from "../../src/visual_functions.js";
+import { makeRoundFlag, isImageSafe } from "../../src/visual_functions.js";
 import { simplifyString } from "../../src/string_functions.js";
 
 export default {
@@ -66,6 +66,17 @@ export default {
             interaction.editReply({
                 embeds: [new EmbedBuilder().setColor(Colors.Greyple).setDescription(`Carregando...`)]
             }).then(async () => {
+
+                const imageUrl = interaction.options.getAttachment('imagem').url;
+                if (!(await isImageSafe(imageUrl))) {
+                    return interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(`Imagem bloqueada: conteúdo impróprio ou símbolo de ódio detectado.`)
+                        ]
+                    });
+                }
 
                 const buffer = await makeRoundFlag(interaction.options.getAttachment('imagem').url);
 

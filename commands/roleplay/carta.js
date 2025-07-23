@@ -12,7 +12,7 @@ import { config } from "../../src/server_info.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { simplifyString } from "../../src/string_functions.js";
 import gis from "g-i-s";
-import { getAverageColor } from "../../src/visual_functions.js";
+import { getAverageColor, isImageSafe } from "../../src/visual_functions.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -62,7 +62,7 @@ export default {
             .setTitle(`Carta enviada por ${senderName}`)
             .setDescription(interaction.options.get('conteudo').value);
 
-            if (!error && results[0]?.url) {
+            if (!error && results[0]?.url && (await isImageSafe(results[0].url))) {
                 responseEmbed.setThumbnail(results[0].url);
                 // Calcula e seta a cor média
                 try {

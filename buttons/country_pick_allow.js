@@ -8,7 +8,7 @@ import {
 } from 'discord.js';
 import { config } from '../src/server_info.js';
 import { simplifyString } from "../src/string_functions.js";
-import { getAverageColor, makeRoundFlag } from "../src/visual_functions.js";
+import { getAverageColor, makeRoundFlag, isImageSafe } from "../src/visual_functions.js";
 import gis from "g-i-s";
 
 export default {
@@ -105,7 +105,7 @@ export default {
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
-                        if (!error && results[0]?.url) {
+                        if (!error && results[0]?.url && (await isImageSafe(results[0].url))) {
                             
                             const buffer = await makeRoundFlag(results[0].url);
 
