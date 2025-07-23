@@ -29,6 +29,24 @@ export default {
      * @param {ChatInputCommandInteraction} interaction
      */
     async execute(interaction) {
+
+        // Comece pedindo o nome do servidor via modal
+        await interaction.showModal(
+            new ModalBuilder()
+                .setCustomId('setup_server_name')
+                .setTitle('Configuração - Nome do servidor')
+                .addComponents(
+                    new ActionRowBuilder().addComponents(
+                        new TextInputBuilder()
+                            .setCustomId('server_name_input')
+                            .setLabel('Digite o nome do servidor')
+                            .setStyle(TextInputStyle.Short)
+                            .setPlaceholder('Exemplo: Império do Norte - {ano}')
+                            .setRequired(true)
+                    )
+                )
+        );
+
         const server_setup = await setup(interaction.guildId);
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
@@ -48,23 +66,6 @@ export default {
         if(!setup_data.server) setup_data.server = {};
         setup_data.server.channels = {};
         setup_data.server.roles = {};
-
-        // Comece pedindo o nome do servidor via modal
-        await interaction.showModal(
-            new ModalBuilder()
-                .setCustomId('setup_server_name')
-                .setTitle('Configuração - Nome do servidor')
-                .addComponents(
-                    new ActionRowBuilder().addComponents(
-                        new TextInputBuilder()
-                            .setCustomId('server_name_input')
-                            .setLabel('Digite o nome do servidor')
-                            .setStyle(TextInputStyle.Short)
-                            .setPlaceholder('Exemplo: Império do Norte - {ano}')
-                            .setRequired(true)
-                    )
-                )
-        );
 
         const modalSubmit = await interaction.awaitModalSubmit({
             time: 5 * 60 * 1000,
