@@ -106,18 +106,21 @@ export default {
             )
         ) {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${bot_config.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
-
-            collectingUsers.add(message.author.id);
             
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (server_config?.server?.action_timing * 1000) || 20_000 });
+            
+            collectingUsers.add(message.author.id);
 
-            message.react('📝').catch(() => {});
-            setTimeout(() => {
-               message?.reactions.removeAll().catch(() => {}); 
-            }, (server_config?.server?.action_timing * 1000) || 20_000);
+            message.react('📝')
+            .catch(() => {})
+            .then((reaction) => {
+                setTimeout(() => {
+                    reaction.remove().catch(() => {}); 
+                }, (server_config?.server?.action_timing * 1000) || 20_000);
+            })
 
-            message.reply(`-# Envie todas as partes da sua ação em até ${(server_config?.server?.action_timing) || 20} segundos.`).then(async (msg) => {
+            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((server_config?.server?.action_timing) || 20))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
                     msg.delete().catch(() => {});
                 }, (server_config?.server?.action_timing * 1000) || 20_000);
@@ -128,10 +131,13 @@ export default {
                 const prompt_adicional = server_config?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
-                    msg.react('📝');
-                    setTimeout(() => {
-                        msg?.reactions.removeAll().catch(() => {});
-                    }, (server_config?.server?.action_timing * 1000) || 20_000);
+                    msg.react('📝')
+                    .catch(() => {})
+                    .then((reaction) => {
+                        setTimeout(() => {
+                            reaction.remove().catch(() => {}); 
+                        }, (server_config?.server?.action_timing * 1000) || 20_000);
+                    })
                 });
 
                 collector.on('end', async (collected) => {

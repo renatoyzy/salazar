@@ -10,7 +10,6 @@ import "dotenv/config";
 /**
  * Retorna as configurações do servidor no banco de dados (ou undefined)
  * @param {SnowflakeUtil} serverId 
- * @returns {{} | undefined} Objeto das configurações do servidor (ou undefined se não existirem)
  */
 export async function config(serverId) {
     const client = new MongoClient(process.env.DB_URI, {
@@ -39,7 +38,6 @@ export async function config(serverId) {
 /**
  * Retorna o setup do servidor no banco de dados (ou undefined)
  * @param {SnowflakeUtil} serverId 
- * @returns {{} | undefined} Objeto do setup do servidor (ou undefined se não existirem)
  */
 export async function setup(serverId) {
     const client = new MongoClient(process.env.DB_URI, {
