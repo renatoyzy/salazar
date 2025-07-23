@@ -488,7 +488,14 @@ export default {
                                 new EmbedBuilder()
                                     .setTitle("Setup concluído!")
                                     .setColor(Colors.Green)
-                                    .setDescription(`O **${bot_config.name}** foi configurado com sucesso neste servidor. Se quiser mudar alguma coisa, use o /configuração.`)
+                                    .setDescription(`O **${bot_config.name}** foi configurado com sucesso neste servidor`)
+                                    .addFields([
+                                        {
+                                            name: 'Configurações adicionais!',
+                                            value: 'Você pode configurar o bot ainda mais usando o comando `/configuração`. Opções como **prompt adicional** e **tempo para envio de todas as partes da ação** estão disponíveis apenas lá, fora todas as opções do setup.',
+                                            inline: true
+                                        }
+                                    ])
                                     .setTimestamp(new Date())
                             ]
                         });

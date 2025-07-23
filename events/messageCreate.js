@@ -107,17 +107,17 @@ export default {
             collectingUsers.add(message.author.id);
             
             const filter = msg => msg.author.id == message.author.id;
-            const collector = await message.channel.createMessageCollector({ filter, time: 20_000 });
+            const collector = await message.channel.createMessageCollector({ filter, time: (server_config?.server?.action_timing * 1000) || 20_000 });
 
             message.react('📝').catch(() => {});
             setTimeout(() => {
                message?.reactions.removeAll().catch(() => {}); 
-            }, 20_000);
+            }, (server_config?.server?.action_timing * 1000) || 20_000);
 
-            message.reply('-# Envie todas as partes da sua ação em até 20 segundos.').then(async (msg) => {
+            message.reply(`-# Envie todas as partes da sua ação em até ${(server_config?.server?.action_timing) || 20} segundos.`).then(async (msg) => {
                 setTimeout(() => {
                     msg.delete().catch(() => {});
-                }, 20_000);
+                }, (server_config?.server?.action_timing * 1000) || 20_000);
             
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = await GetContext(message.guild);
@@ -128,7 +128,7 @@ export default {
                     msg.react('📝');
                     setTimeout(() => {
                         msg?.reactions.removeAll().catch(() => {});
-                    }, 20_000);
+                    }, (server_config?.server?.action_timing * 1000) || 20_000);
                 });
 
                 collector.on('end', async (collected) => {

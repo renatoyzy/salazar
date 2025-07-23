@@ -4,6 +4,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
     SlashCommandChannelOption,
+    SlashCommandIntegerOption,
     SlashCommandRoleOption,
     SlashCommandStringOption
 } from "discord.js";
@@ -27,6 +28,7 @@ export default {
             .setChoices([
                 { name: 'Nome do servidor', value: 'name' },
                 { name: 'Prompt adicional', value: 'extra_prompt' },
+                { name: 'Segundos para enviar partes da ação', value: 'action_timing' },
                 { name: 'Cargo de jogador', value: 'roles.player' },
                 { name: 'Cargo de não jogador', value: 'roles.non_player' },
                 { name: 'Canal da administração', value: 'channels.staff' },
@@ -60,6 +62,12 @@ export default {
             .setName('texto')
             .setDescription('O texto que será definido para essa opção')
             .setRequired(false)
+        )
+        .addIntegerOption(
+            new SlashCommandIntegerOption()
+            .setName('tempo')
+            .setDescription('O tempo em segundos que será definido para essa opção')
+            .setRequired(false)
         ),
 
     min_tier: 1,
@@ -76,7 +84,8 @@ export default {
             'roles': 'cargo',
 
             'name': 'texto',
-            'extra_prompt': 'texto'
+            'extra_prompt': 'texto',
+            'action_timing': 'tempo'
         };
         // Verifica se a opção é um campo de array
         const array_options = [
@@ -87,6 +96,7 @@ export default {
         const option_labels = {
             "name": "Nome do servidor",
             "extra_prompt": "Prompt adicional",
+            "action_timing": "Segundos para enviar partes da ação",
             "roles.player": "Cargo de jogador",
             "roles.non_player": "Cargo de não jogador",
             "channels.staff": "Canal da administração",
