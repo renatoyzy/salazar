@@ -264,28 +264,27 @@ export default {
 
         // Seleção de país
         else if (message.channelId === server_config?.server?.channels?.country_picking) {
-            const country = message.cleanContent.trim();
+            const country = message.cleanContent.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '');
             if (!country) return;
 
             const countryCategory = message.guild.channels.cache.get(server_config?.server?.channels?.country_category);
             
-            const existingChannel = countryCategory?.children?.cache.find(c => c.name.replaceAll("-", " ").includes(country.toLowerCase()));
-            const existingRole = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(country.toLowerCase()));
+            const existingChannel = countryCategory?.children?.cache.find(c => c.name.replaceAll("-", " ").normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country.toLowerCase()));
+            const existingRole = message.guild.roles.cache.find(r => r.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').includes(country.toLowerCase()));
             
             let replyEmbed = new EmbedBuilder()
             .setColor(Colors.Yellow)
-            .setTitle(`${message.author.displayName} quer escolher o país ${country}`)
+            .setTitle(`${message.author.displayName} escolheu o país ${country.toUpperCase()}`)
             .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."});
 
-            // Se já existe um canal para o país, avisa
-            existingChannel && replyEmbed.addFields([{ name: '⚠️ País já escolhido', value: `O canal para o país **${country}** já existe: <#${existingChannel.id}>` }]);
-            // Se já existe um cargo para o país, avisa
-            existingRole && replyEmbed.addFields([{ name: '⚠️ País já tem cargo', value: `O cargo para o país **${country}** já existe: <@&${existingRole.id}>` }]);
-            // Se não existir nada, avisar que vai criar novos
-            !existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ Nota para o administrador', value: `Nenhum canal ou cargo para o país **${country}** foi encontrado. Um novo canal e cargo serão criados. Se você acredita que isso é um erro, por favor, clique na opção de setar manualmente, e adicione o cargo existente a(o) jogador(a).` }]);
+            existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ Tudo certo, administrador!', value: `Aparentemente o país já tem um cargo e canal, que serão setados se escolher Permitir. Administrador, apenas verifique se o país escolhido já não tem dono(a).` }]);
+            existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ País possui apenas canal', value: `O canal para o país **${country}** existe (<@&${existingRole.id}>) **mas ele não tem um cargo!** Se acredita que isso é um erro, prefira setar manualmente.` }]);
+            !existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ País possui apenas cargo', value: `O cargo para o país **${country}** existe (<@&${existingRole.id}>) **mas ele não tem um canal, ou a categoria de países não está configurada corretamente!** Se acredita que isso é um erro, prefira setar manualmente.` }]);
+            !existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ Nota para o administrador', value: `Nenhum canal ou cargo para o país **${country}** foi encontrado. Um novo canal e cargo serão criados se você escolher Permitir. Se você acredita que isso é um erro, por favor, prefira setar manualmente, e adicione o cargo existente a(o) jogador(a).` }]);
 
             message.reply({
-                content: `@admin`,
+                content: `-# pings vão aqui`,
+                // content: `-# <@&${message.guild.roles.cache.filter(r => !r.managed && !r.name.toLowerCase().includes('bot') && r.permissions.has(PermissionsBitField.Flags.ManageRoles)).map(r => r.id).join('> <@&')}>`,
                 embeds: [replyEmbed],
                 components: [
                     new ActionRowBuilder()
@@ -309,35 +308,6 @@ export default {
                     )
                 ]
             });
-
-            /**
-             * 
-
-            
-
-            const existingChannel = countryCategory.children.find(c => c.name.toLowerCase() === country);
-            if (existingChannel) {
-                return message.reply(`O canal para o país **${country}** já existe: <#${existingChannel.id}>`);
-            }
-
-            const newChannel = await message.guild.channels.create({
-                name: country,
-                type: 0, // GUILD_TEXT
-                parent: server_config?.server?.channels?.country_category,
-                permissionOverwrites: [
-                    {
-                        id: message.guild.roles.everyone,
-                        deny: [PermissionsBitField.Flags.ViewChannel]
-                    },
-                    {
-                        id: bot_config.id,
-                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages]
-                    }
-                ]
-            });
-
-            message.reply(`Canal criado para o país **${country}**: <#${newChannel.id}>`);
-             */
         }
     }
 };
