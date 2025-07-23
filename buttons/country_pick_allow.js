@@ -64,6 +64,10 @@ export default {
                         {
                             id: countryRole.id,
                             allow: [PermissionsBitField.Flags.ViewChannel],
+                        },
+                        {
+                            id: interaction.guild.roles.everyone.id,
+                            deny: [PermissionsBitField.Flags.ViewChannel],
                         }
                     ]
                 });
@@ -71,6 +75,7 @@ export default {
         } else {
             interaction.guild.roles.create({
                 name: unfiltered_country,
+                permissions: new PermissionsBitField([]),
                 reason: `Cargo criado automaticamente para o país ${country}`,
             }).then(async (role) => {
                 await player.roles.add(role).catch(() => {});
@@ -85,6 +90,10 @@ export default {
                             {
                                 id: role.id,
                                 allow: [PermissionsBitField.Flags.ViewChannel],
+                            },
+                            {
+                                id: interaction.guild.roles.everyone.id,
+                                deny: [PermissionsBitField.Flags.ViewChannel],
                             }
                         ]
                     });
