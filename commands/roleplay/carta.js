@@ -73,7 +73,7 @@ export default {
                 }
             }
 
-            if(interaction.options.getAttachment('imagem') && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
+            if(interaction.options.getAttachment('imagem') && (await isImageSafe(interaction.options.getAttachment('imagem').url)) && interaction.options.getAttachment('imagem').contentType.startsWith('image')) responseEmbed.setImage(interaction.options.getAttachment('imagem').url);
 
             try {
                 if(countryChat.type === ChannelType.GuildForum) {
