@@ -263,7 +263,7 @@ export default {
         }
 
         // Seleção de país
-        else if (message.channelId === server_config?.server?.channels?.country_picking) {
+        else if (server_config.server_tier>=2 && message.channelId === server_config?.server?.channels?.country_picking) {
             const country = message.cleanContent.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '');
             if (!country) return;
 
@@ -274,8 +274,11 @@ export default {
             
             let replyEmbed = new EmbedBuilder()
             .setColor(Colors.Yellow)
-            .setTitle(`${message.author.displayName} escolheu o país ${country.toUpperCase()}`)
-            .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."});
+            .setTitle(`${message.author.displayName} escolheu o país ${message.cleanContent.trim()}`)
+            .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
+            .addFields([
+                { name: '🎌 País solicitado', value: message.cleanContent.trim(), inline: true },
+            ]);
 
             existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ Tudo certo, administrador!', value: `Aparentemente o país já tem um cargo e canal, que serão setados se escolher Permitir. Administrador, apenas verifique se o país escolhido já não tem dono(a).` }]);
             existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ País possui apenas canal', value: `O canal para o país **${country}** existe (<@&${existingRole.id}>) **mas ele não tem um cargo!** Se acredita que isso é um erro, prefira setar manualmente.` }]);
@@ -283,8 +286,8 @@ export default {
             !existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ Nota para o administrador', value: `Nenhum canal ou cargo para o país **${country}** foi encontrado. Um novo canal e cargo serão criados se você escolher Permitir. Se você acredita que isso é um erro, por favor, prefira setar manualmente, e adicione o cargo existente a(o) jogador(a).` }]);
 
             message.reply({
-                content: `-# pings vão aqui`,
-                // content: `-# <@&${message.guild.roles.cache.filter(r => !r.managed && !r.name.toLowerCase().includes('bot') && r.permissions.has(PermissionsBitField.Flags.ManageRoles)).map(r => r.id).join('> <@&')}>`,
+                //content: `-# pings vão aqui`,
+                content: `-# <@&${message.guild.roles.cache.filter(r => !r.managed && !r.name.toLowerCase().includes('bot') && r.permissions.has(PermissionsBitField.Flags.ManageRoles)).map(r => r.id).join('> <@&')}>`,
                 embeds: [replyEmbed],
                 components: [
                     new ActionRowBuilder()
