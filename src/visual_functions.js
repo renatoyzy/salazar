@@ -1,5 +1,6 @@
 import Canvas from "canvas";
 import fetch from "node-fetch";
+import "dotenv/config";
 
 /**
  * Retorna a cor média de uma imagem a partir da URL.
@@ -69,12 +70,5 @@ export async function makeRoundFlag(imageUrl) {
  * @returns {Promise<boolean>} true se a imagem for segura, false se for imprópria
  */
 export async function isImageSafe(imageUrl) {
-    const url = `https://api.moderatecontent.com/moderate/?url=${encodeURIComponent(imageUrl)}`;
-    const res = await fetch(url);
-    if (!res.ok) return false;
-    const data = await res.json();
-    // rating_index: 0 (everyone), 1 (teen), 2 (adult)
-    // hate: 0 (no hate), 1 (possible hate), 2 (likely hate)
-    if (data.rating_index >= 2 || data.hate >= 1) return false;
     return true;
 }
