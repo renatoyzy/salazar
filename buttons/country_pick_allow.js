@@ -8,7 +8,8 @@ import {
 } from 'discord.js';
 import { config } from '../src/server_info.js';
 import { simplifyString } from "../src/string_functions.js";
-import { getAverageColor, makeRoundFlag } from "../../src/visual_functions.js";
+import { getAverageColor, makeRoundFlag } from "../src/visual_functions.js";
+import gis from "g-i-s";
 
 export default {
 
