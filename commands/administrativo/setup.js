@@ -352,6 +352,61 @@ export default {
                         components: []
                     });
                     await i.update({
+                        content: `Agora selecione o **canal de escolha de país**. Esse é o canal onde os jogadores escolhem seus países no início do jogo. O bot irá monitorar esse canal para registrar as escolhas dos jogadores.`,
+                        components: [
+                            new ActionRowBuilder()
+                            .addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_country_picking_channel")
+                                .setPlaceholder("Canal de escolha de país")
+                                .setMinValues(1)
+                                .setMaxValues(1)
+                            )
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setCustomId("setup_skip_country_picking_channel")
+                                .setLabel("Pular (não quero automatizar a escolha de país)")
+                                .setStyle(ButtonStyle.Secondary)
+                            )
+                        ]
+                    });
+                    break;
+
+                case "setup_countries_category":
+                    setup_data.server.channels.countries_category = i.values[0];
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
+                        content: `Agora selecione o **canal de escolha de país**. Esse é o canal onde os jogadores escolhem seus países no início do jogo. O bot irá monitorar esse canal para registrar as escolhas dos jogadores.`,
+                        components: [
+                            new ActionRowBuilder()
+                            .addComponents(
+                                new ChannelSelectMenuBuilder()
+                                .setCustomId("setup_country_picking_channel")
+                                .setPlaceholder("Canal de escolha de país")
+                                .setMinValues(1)
+                                .setMaxValues(1)
+                            )
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setCustomId("setup_skip_country_picking_channel")
+                                .setLabel("Pular (não quero automatizar a escolha de país)")
+                                .setStyle(ButtonStyle.Secondary)
+                            )
+                        ]
+                    });
+                    break;
+                
+                case "setup_skip_country_picking_channel":
+                    setup_data.server.channels.country_picking = null;
+                    
+                    await i.message?.edit({
+                        content: `Setup em andamento...`,
+                        components: []
+                    });
+                    await i.update({
                         content: `Agora selecione os **canais de ações**. Estes são os canais em que os jogadores jogam, basicamente. Qualquer mensagem de mais de 500 caracteres enviada por um jogador em um destes chats será considerada uma ação, e seus resultados serão narrados. \n-# Selecione de 1-15 canais. Pode incluir categorias também. Nesse caso, todos os canais dentro da categoria serão considerados.`,
                         components: [
                             new ActionRowBuilder().addComponents(
@@ -365,8 +420,9 @@ export default {
                     });
                     break;
 
-                case "setup_countries_category":
-                    setup_data.server.channels.countries_category = i.values[0];
+                case "setup_country_picking_channel":
+                    setup_data.server.channels.country_picking = i.values[0];
+
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []
