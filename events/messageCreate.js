@@ -148,6 +148,8 @@ export default {
 
                     const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
 
+                    console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
+
                     const response = await ai_generate(prompt).catch(error => {
                         console.error("Erro ao gerar narração:", error);
                     });
@@ -206,6 +208,8 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
 
+            console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
+
             const response = await ai_generate(prompt).catch(error => {
                 console.error("Erro ao gerar contexto de evento:", error);
             });
@@ -241,6 +245,8 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 
+            console.log(`- O período está sendo passado em ${message.guild.name} (${message.guildId})`);
+
             const response = await ai_generate(prompt).catch(error => {
                 console.error("Erro ao gerar resumo de período:", error);
             });
@@ -253,15 +259,17 @@ export default {
                 ? `# Resumo geral do ano de ${ano_atual}`
                 : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
             let finaltext = `${tituloResumo}\n${response.text}`;
-            const chunks = chunkifyText(finaltext);
+            const chunks = chunkifyText(finaltext, `\n-# RG-${ano_atual}`);
 
-            const msgs = await contextChannel.messages.fetch();
-            msgs.filter(msg => 
-                msg.author.id === bot_config.id &&
+            const msgs = await contextChannel.messages.fetch({ limit: 100 }); // Limite máximo do bulkDelete
+            const deletaveis = msgs.filter(msg =>
                 (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
-                !msg.content.includes('-# RG') &&
-                !msg.content.includes('# Resumo geral de')
-            ).forEach(msg => msg.delete());
+                !msg.content.includes('-# RG-')
+            );
+
+            if (deletaveis.size > 0) {
+                await contextChannel.bulkDelete(deletaveis, true); // true ignora mensagens antigas
+            }
 
             chunks.forEach(chunk => contextChannel.send(chunk));
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);

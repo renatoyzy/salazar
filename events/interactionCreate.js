@@ -62,7 +62,7 @@ async function handleChatInput(interaction) {
     const command = client.commands.get(interaction.commandName);
     !command.disable_defer && await interaction.deferReply(command.ephemeral && {flags: [MessageFlags.Ephemeral]});
 
-    console.log(`- ${interaction.member.user.displayName} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.url})`);
+    console.log(`- ${interaction.member.user.username} (${interaction.member.id}) usou ${interaction.commandName} em ${interaction.channel?.name} (${interaction.channel?.guild.name})`);
 
     try {
         if (!interaction.replied) {

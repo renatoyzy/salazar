@@ -12,26 +12,29 @@ export function simplifyString(string, keepNumbers=false) {
 }
 
 /**
- * Separa um texto em chunks, priorizando quebras de linha para preservar markdown.
+ * Separa um texto em chunks, priorizando quebras de linha para preservar markdown,
+ * e adiciona um sufixo obrigatório em cada chunk sem ultrapassar o limite.
  * @param {string} texto - Texto completo a ser separado.
+ * @param {string} sufixo - Sufixo obrigatório em cada chunk.
  * @param {number} maxLength - Tamanho máximo de cada chunk.
  * @returns {string[]} Array de chunks.
  */
-export function chunkifyText(texto, maxLength = 2000) {
+export function chunkifyText(texto, sufixo = "", maxLength = 2000) {
     const lines = texto.split('\n');
     const chunks = [];
     let currentChunk = '';
 
     for (const line of lines) {
-        // Se adicionar a linha excede o limite, salva o chunk atual e começa outro
-        if ((currentChunk.length + line.length + 1) > maxLength) {
-            if (currentChunk) chunks.push(currentChunk);
+        // Calcula tamanho considerando o sufixo
+        const totalLength = currentChunk.length + line.length + 1 + sufixo.length;
+        if (totalLength > maxLength) {
+            if (currentChunk) chunks.push(currentChunk + sufixo);
             currentChunk = line;
         } else {
             currentChunk += (currentChunk ? '\n' : '') + line;
         }
     }
-    if (currentChunk) chunks.push(currentChunk);
+    if (currentChunk) chunks.push(currentChunk + sufixo);
 
     return chunks;
 }
