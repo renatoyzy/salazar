@@ -37,7 +37,8 @@ export default {
             components: []
         });
 
-        interaction.channel.send(`<@${(await interaction.message.fetchReference())?.author.id}>`).then(msg => msg.delete()).catch(() => {});
+        const player = (interaction.message.embeds[0].fields.find(f => f.name === '👥 ID do jogador')?.value);
+        interaction.channel.send(`<@${player.id}>`).then(msg => msg.delete()).catch(() => {});
     }
 
 }

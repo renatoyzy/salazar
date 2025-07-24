@@ -32,7 +32,7 @@ export default {
 
         const unfiltered_country = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
         const country = simplifyString(unfiltered_country);
-        const player = (await interaction.message.fetchReference()).member;
+        const player = await interaction.guild.members.fetch(interaction.message.embeds[0].fields.find(f => f.name === '👥 ID do jogador')?.value);
 
         // Busca todos os cargos de país baseados nos canais da categoria
         const countryCategory = await interaction.guild.channels.fetch(server_config?.channels?.country_category);
@@ -190,7 +190,7 @@ export default {
             components: []
         });
 
-        interaction.channel.send(`<@${(await interaction.message.fetchReference())?.author.id}>`).then(msg => msg.delete()).catch(() => {});
+        interaction.channel.send(`<@${player.id}>`).then(msg => msg.delete()).catch(() => {});
     }
 
 }

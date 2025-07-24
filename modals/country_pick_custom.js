@@ -38,6 +38,7 @@ export default {
         .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
         .addFields([
             { name: '🎌 País solicitado', value: unfiltered_country, inline: true },
+            { name: '👥 ID do jogador', value: interaction.user.id, inline: true }
         ]);
 
         existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ Tudo certo, administrador!', value: `Aparentemente o país já tem um cargo e canal, que serão setados se escolher Permitir. Administrador, apenas verifique se o país escolhido já não tem dono(a).` }]);
