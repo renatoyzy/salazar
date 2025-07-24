@@ -190,6 +190,10 @@ export default {
             components: []
         });
 
+        setTimeout(() => {
+            interaction.message?.deletable && interaction.message.delete();
+        }, 60_000);
+
         interaction.channel.send(`<@${player.id}>`).then(msg => msg.delete()).catch(() => {});
     }
 

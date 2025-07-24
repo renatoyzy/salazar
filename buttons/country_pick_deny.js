@@ -37,6 +37,10 @@ export default {
             components: []
         });
 
+        setTimeout(() => {
+            interaction.message?.deletable && interaction.message.delete();
+        }, 60_000);
+
         const player = (interaction.message.embeds[0].fields.find(f => f.name === '👥 ID do jogador')?.value);
         interaction.channel.send(`<@${player.id}>`).then(msg => msg.delete()).catch(() => {});
     }
