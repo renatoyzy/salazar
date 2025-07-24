@@ -1,9 +1,6 @@
 import { 
     ActionRowBuilder,
-    ButtonBuilder,
     ButtonInteraction,
-    ButtonStyle,
-    CategoryChannel,
     ChannelType,
     MessageFlags,
     StringSelectMenuBuilder,
@@ -11,12 +8,26 @@ import {
 } from 'discord.js';
 import { config } from '../src/server_info.js';
 
+const cooldownUsers = {};
+
 export default {
 
     /**
      * @param {ButtonInteraction} interaction 
      */
     async execute(interaction) {
+
+        const USE_COOLDOWN = 10 * 60 * 1000;
+
+        if(Object.keys(cooldownUsers).includes(interaction.user.id)) return interaction.reply({
+            flags: [MessageFlags.Ephemeral],
+            content: `Você só poderá usar esse botão novamente <t:${Math.floor(cooldownUsers[interaction.user.id]/1000)}:R>`
+        });
+
+        cooldownUsers[interaction.user.id] = new Date().getTime() + (USE_COOLDOWN);
+        setTimeout(() => {
+            delete cooldownUsers[interaction.user.id];    
+        }, USE_COOLDOWN);
 
         const server_config = await config(interaction.guildId);
 
