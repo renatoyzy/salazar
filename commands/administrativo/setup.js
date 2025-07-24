@@ -33,18 +33,19 @@ export default {
         // Comece pedindo o nome do servidor via modal
         await interaction.showModal(
             new ModalBuilder()
-                .setCustomId('setup_server_name')
-                .setTitle('Configuração - Nome do servidor')
+            .setCustomId('setup_server_name')
+            .setTitle('Configuração - Nome do servidor')
+            .addComponents(
+                new ActionRowBuilder()
                 .addComponents(
-                    new ActionRowBuilder().addComponents(
-                        new TextInputBuilder()
-                            .setCustomId('server_name_input')
-                            .setLabel('Digite o nome do servidor')
-                            .setStyle(TextInputStyle.Short)
-                            .setPlaceholder('Exemplo: Império do Norte - {ano}')
-                            .setRequired(true)
-                    )
+                    new TextInputBuilder()
+                    .setCustomId('server_name_input')
+                    .setLabel('Digite o nome do servidor')
+                    .setStyle(TextInputStyle.Short)
+                    .setPlaceholder('Exemplo: Império do Norte - {ano}')
+                    .setRequired(true)
                 )
+            )
         );
 
         const server_setup = await setup(interaction.guildId);

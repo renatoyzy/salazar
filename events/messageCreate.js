@@ -270,57 +270,5 @@ export default {
             chunks.forEach(chunk => contextChannel.send(chunk));
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
         }
-
-        // Seleção de país
-        else if (server_config.server_tier>=2 && message.channelId === server_config?.server?.channels?.country_picking) {
-            const unfiltered_country = message.cleanContent.trim();
-            const country = simplifyString(message.cleanContent);
-            if (!country) return;
-
-            const countryCategory = message.guild.channels.cache.get(server_config?.server?.channels?.country_category);
-            
-            const existingChannel = countryCategory?.children?.cache.find(c => simplifyString(c.name).includes(country));
-            const existingRole = message.guild.roles.cache.find(r => simplifyString(r.name).includes(country));
-            
-            let replyEmbed = new EmbedBuilder()
-            .setColor(Colors.Yellow)
-            .setTitle(`${message.author.displayName} escolheu o país "${unfiltered_country}"`)
-            .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
-            .addFields([
-                { name: '🎌 País solicitado', value: unfiltered_country, inline: true },
-            ]);
-
-            existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ Tudo certo, administrador!', value: `Aparentemente o país já tem um cargo e canal, que serão setados se escolher Permitir. Administrador, apenas verifique se o país escolhido já não tem dono(a).` }]);
-            existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ País possui apenas canal', value: `O canal para o país **${country}** existe (<@&${existingRole.id}>) **mas ele não tem um cargo!** Se acredita que isso é um erro, prefira setar manualmente.` }]);
-            !existingChannel && existingRole && replyEmbed.addFields([{ name: '⚠️ País possui apenas cargo', value: `O cargo para o país **${country}** existe (<@&${existingRole.id}>) **mas ele não tem um canal, ou a categoria de países não está configurada corretamente!** Se acredita que isso é um erro, prefira setar manualmente.` }]);
-            !existingChannel && !existingRole && replyEmbed.addFields([{ name: '⚠️ Nota para o administrador', value: `Nenhum canal ou cargo para o país **${country}** foi encontrado. Um novo canal e cargo serão criados se você escolher Permitir. Se você acredita que isso é um erro, por favor, prefira setar manualmente, e adicione o cargo existente a(o) jogador(a).` }]);
-
-            message.reply({
-                //content: `-# pings vão aqui`,
-                content: `-# <@&${message.guild.roles.cache.filter(r => !r.managed && !r.name.toLowerCase().includes('bot') && r.permissions.has(PermissionsBitField.Flags.ManageRoles)).map(r => r.id).join('> <@&')}>`,
-                embeds: [replyEmbed],
-                components: [
-                    new ActionRowBuilder()
-                    .addComponents(
-                        new ButtonBuilder()
-                        .setCustomId('country_pick_deny')
-                        .setLabel(`Não permitir`)
-                        .setStyle(ButtonStyle.Secondary)
-                    )
-                    .addComponents(
-                        new ButtonBuilder()
-                        .setCustomId('country_pick_manual')
-                        .setLabel(`Vou setar manualmente`)
-                        .setStyle(ButtonStyle.Secondary)
-                    )
-                    .addComponents(
-                        new ButtonBuilder()
-                        .setCustomId('country_pick_allow')
-                        .setLabel(`Permitir`)
-                        .setStyle(ButtonStyle.Success)
-                    )
-                ]
-            });
-        }
     }
 };

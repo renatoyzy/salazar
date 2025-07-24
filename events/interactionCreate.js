@@ -130,7 +130,7 @@ async function handleButton(interaction) {
                 .setTitle(`🤖  Registro de uso de botão`)
                 .setFields([
                     { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
-                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component?.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
                     { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
                 ])
                 .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
@@ -169,7 +169,8 @@ async function handleSelectMenu(interaction) {
     }
 
     // Handler pelo customId
-    const selectHandler = client.selects?.get(interaction.customId);
+    const baseId = interaction.customId.split(":")[0];
+    const selectHandler = client.selects?.get(baseId);
     if (!selectHandler) {
         return interaction.reply({ content: `Select menu desconhecido.`, flags: [MessageFlags.Ephemeral] });
     }
@@ -187,7 +188,7 @@ async function handleSelectMenu(interaction) {
                 .setTitle(`🤖  Registro de uso de select menu`)
                 .setFields([
                     { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
-                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component?.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
                     { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
                 ])
                 .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
@@ -234,7 +235,7 @@ async function handleModalSubmit(interaction) {
                 .setTitle(`🤖  Registro de uso de modal`)
                 .setFields([
                     { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
-                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component?.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
                     { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
                 ])
                 .setThumbnail(interaction.user.avatarURL({ dynamic: true }))

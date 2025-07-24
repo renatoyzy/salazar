@@ -1,10 +1,15 @@
 import { 
-    Colors, 
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonInteraction,
+    ButtonStyle,
+    CategoryChannel,
+    ChannelType,
     MessageFlags,
-    EmbedBuilder,
-    PermissionsBitField
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder
 } from 'discord.js';
+import { config } from '../src/server_info.js';
 
 export default {
 
@@ -13,7 +18,48 @@ export default {
      */
     async execute(interaction) {
 
-        
+        const server_config = await config(interaction.guildId);
+
+        if(server_config?.server_tier<=2) return interaction.reply('Essa funcionalidade não está disponível no plano atual do servidor.');
+
+        const country_category = await interaction.guild?.channels.fetch(server_config?.server?.channels?.country_category);
+        if(country_category.type != ChannelType.GuildCategory) return interaction.reply('A categoria de países não está configurada corretamente');
+        const country_channels = country_category.children.cache;
+
+        let options = country_channels.map(c => 
+            new StringSelectMenuOptionBuilder()
+			.setLabel(`${c.name}`)
+			.setValue(`${c.id}`)
+        ).sort((a, b) => a.data.label.localeCompare(b.data.label));
+
+        options.push(
+            new StringSelectMenuOptionBuilder()
+            .setLabel('outro')
+            .setValue('outro')
+            .setDescription('Não encontrei o país que desejo nas opções.')
+        )
+
+        const MAX_OPTIONS = 25;
+        let selectMenus = [];
+
+        // Divide as opções em grupos de até 25
+        for (let i = 0; i < options.length; i += MAX_OPTIONS) {
+            selectMenus.push(
+                new StringSelectMenuBuilder()
+                .setCustomId(`country_pick:${i/MAX_OPTIONS}`)
+                .setPlaceholder(`Seletor dos países ${i}-${i + MAX_OPTIONS}`)
+                .setMinValues(1)
+                .setMaxValues(1)
+                .setOptions(options.slice(i, i + MAX_OPTIONS))
+            );
+        }
+
+        interaction.reply({
+            flags: [MessageFlags.Ephemeral],
+            content: '## Escolha com o que vai jogar:',
+            components: selectMenus.map(menu => new ActionRowBuilder().addComponents(menu))
+        })
+
     }
 
 }
