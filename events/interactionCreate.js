@@ -7,7 +7,6 @@ import {
     ButtonInteraction,
     ChatInputCommandInteraction,
     AutocompleteInteraction,
-    AnySelectMenuInteraction,
     ModalSubmitInteraction
 } from "discord.js";
 import fs from "fs";
@@ -153,7 +152,7 @@ async function handleAutocomplete(interaction) {
 }
 
 /**
- * @param {AnySelectMenuInteraction} interaction
+ * @param {import("discord.js").AnySelectMenuInteraction} interaction
  */
 async function handleSelectMenu(interaction) {
 

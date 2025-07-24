@@ -423,6 +423,23 @@ export default {
                 case "setup_country_picking_channel":
                     setup_data.server.channels.country_picking = i.values[0];
 
+                    i.guild.channels.cache.get(i.values[0]).send({
+                        embeds: [
+                            new EmbedBuilder()
+                            .setDescription("Escolha com o que você vai jogar")
+                            .setColor(Colors.Blurple)
+                        ],
+                        components: [
+                            new ActionRowBuilder()
+                            .addComponents([
+                                new ButtonBuilder()
+                                .setStyle(ButtonStyle.Primary)
+                                .setLabel('Clique em mim para selecionar seu país!')
+                                .setCustomId('country_pick')
+                            ])
+                        ]
+                    });
+
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []

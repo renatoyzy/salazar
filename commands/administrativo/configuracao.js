@@ -1,4 +1,7 @@
 import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     ChatInputCommandInteraction,
     Colors,
     EmbedBuilder,
@@ -187,6 +190,32 @@ export default {
                     updateQuery = { $set: { [`server.${option}`]: value } };
                     action = `${option_labels[option] || option} redefinido para ${fake_value}`;
                 }
+            }
+
+            // Additional tasks
+            switch (option) {
+                case "channels.country_picking":
+                    interaction.guild.channels.cache.get(value) &&
+                    interaction.guild.channels.cache.get(value).send({
+                        embeds: [
+                            new EmbedBuilder()
+                            .setDescription("Escolha com o que você vai jogar")
+                            .setColor(Colors.Blurple)
+                        ],
+                        components: [
+                            new ActionRowBuilder()
+                            .addComponents([
+                                new ButtonBuilder()
+                                .setStyle(ButtonStyle.Primary)
+                                .setLabel('Clique em mim para selecionar seu país!')
+                                .setCustomId('country_pick')
+                            ])
+                        ]
+                    });
+                    break;
+            
+                default:
+                    break;
             }
 
             const reply_config = await collection.findOneAndUpdate(
