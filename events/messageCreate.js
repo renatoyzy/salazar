@@ -17,7 +17,7 @@ import client from "../src/client.js";
 import "dotenv/config";
 import { GetContext } from "../src/roleplay.js";
 import ai_generate from "../src/ai_generate.js";
-import { simplifyString } from "../src/string_functions.js";
+import { simplifyString, chunkifyText } from "../src/string_functions.js";
 
 const collectingUsers = new Set();
 
@@ -167,10 +167,7 @@ export default {
 
                     const max_length = 2000;
                     let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
-                    const chunks = [];
-                    for (let i = 0; i < finaltext.length; i += max_length) {
-                        chunks.push(finaltext.slice(i, i + max_length));
-                    }
+                    const chunks = chunkifyText(finaltext);
                     if (diffChunk) chunks.push(diffChunk);
                     chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${bot_config.site})`);
 
@@ -239,6 +236,8 @@ export default {
             server_config?.server?.name?.includes('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
             const acao_contexto = await GetContext(message.guild);
+            const periodo_anterior = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+            const periodo_atual = simplifyString(message.cleanContent);
 
             const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 
@@ -254,10 +253,7 @@ export default {
                 ? `# Resumo geral do ano de ${ano_atual}`
                 : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
             let finaltext = `${tituloResumo}\n${response.text}`;
-            const chunks = [];
-            for (let i = 0; i < finaltext.length; i += max_length) {
-                chunks.push(finaltext.slice(i, i + max_length) + `\n-# RG-${ano_atual}`);
-            }
+            const chunks = chunkifyText(finaltext);
 
             const msgs = await contextChannel.messages.fetch();
             msgs.filter(msg => 

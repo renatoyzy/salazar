@@ -4,7 +4,7 @@ import { config } from "./server_info.js";
 /**
  * Obtém o contexto do roleplay para um servidor específico.
  * @param {Guild} guild - Objeto guild do Discord
- * @returns {string | undefined} Contexto completo do roleplay 
+ * @returns {Promise<string | undefined>} Contexto completo do roleplay 
  */
 export async function GetContext(guild) {
     const server_config = await config(guild.id || guild);
