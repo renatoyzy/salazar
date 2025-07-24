@@ -6,7 +6,9 @@ import {
     MessageFlags,
     ButtonInteraction,
     ChatInputCommandInteraction,
-    AutocompleteInteraction
+    AutocompleteInteraction,
+    AnySelectMenuInteraction,
+    ModalSubmitInteraction
 } from "discord.js";
 import fs from "fs";
 import path from "path";
@@ -32,12 +34,14 @@ export default {
 
         if (interaction.isChatInputCommand()) {
             await handleChatInput(interaction);
-        } 
-        else if (interaction.isButton()) {
+        }  else if (interaction.isButton()) {
             await handleButton(interaction);
-        }
-        else if (interaction.isAutocomplete()) {
+        } else if (interaction.isAutocomplete()) {
             await handleAutocomplete(interaction);
+        } else if (interaction.isAnySelectMenu()) {
+            await handleSelectMenu(interaction);
+        } else if (interaction.isModalSubmit()) {
+            await handleModalSubmit(interaction);
         }
 
     }
@@ -49,9 +53,7 @@ export default {
  * @param {ChatInputCommandInteraction} interaction 
  */
 async function handleChatInput(interaction) {
-    const server_config = await config(interaction.guildId);
-
-    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    
     const interactionContent = interaction.options._hoistedOptions.length > 0
         ? interaction.options._hoistedOptions.map(x => `**${capitalize(x.name)}:** \`\`\`${x.value}\`\`\``)
         : "";
@@ -70,6 +72,9 @@ async function handleChatInput(interaction) {
     } catch (error) {
         console.error(error);
     }
+
+    const server_config = await config(interaction.guildId);
+    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
 
     if (logChannel) {
         const fields = [
@@ -98,8 +103,25 @@ async function handleChatInput(interaction) {
  * @param {ButtonInteraction} interaction 
  */
 async function handleButton(interaction) {
-    const server_config = await config(interaction.guildId);
 
+    client.buttons = new Collection();
+    const buttonsPath = path.join(__dirname, "../buttons");
+    const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith(".js"));
+
+    for (const file of buttonFiles) {
+        const { default: button } = await import(`file://${path.join(buttonsPath, file)}`);
+        const buttonName = path.basename(file, ".js");
+        client.buttons.set(buttonName, button);
+    }
+
+    const buttonHandler = client.buttons.get(interaction.customId);
+    if (!buttonHandler) {
+        return interaction.reply({ content: `Botão desconhecido.`, flags: [MessageFlags.Ephemeral] });
+    }
+
+    await buttonHandler.execute(interaction);
+
+    const server_config = await config(interaction.guildId);
     const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
 
     if (logChannel) {
@@ -118,23 +140,6 @@ async function handleButton(interaction) {
             ]
         });
     }
-
-    client.buttons = new Collection();
-    const buttonsPath = path.join(__dirname, "../buttons");
-    const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith(".js"));
-
-    for (const file of buttonFiles) {
-        const { default: button } = await import(`file://${path.join(buttonsPath, file)}`);
-        const buttonName = path.basename(file, ".js");
-        client.buttons.set(buttonName, button);
-    }
-
-    const buttonHandler = client.buttons.get(interaction.customId);
-    if (!buttonHandler) {
-        return interaction.reply({ content: `Botão desconhecido.`, flags: [MessageFlags.Ephemeral] });
-    }
-
-    await buttonHandler.execute(interaction);
 }
 
 /**
@@ -144,6 +149,100 @@ async function handleAutocomplete(interaction) {
     const command = interaction.client.commands.get(interaction.commandName);
     if (command && typeof command.autocomplete === 'function') {
         await command.autocomplete(interaction);
+    }
+}
+
+/**
+ * @param {AnySelectMenuInteraction} interaction
+ */
+async function handleSelectMenu(interaction) {
+
+    // Carrega selects dinamicamente
+    client.selects = new Collection();
+    const selectsPath = path.join(__dirname, "../selects");
+    if (fs.existsSync(selectsPath)) {
+        const selectFiles = fs.readdirSync(selectsPath).filter(file => file.endsWith(".js"));
+        for (const file of selectFiles) {
+            const { default: select } = await import(`file://${path.join(selectsPath, file)}`);
+            const selectName = path.basename(file, ".js");
+            client.selects.set(selectName, select);
+        }
+    }
+
+    // Handler pelo customId
+    const selectHandler = client.selects?.get(interaction.customId);
+    if (!selectHandler) {
+        return interaction.reply({ content: `Select menu desconhecido.`, flags: [MessageFlags.Ephemeral] });
+    }
+
+    await selectHandler.execute(interaction);
+
+    const server_config = await config(interaction.guildId);
+
+    // Log igual antes
+    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    if (logChannel) {
+        await logChannel.send({
+            embeds: [
+                new EmbedBuilder()
+                .setTitle(`🤖  Registro de uso de select menu`)
+                .setFields([
+                    { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
+                ])
+                .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
+                .setColor(Colors.Yellow)
+                .setTimestamp(interaction.createdAt)
+            ]
+        });
+    }
+}
+
+/**
+ * @param {ModalSubmitInteraction} interaction
+ */
+async function handleModalSubmit(interaction) {
+
+    // Carrega modals dinamicamente
+    client.modals = new Collection();
+    const modalsPath = path.join(__dirname, "../modals");
+    if (fs.existsSync(modalsPath)) {
+        const modalFiles = fs.readdirSync(modalsPath).filter(file => file.endsWith(".js"));
+        for (const file of modalFiles) {
+            const { default: modal } = await import(`file://${path.join(modalsPath, file)}`);
+            const modalName = path.basename(file, ".js");
+            client.modals.set(modalName, modal);
+        }
+    }
+
+    // Handler pelo customId
+    const modalHandler = client.modals?.get(interaction.customId);
+    if (!modalHandler) {
+        return interaction.reply({ content: `Modal desconhecido.`, flags: [MessageFlags.Ephemeral] });
+    }
+
+    await modalHandler.execute(interaction);
+
+    const server_config = await config(interaction.guildId);
+
+    // Log igual antes
+    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    if (logChannel) {
+        await logChannel.send({
+            embeds: [
+                new EmbedBuilder()
+                .setTitle(`🤖  Registro de uso de modal`)
+                .setFields([
+                    { name: `👤  Usuário`, value: `<@${interaction.user.id}> (${interaction.user.id})` },
+                    { name: `🤖  Informações`, value: `\`\`\`json\n${inspect(interaction.component.toJSON(), {depth: 0}).slice(0, 990)}\n\`\`\`` },
+                    { name: `💬  Canal`, value: `${interaction.message.url} (${interaction.channel.id})` }
+                ])
+                .setThumbnail(interaction.user.avatarURL({ dynamic: true }))
+                .setColor(Colors.Yellow)
+                .setTimestamp(interaction.createdAt)
+            ]
+        });
     }
 }
 
