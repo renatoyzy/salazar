@@ -58,7 +58,7 @@ export default {
             selectMenus.push(
                 new StringSelectMenuBuilder()
                 .setCustomId(`country_pick:${i/MAX_OPTIONS}`)
-                .setPlaceholder(`Seletor dos países ${i}-${i + MAX_OPTIONS}`)
+                .setPlaceholder(`Países a partir de ${options[i].data.label.charAt(0)} (alfabeticamente)`)
                 .setMinValues(1)
                 .setMaxValues(1)
                 .setOptions(options.slice(i, i + MAX_OPTIONS))
