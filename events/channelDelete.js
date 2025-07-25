@@ -10,12 +10,17 @@ export default {
      */
     async execute(channel) {
 
+        const serverConfig = await config(channel.guild.id);
+
+        if(channel.parentId != serverConfig?.server?.channels?.country_category &&
+            channel.parent?.parentId != serverConfig?.server?.channels?.country_category
+        ) return;
+
         const equivalentRole = channel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(channel.name)));
         if(equivalentRole) {
-            equivalentRole.deletable && equivalentRole.delete('O canal associado foi apagado.');
+            await equivalentRole.delete('O canal associado foi apagado.').catch(() => {});
         }
 
-        const serverConfig = await config(channel.guild.id);
         const pickCountryChannel = channel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
         if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;

@@ -10,12 +10,20 @@ export default {
      */
     async execute(role) {
 
-        const equivalentChannel = role.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(role.name)));
+        const serverConfig = await config(role.guild.id);
+        
+        const equivalentChannel = role.guild.channels.cache.find(c => simplifyString(role.name).includes(simplifyString(c.name)));
+
+        if(
+            equivalentChannel &&
+            equivalentChannel.parentId != serverConfig?.server?.channels?.country_category &&
+            equivalentChannel.parent?.parentId != serverConfig?.server?.channels?.country_category
+        ) return;
+
         if(equivalentChannel) {
-            equivalentChannel.deletable && equivalentChannel.delete('O cargo associado foi apagado.');
+            equivalentChannel.delete('O cargo associado foi apagado.').catch(() => {});
         }
 
-        const serverConfig = await config(role.guild.id);
         const pickCountryChannel = role.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
         if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
