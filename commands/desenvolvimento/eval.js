@@ -17,10 +17,15 @@ import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
-import * as roleplay from "../../src/roleplay.js";
-import * as ai_generate from "../../src/ai_generate.js";
-import * as string_functions from "../../src/string_functions.js";
-import * as visual_functions from "../../src/visual_functions.js";
+import { GetContext } from "../../src/roleplay.js";
+import ai_generate from "../../src/ai_generate.js";
+import { chunkifyText, simplifyString } from "../../src/string_functions.js";
+import {
+    getAverageColor,
+    fetchImageAsPngBuffer,
+    isImageSafe,
+    makeRoundFlag
+} from "../../src/visual_functions.js";
 import gis from "g-i-s";
 
 /**
@@ -88,7 +93,7 @@ async function executeCode(code, interaction) {
     try {
         // Timeout para evitar códigos que travam
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Timeout: Código levou mais de 10 segundos para executar")), 10000);
+            setTimeout(() => reject(new Error("Timeout: Código levou mais de 1 minuto para executar")), 60_000);
         });
 
         const evalPromise = Promise.resolve(eval(code));
