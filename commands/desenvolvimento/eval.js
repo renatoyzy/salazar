@@ -17,8 +17,10 @@ import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
-import { GetContext } from "../../src/roleplay.js";
-import ai_generate from "../../src/ai_generate.js";
+import * as roleplay from "../../src/roleplay.js";
+import * as ai_generate from "../../src/ai_generate.js";
+import * as string_functions from "../../src/string_functions.js";
+import * as visual_functions from "../../src/visual_functions.js";
 import gis from "g-i-s";
 
 /**
