@@ -31,6 +31,9 @@ export default {
             for (const msg of msgs.values()) {
                 if (!msg.editable) continue;
                 if (msg.content.includes(`<@${interaction.member.id}>`)) {
+                    await interaction.member.roles.remove(server_config?.server?.roles?.player);
+                    await interaction.reply({content: 'Você deixou o seu país com sucesso. Se quiser pegar outro, ou ficar apenas espectando, a escolha é sua.', flags: [MessageFlags.Ephemeral]})
+                    
                     const lines = msg.content.split('\n');
                     const newLines = lines.filter(line => !line.includes(`<@${interaction.member.id}>`) || line.startsWith('##'));
                     if (newLines.length <= 1) {
@@ -38,14 +41,12 @@ export default {
                     } else {
                         await msg.edit(newLines.join('\n')).catch(() => {});
                     }
-                    interaction.member.roles.remove(server_config?.server?.roles?.player);
-                    interaction.reply({content: 'Você deixou o seu país com sucesso. Se quiser pegar outro, ou ficar apenas espectando, a escolha é sua.', flags: [MessageFlags.Ephemeral]})
                 }
             }
         } catch (err) {
             console.error('Erro ao remover player da lista de país ao sair:', err);
         } finally {
-            if(!interaction.replied) interaction.reply('Não achei nenhum país associado ao seu nome. Nada mudou')
+            if(!interaction.replied) await interaction.reply('Não achei nenhum país associado ao seu nome. Nada mudou')
         }
 
     }
