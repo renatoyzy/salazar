@@ -254,7 +254,6 @@ export default {
             const contextChannel = message.guild.channels.cache.get(server_config?.server?.channels?.context);
             if (!contextChannel) return;
 
-            const max_length = 1989; // 2000 - 11 (para o "-# RG-2023" no final)
             let tituloResumo = periodoCompleto
                 ? `# Resumo geral do ano de ${ano_atual}`
                 : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
@@ -262,13 +261,13 @@ export default {
             const chunks = chunkifyText(finaltext, `\n-# RG-${ano_atual}`);
 
             const msgs = await contextChannel.messages.fetch({ limit: 100 }); // Limite máximo do bulkDelete
-            const deletaveis = msgs.filter(msg =>
+            const deletable = msgs.filter(msg =>
                 (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
                 !msg.content.includes('-# RG-')
             );
 
-            if (deletaveis.size > 0) {
-                await contextChannel.bulkDelete(deletaveis, true); // true ignora mensagens antigas
+            if (deletable.size > 0) {
+                await contextChannel.bulkDelete(deletable, true); // true ignora mensagens antigas
             }
 
             chunks.forEach(chunk => contextChannel.send(chunk));
