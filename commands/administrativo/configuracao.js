@@ -199,7 +199,7 @@ export default {
                     interaction.guild.channels.cache.get(value).send({
                         embeds: [
                             new EmbedBuilder()
-                            .setDescription("Escolha com o que você vai jogar")
+                            .setDescription("Escolha com o que você vai jogar!")
                             .setColor(Colors.Blurple)
                         ],
                         components: [
@@ -207,8 +207,12 @@ export default {
                             .addComponents([
                                 new ButtonBuilder()
                                 .setStyle(ButtonStyle.Primary)
-                                .setLabel('Clique em mim para selecionar seu país!')
-                                .setCustomId('country_pick')
+                                .setLabel('Selecionar seu país!')
+                                .setCustomId('country_pick'),
+                                new ButtonBuilder()
+                                .setStyle(ButtonStyle.Secondary)
+                                .setLabel('Sair do roleplay')
+                                .setCustomId('country_leave')
                             ])
                         ]
                     });
