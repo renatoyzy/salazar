@@ -31,10 +31,11 @@ export default {
 
         const server_config = await config(interaction.guildId);
 
-        if(server_config?.server_tier<=2) return interaction.reply('Essa funcionalidade não está disponível no plano atual do servidor.');
+        if (!server_config?.server?.channels?.picked_countries) return;
+        if(server_config?.server_tier<=2) return interaction.reply({content: 'Essa funcionalidade não está disponível no plano atual do servidor.', flags: [MessageFlags.Ephemeral]});
 
         const country_category = await interaction.guild?.channels.fetch(server_config?.server?.channels?.country_category);
-        if(country_category.type != ChannelType.GuildCategory) return interaction.reply('A categoria de países não está configurada corretamente');
+        if(country_category.type != ChannelType.GuildCategory) return interaction.reply({content: 'A categoria de países não está configurada corretamente', flags: [MessageFlags.Ephemeral]});
         const country_channels = country_category.children.cache;
 
         let options = country_channels.map(c => 
