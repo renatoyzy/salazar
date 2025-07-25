@@ -21,7 +21,6 @@ export default {
 
         if (!server_config?.server?.channels?.picked_countries) return;
         if(server_config?.server_tier<=2) return interaction.reply({content: 'Essa funcionalidade não está disponível no plano atual do servidor.', flags: [MessageFlags.Ephemeral]});
-        if(!interaction.member.roles.cache.has(server_config?.server?.roles?.player)) return interaction.reply({content: 'Você não possui o cargo de jogador.', flags: [MessageFlags.Ephemeral]})
 
         try {
 
@@ -39,10 +38,14 @@ export default {
                     } else {
                         await msg.edit(newLines.join('\n')).catch(() => {});
                     }
+                    interaction.member.roles.remove(server_config?.server?.roles?.player);
+                    interaction.reply({content: 'Você deixou o seu país com sucesso. Se quiser pegar outro, ou ficar apenas espectando, a escolha é sua.', flags: [MessageFlags.Ephemeral]})
                 }
             }
         } catch (err) {
             console.error('Erro ao remover player da lista de país ao sair:', err);
+        } finally {
+            if(!interaction.replied) interaction.reply('Não achei nenhum país associado ao seu nome. Nada mudou')
         }
 
     }
