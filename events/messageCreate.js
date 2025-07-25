@@ -3,9 +3,6 @@ import {
     EmbedBuilder, 
     Colors, 
     PermissionsBitField, 
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle
 } from "discord.js";
 import { 
     MongoClient, 
@@ -17,7 +14,7 @@ import client from "../src/client.js";
 import "dotenv/config";
 import { GetContext } from "../src/roleplay.js";
 import ai_generate from "../src/ai_generate.js";
-import { simplifyString, chunkifyText } from "../src/string_functions.js";
+import { simplifyString, chunkifyText, isLikelyAI } from "../src/string_functions.js";
 
 const collectingUsers = new Set();
 
@@ -96,8 +93,15 @@ export default {
         }
 
         // Narração de IA
-        else if ((message.cleanContent.length >= 500 || message.content.toLowerCase().includes("ação: ")) &&
-            !collectingUsers.has(message.author.id) && (
+        else if (
+            (
+                message.cleanContent.length >= 500 || 
+                message.content.toLowerCase().includes("ação: ")
+            ) 
+            &&
+            !collectingUsers.has(message.author.id)
+            &&
+            (
                 server_config?.server?.channels?.actions?.includes(message.channelId) ||
                 server_config?.server?.channels?.actions?.includes(message.channel?.parentId) ||
                 server_config?.server?.channels?.countries_category?.includes(message.channelId) ||
@@ -143,6 +147,8 @@ export default {
                 collector.on('end', async (collected) => {
                     collectingUsers.delete(message.author.id);
                     const acao = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
+
+                    if(isLikelyAI(acao)) return msg.edit('-# Foi detectado um teor alto de uso de IA na sua ação. De IA já basta eu. Envie sua ação em um chat de narração humana, ou reescreva ela manualmente.');
 
                     msg.edit('-# Gerando narração...');
 

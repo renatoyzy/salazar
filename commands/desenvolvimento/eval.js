@@ -19,7 +19,16 @@ import client, { announce } from "../../src/client.js";
 import server_paid from "../../src/server_paid.js";
 import { GetContext } from "../../src/roleplay.js";
 import ai_generate from "../../src/ai_generate.js";
-import { chunkifyText, simplifyString } from "../../src/string_functions.js";
+import {
+    chunkifyText,
+    simplifyString,
+    detectAI,
+    isLikelyAI,
+    analyzeTextQuality,
+    createDetector,
+    detectAIBatch,
+    AITextDetector
+} from "../../src/string_functions.js";
 import {
     getAverageColor,
     fetchImageAsPngBuffer,
