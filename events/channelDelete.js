@@ -15,8 +15,8 @@ export default {
             equivalentRole.deletable && equivalentRole.delete('O canal associado foi apagado.');
         }
 
-        const serverConfig = await config(channel.guildId);
-        const pickCountryChannel = await channel.guild.channels.fetch(serverConfig?.server?.channels?.picked_countries);
+        const serverConfig = await config(channel.guild.id);
+        const pickCountryChannel = channel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
         if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
 

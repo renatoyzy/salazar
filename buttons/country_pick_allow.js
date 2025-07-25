@@ -133,7 +133,7 @@ export default {
         }
 
         // Atualiza o canal de países escolhidos
-        const pickedCountriesChannel = await interaction.guild.channels.fetch(server_config?.channels?.picked_countries).catch(() => {});
+        const pickedCountriesChannel = await interaction.guild.channels.fetch(server_config?.channels?.picked_countries);
         if (pickedCountriesChannel && pickedCountriesChannel.isTextBased()) {
             // Busca todas as mensagens do canal
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });
@@ -159,7 +159,7 @@ export default {
             // Procura mensagem do país
             let countryMsg = msgs.find(msg =>
                 msg.author.id === interaction.client.user.id &&
-                simplifyString(msg.content.split('\n')[0]).includes(normalizedCountry)
+                simplifyString(msg.content.split('\n')[0]).toUpperCase().includes(normalizedCountry)
             );
 
             if (countryMsg) {

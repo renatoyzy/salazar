@@ -1,4 +1,6 @@
 import { ChannelType, Role } from "discord.js";
+import { simplifyString } from "../src/string_functions.js";
+import { config } from "../src/server_info.js";
 
 export default {
     name: 'roleDelete',
@@ -13,8 +15,8 @@ export default {
             equivalentChannel.deletable && equivalentChannel.delete('O cargo associado foi apagado.');
         }
 
-        const serverConfig = await config(role.guildId);
-        const pickCountryChannel = await role.guild.channels.fetch(serverConfig?.server?.channels?.picked_countries);
+        const serverConfig = await config(role.guild.id);
+        const pickCountryChannel = role.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
         if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
 
