@@ -148,10 +148,12 @@ export const defaultConfiguration = {
         actions: {
             label: "Canais de ações",
             input: "canal",
+            array: true,
         },
         events: {
             label: "Canais de eventos",
             input: "canal",
+            array: true,
         },
         narrations: {
             label: "Canal de narrações",
@@ -182,6 +184,12 @@ export const defaultConfiguration = {
             input: "canal",
         },
     },
+    experiments: {
+        disable_year_summary: {
+            label: "(Experimento) Desativar sumário anual",
+            input: "booleano",
+        }
+    }
 };
 
 /**

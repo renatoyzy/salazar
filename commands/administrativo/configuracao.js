@@ -5,6 +5,7 @@ import {
     ChatInputCommandInteraction,
     Colors,
     EmbedBuilder,
+    SlashCommandBooleanOption,
     SlashCommandBuilder,
     SlashCommandChannelOption,
     SlashCommandIntegerOption,
@@ -18,6 +19,7 @@ import {
 import * as Server from "../../src/Server.js";
 import botConfig from "../../config.json" with { type: "json" };
 import { inspect } from "util";
+import { chunkifyText } from "../../src/StringUtils.js";
 
 // Função para criar opções dinamicamente
 function buildOptions(builder) {
@@ -39,7 +41,8 @@ function buildOptions(builder) {
         canal: SlashCommandChannelOption,
         cargo: SlashCommandRoleOption,
         texto: SlashCommandStringOption,
-        tempo: SlashCommandIntegerOption
+        tempo: SlashCommandIntegerOption,
+        booleano: SlashCommandBooleanOption
     };
 
     Object.entries(types).forEach(([type, OptionClass]) => {
@@ -55,17 +58,25 @@ function buildOptions(builder) {
     return builder;
 }
 
-// Função recursiva para montar objeto de resposta
+// Função recursiva para montar objeto de resposta, respeitando array e booleano
 function buildFullConfig(dbConfig, defaultConfig = Server.defaultConfiguration) {
     const result = {};
     for (const key in defaultConfig) {
         const value = defaultConfig[key];
         if (typeof value === "object" && value.input) {
-            // Campo simples
-            result[key] = dbConfig?.[key] ?? undefined;
+            if (value.array) {
+                // Campo array
+                result[key] = dbConfig?.[key] ?? [];
+            } else if (value.input === "booleano") {
+                // Campo booleano
+                result[key] = dbConfig?.[key] ?? false;
+            } else {
+                // Campo simples
+                result[key] = dbConfig?.[key] ?? undefined;
+            }
         } else if (typeof value === "object") {
             // Subcampo/categoria
-            result[key] = buildFullConfig(value, dbConfig?.[key]);
+            result[key] = buildFullConfig(dbConfig?.[key], value);
         }
     }
     return result;
@@ -88,10 +99,17 @@ export default {
         const option = interaction.options.get('opção')?.value;
 
         // Verifica se a opção é um campo de array
-        const array_options = [
-            'channels.actions',
-            'channels.events'
-        ];
+        const array_options = Object.entries(Server.optionsAlike)
+        .filter(([key]) => {
+            // Busca no defaultConfiguration se tem array: true
+            const parts = key.split('.');
+            let ref = Server.defaultConfiguration;
+            for (const part of parts) {
+                ref = ref?.[part];
+            }
+            return ref?.array === true;
+        })
+        .map(([key]) => key);
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
             serverApi: {
@@ -111,7 +129,7 @@ export default {
                 const reply_config = await collection.findOne({ server_id: interaction.guildId });
                 const fullConfig = buildFullConfig(reply_config?.server);
 
-                let responseCode = `\`\`\`json\n${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
+                let responseCode = `${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
 
                 Object.keys(Server.optionLabels).reverse().forEach(key => {
                     responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
@@ -121,16 +139,16 @@ export default {
                     new EmbedBuilder()
                     .setTitle(`Configuração atual do servidor`)
                     .setColor(Colors.Blurple)
-                    .setDescription(responseCode)
+                    .addFields(chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}}))
                     .setTimestamp(interaction.createdAt)
                 ]})
             }
 
-            const value = interaction.options.get(Server.optionsAlike[option.split('.')[0]])?.value;
+            const value = interaction.options.get(Server.optionsAlike[option])?.value;
 
             if (!value) return interaction.editReply({embeds: [
                 new EmbedBuilder()
-                .setDescription(`Para alterar o **${Server.optionLabels[option] || option}**, você precisa definir o argumento de **${Server.optionsAlike[option.split('.')[0]]}** no comando, e não o que você definiu.`)
+                .setDescription(`Para alterar o **${Server.optionLabels[option] || option}**, você precisa definir o argumento de **${Server.optionsAlike[option] || option}** no comando, e não o que você definiu.`)
                 .setColor(Colors.Red)
             ]});
 
@@ -204,16 +222,13 @@ export default {
                 { returnDocument: "after", upsert: true }
             );
 
-            let responseCode = `\`\`\`json\n${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
+            let responseCode = `${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
             });
 
-            let embed_fields = [{
-                name: `Configuração atual do servidor`,
-                value: responseCode
-            }];
+            let embed_fields = chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}})
 
             array_options.includes(option) && embed_fields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
             option == "name" && embed_fields.push({name: 'Dica pro nome do servidor', value: 'Se você colocar "{ano}" em alguma parte do nome, toda vez que o ano mudar, o nome do servidor será atualizado!'})
