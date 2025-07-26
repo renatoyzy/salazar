@@ -17,6 +17,7 @@ import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 
 const collectingUsers = new Set();
+const collectingAdmins = new Set();
 
 export default {
     name: 'messageCreate',
@@ -217,21 +218,63 @@ export default {
                 serverConfig?.server?.channels?.events?.includes(message.channelId) ||
                 serverConfig?.server?.channels?.events?.includes(message.channel?.parentId)
             )
+            &&
+            !collectingAdmins.has(message.author.id)
         ) {
-            const acao_contexto = await getContext(message.guild);
-            const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
-            const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
+            const filter = msg => msg.author.id == message.author.id;
+            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
+            
+            collectingAdmins.add(message.author.id);
 
-            console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
+            message.react('📝')
+            .catch(() => {})
+            .then((reaction) => {
+                setTimeout(() => {
+                    reaction.remove().catch(() => {}); 
+                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
+            })
 
-            const response = await aiGenerate(prompt).catch(error => {
-                console.error("Erro ao gerar contexto de evento:", error);
+            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes do evento. Envie todas as partes desse evento <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
+                setTimeout(() => {
+                    msg.delete().catch(() => {});
+                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
+
+                const evento_contexto = await getContext(message.guild);
+                const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+
+                collector.on('collect', msg => {
+                    msg.react('📝')
+                    .catch(() => {})
+                    .then((reaction) => {
+                        setTimeout(() => {
+                            reaction.remove().catch(() => {}); 
+                        }, (serverConfig?.server?.action_timing * 1000) || 20_000);
+                    })
+                });
+
+                collector.on('end', async (collected) => {
+                    collectingAdmins.delete(message.author.id);
+                    const evento = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
+
+                    msg.edit('-# Gerando narração...');
+
+                    const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
+
+                    console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
+
+                    const response = await aiGenerate(prompt).catch(error => {
+                        console.error("Erro ao gerar contexto de evento:", error);
+                    });
+
+                    if (response.text === "IRRELEVANTE!!!") return;
+
+                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(response.text);
+
+                });
+
             });
 
-            if (response.text === "IRRELEVANTE!!!") return;
-
-            message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(response.text);
         }
 
         // Passagem de ano
