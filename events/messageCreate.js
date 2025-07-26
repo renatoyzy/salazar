@@ -3,7 +3,8 @@ import {
     EmbedBuilder, 
     Colors, 
     PermissionsBitField,
-    WebhookClient
+    WebhookClient,
+    ChannelType
 } from "discord.js";
 import { 
     MongoClient, 
@@ -306,8 +307,8 @@ export default {
 
             if(!serverConfig?.server?.experiments?.disable_year_summary) {
                 const actionContext = await getContext(message.guild);
-                const periodo_anterior = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
-                const periodo_atual = simplifyString(message.cleanContent);
+                const roleplayPreviousPeriod = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const roleplayCurrentPeriod = simplifyString(message.cleanContent);
 
                 const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 
@@ -332,11 +333,25 @@ export default {
                     !msg.content.includes('-# RG-')
                 );
 
+                const yearIndividualActions = deletable.sort().map(m => m.content);
+
                 if (deletable.size > 0) {
                     await contextChannel.bulkDelete(deletable, true); // true ignora mensagens antigas
                 }
 
                 chunks.forEach(chunk => contextChannel.send(chunk));
+
+                if(contextChannel.type != ChannelType.GuildText) return;
+
+                contextChannel.threads.create({
+                    name: tituloResumo.replace('# ', ''),
+                    startMessage: `Cada resumo publicado durante esse período do roleplay.`,
+                }).then(yearThread => {
+                    yearIndividualActions.forEach(narrationSum => {
+                        yearThread.send(narrationSum);
+                    });
+                });
+
             };
 
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
