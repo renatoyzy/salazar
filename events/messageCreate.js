@@ -105,8 +105,8 @@ export default {
             (
                 serverConfig?.server?.channels?.actions?.includes(message.channelId) ||
                 serverConfig?.server?.channels?.actions?.includes(message.channel?.parentId) ||
-                serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
-                serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
+                serverConfig?.server?.channels?.country_category == message.channel?.parent?.id ||
+                serverConfig?.server?.channels?.country_category == message.channel?.parent?.parent?.id
             )
         ) {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
