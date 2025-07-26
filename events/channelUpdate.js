@@ -1,0 +1,39 @@
+import { ChannelType, GuildChannel } from "discord.js";
+import { simplifyString } from "../src/string_functions.js";
+import { config } from "../src/server_info.js";
+
+export default {
+    name: 'channelUpdate',
+
+    /**
+     * @param {GuildChannel} oldChannel 
+     * @param {GuildChannel} newChannel 
+     */
+    async execute(oldChannel, newChannel) {
+
+        if(oldChannel.name == newChannel.name) return;
+
+        const serverConfig = await config(newChannel.guild.id);
+
+        if(newChannel.parentId != serverConfig?.server?.channels?.country_category &&
+            newChannel.parent?.parentId != serverConfig?.server?.channels?.country_category
+        ) return;
+
+        const equivalentRole = newChannel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(oldChannel.name)));
+        if(equivalentRole) {
+            await equivalentRole.setName(simplifyString(newChannel.name, true, true).toUpperCase()).catch(() => {});
+        }
+
+        const pickCountryChannel = newChannel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
+
+        if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
+
+        const equivalentMessage = (await pickCountryChannel.messages.fetch({limit: 100})).find(m => simplifyString(m.content).includes(simplifyString(oldChannel.name)));
+        if(equivalentMessage) {
+            let newContent = equivalentMessage.content.split('\n');
+            newContent.unshift(`## ${simplifyString(newChannel.name, true, true, false).toUpperCase()}`)
+            equivalentMessage.editable && equivalentMessage.edit(newContent.join('\n'))
+        }
+        
+    }
+}

@@ -3,14 +3,25 @@ import { createHash } from "crypto";
 /**
  * Simplifica ao máximo uma string
  * @param {string} string - Texto a ser simplificado
- * @param {boolean} keepNumbers - Se os números devem ser mantidos
+ * @param {boolean} [keepNumbers=false] - Se os números devem ser mantidos
+ * @param {boolean} [keepAccents=false] - Se os acentos devem ser mantidos
+ * @param {boolean} [lowerCase=true] - Se o resultado deve ser em caixa baixa forçada
+ * @returns {string}
  */
-export function simplifyString(string, keepNumbers=false) {
+export function simplifyString(string, keepNumbers=false, keepAccents=false, lowerCase=true) {
     let regex = /[^a-zA-Z ]/g;
 
-    if(keepNumbers) regex = /[^a-zA-Z0-9 ]/g;
+    if(keepNumbers) {
+      if(keepAccents) regex = /[^A-zÀ-ú0-9 ]/g;
+      else regex = /[^a-zA-Z0-9 ]/g;
+    } else if(keepAccents) {
+      regex = /[^A-zÀ-ú ]/g;
+    }
 
-    else return string.trim().toLowerCase().replaceAll('-', ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(regex, '');
+    if(lowerCase) string = string.toLowerCase();
+
+    if(keepAccents) return string.trim().replaceAll('-', ' ').replace(regex, '');
+    else return string.trim().replaceAll('-', ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(regex, '');
 }
 
 /**
