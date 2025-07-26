@@ -122,7 +122,13 @@ export default {
             
             collectingUsers.add(message.author.id);
 
-            message.react('📝').catch(() => {})
+            message.react('📝')
+            .catch(() => {})
+            .then((reaction) => {
+                setTimeout(() => {
+                    reaction.remove().catch(() => {}); 
+                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
+            })
 
             message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
@@ -136,13 +142,7 @@ export default {
                 const extraPrompt = serverConfig?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
-                    msg.react('📝')
-                    .catch(() => {})
-                    .then((reaction) => {
-                        setTimeout(() => {
-                            reaction.remove().catch(() => {}); 
-                        }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-                    })
+                    msg.react('📝').catch(() => {});
                 });
 
                 collector.on('end', async (collected) => {
