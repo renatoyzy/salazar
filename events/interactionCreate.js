@@ -14,7 +14,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
-import client from "../src/client.js";
+import client from "../src/Client.js";
 import { inspect } from "util";
 
 // Simular __dirname e __filename no ES module

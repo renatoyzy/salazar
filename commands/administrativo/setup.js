@@ -15,7 +15,6 @@ import {
 import { MongoClient, ServerApiVersion } from "mongodb";
 import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
-import deploy_commands from "../../src/deploy_commands.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -532,7 +531,7 @@ export default {
                     }
 
                     collector.stop("completed");
-                    deploy_commands(collector.guildId);
+                    Server.deployCommands(collector.guildId);
                     break;
 
                 default:

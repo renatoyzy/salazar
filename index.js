@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import botConfig from "./config.json" with { type: "json" };
-import client from "./src/client.js";
+import client from "./src/Client.js";
 import "dotenv/config";
 
 // Simular __dirname e __filename no ES module

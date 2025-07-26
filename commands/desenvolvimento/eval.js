@@ -15,8 +15,7 @@ import fs from "fs";
 import path from "path";
 import * as Server from "../../src/Server.js";
 import project_package from "../../package.json" with { type: "json" };
-import deploy_commands from "../../src/deploy_commands.js";
-import client, { announce } from "../../src/client.js";
+import client, { announce } from "../../src/Client.js";
 
 import { getContext } from "../../src/Roleplay.js";
 import { aiGenerate, isLikelyAI, detectAI } from "../../src/AIUtils.js";

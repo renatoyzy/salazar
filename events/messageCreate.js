@@ -10,7 +10,7 @@ import {
 } from "mongodb";
 import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
-import client from "../src/client.js";
+import client from "../src/Client.js";
 import "dotenv/config";
 import { getContext } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
