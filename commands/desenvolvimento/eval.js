@@ -16,8 +16,7 @@ import path from "path";
 import * as Server from "../../src/Server.js";
 import projectPackage from "../../package.json" with { type: "json" };
 import client, { announce } from "../../src/Client.js";
-
-import { getContext } from "../../src/Roleplay.js";
+import * as Roleplay from "../../src/Roleplay.js";
 import { aiGenerate, isLikelyAI, detectAI } from "../../src/AIUtils.js";
 import {
     chunkifyText,

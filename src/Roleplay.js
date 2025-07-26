@@ -55,7 +55,7 @@ export async function countryPickDialog(selectedCountry, interaction) {
     
     let replyEmbed = new EmbedBuilder()
     .setColor(Colors.Yellow)
-    .setTitle(`${interaction.member.user.displayName} escolheu o país "${unfiltered_country}"`)
+    .setTitle(`${interaction.member.displayName} escolheu o país "${unfiltered_country}"`)
     .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
     .addFields([
         { name: '🎌 País solicitado', value: unfiltered_country, inline: true },
@@ -93,4 +93,37 @@ export async function countryPickDialog(selectedCountry, interaction) {
             )
         ]
     });
+}
+
+/**
+ * Obtém a data atual do roleplay para um servidor específico.
+ * @param {Guild} guild - Objeto guild do Discord
+ * @returns {Promise<string | undefined>} Contexto completo do roleplay 
+ */
+export async function getCurrentDate(guild) {
+    if (typeof guild !== "object") throw new Error("A guild deve ser um objeto de servidor.");
+
+    const serverConfig = await Server.config(guild.id);
+    if (!serverConfig?.server?.channels?.time) return undefined;
+    if (!guild.channels.cache.has(serverConfig.server.channels.time)) return undefined;
+    
+    return simplifyString((await guild.channels.cache.get(serverConfig?.server?.channels?.time)?.messages?.fetch())?.first().cleanContent, true)
+}
+
+/**
+ * Obtém a lista de jogadores do roleplay para um servidor específico.
+ * @param {Guild} guild - Objeto guild do Discord
+ * @returns {Promise<string | undefined>} Contexto completo do roleplay 
+ */
+export async function getAllPlayers(guild) {
+    if (typeof guild !== "object") throw new Error("A guild deve ser um objeto de servidor.");
+
+    const serverConfig = await Server.config(guild.id);
+    if (!serverConfig?.server?.channels?.picked_countries) return undefined;
+    if (!guild.channels.cache.has(serverConfig.server.channels.picked_countries)) return undefined;
+    
+    return (await guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries)?.messages?.fetch())
+        ?.sort()
+        ?.map(msg => msg.cleanContent)
+        ?.join('\n');
 }

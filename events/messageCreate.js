@@ -12,7 +12,7 @@ import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
 import client from "../src/Client.js";
 import "dotenv/config";
-import { getContext } from "../src/Roleplay.js";
+import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 
@@ -82,7 +82,7 @@ export default {
             message.guild.channels.cache.get(serverConfig?.server?.channels?.secret_actions_log)?.send({
                 embeds: [
                     new EmbedBuilder()
-                    .setTitle(`Nova ação secreta de ${message.author.displayName}`)
+                    .setTitle(`Nova ação secreta de ${message.member.displayName}`)
                     .setThumbnail(message.author.avatarURL())
                     .setDescription(message.content)
                     .setColor(Colors.Blurple)
@@ -129,9 +129,10 @@ export default {
                     msg.delete().catch(() => {});
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
             
-                const acao_jogador = message.author.displayName;
+                const acao_jogador = message.member.displayName;
                 const acao_contexto = await getContext(message.guild);
-                const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const servidor_data_roleplay = await getCurrentDate(message.guild);
+                const servidor_pais_jogadores = await getAllPlayers(message.guild);
                 const prompt_adicional = serverConfig?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
@@ -242,7 +243,8 @@ export default {
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
 
                 const evento_contexto = await getContext(message.guild);
-                const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const servidor_data_roleplay = await getCurrentDate(message.guild);
+                const servidor_pais_jogadores = await getAllPlayers(message.guild);
 
                 collector.on('collect', msg => {
                     msg.react('📝')
