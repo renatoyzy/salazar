@@ -51,11 +51,11 @@ export default {
                 .setDescription("Gerando seu palpite...")
             ],
         }).then(async () => {
-            const acao_contexto = await getContext(interaction.guild);
-            const servidor_data_roleplay = await getCurrentDate(interaction.guild);
-            const servidor_pais_jogadores = await getAllPlayers(interaction.guild);
+            const actionContext = await getContext(interaction.guild);
+            const serverRoleplayDate = await getCurrentDate(interaction.guild);
+            const serverOwnedCountries = await getAllPlayers(interaction.guild);
 
-            if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
+            if(!actionContext) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
 

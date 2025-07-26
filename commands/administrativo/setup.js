@@ -58,15 +58,15 @@ export default {
             },
         });
 
-        let setup_data = server_setup || {
+        let setupDate = server_setup || {
             server_id: interaction.guildId,
             server_tier: 0,
             server: {}
         };
 
-        if(!setup_data.server) setup_data.server = {};
-        setup_data.server.channels = {};
-        setup_data.server.roles = {};
+        if(!setupDate.server) setupDate.server = {};
+        setupDate.server.channels = {};
+        setupDate.server.roles = {};
 
         const modalSubmit = await interaction.awaitModalSubmit({
             time: 5 * 60 * 1000,
@@ -80,7 +80,7 @@ export default {
         }
 
         const serverName = modalSubmit.fields.getTextInputValue('server_name_input');
-        setup_data.server.name = serverName;
+        setupDate.server.name = serverName;
 
         await modalSubmit.reply({
             content: `Nome do servidor salvo como: **${serverName}**!\nSe você usar \`{ano}\` no nome, o ${botConfig.name} atualizará automaticamente o nome do servidor toda vez que o ano passar!`,
@@ -109,8 +109,8 @@ export default {
 
             switch (i.customId) {
                 case "setup_player_role":
-                    setup_data.server.roles = {};
-                    setup_data.server.roles.player = i.values[0];
+                    setupDate.server.roles = {};
+                    setupDate.server.roles.player = i.values[0];
 
                     await i.update({
                         content: `Agora informe o **cargo dos que não são jogadores**.`,
@@ -127,7 +127,7 @@ export default {
                     break;
 
                 case "setup_non_player_role":
-                    setup_data.server.roles.non_player = i.values[0];
+                    setupDate.server.roles.non_player = i.values[0];
 
                     await i.update({
                         content: `Agora selecione o **canal principal da administração**.`,
@@ -144,7 +144,7 @@ export default {
                     break;
 
                 case 'setup_admin_channel':
-                    setup_data.server.channels.staff = i.values[0];
+                    setupDate.server.channels.staff = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -165,7 +165,7 @@ export default {
                     break;
 
                 case 'setup_logs_channel':
-                    setup_data.server.channels.logs = i.values[0];
+                    setupDate.server.channels.logs = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -186,7 +186,7 @@ export default {
                     break;
 
                 case 'setup_context_channel':
-                    setup_data.server.channels.context = i.values[0];
+                    setupDate.server.channels.context = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -207,7 +207,7 @@ export default {
                     break;
                 
                 case "setup_narrations_channel":
-                    setup_data.server.channels.narrations = i.values[0];
+                    setupDate.server.channels.narrations = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -228,7 +228,7 @@ export default {
                     break;
                 
                 case "setup_time_channel":
-                    setup_data.server.channels.time = i.values[0];
+                    setupDate.server.channels.time = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -249,7 +249,7 @@ export default {
                     break;
 
                 case "setup_secret_actions_channel":
-                    setup_data.server.channels.secret_actions = i.values[0];
+                    setupDate.server.channels.secret_actions = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -277,7 +277,7 @@ export default {
                     break;
 
                 case "setup_secret_actions_log_channel":
-                    setup_data.server.channels.secret_actions_log = i.values[0];
+                    setupDate.server.channels.secret_actions_log = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -298,8 +298,8 @@ export default {
                     break;
                 
                 case "setup_skip_secret_actions_log_channel":
-                    setup_data.server.channels.secret_actions_log = null;
-                    setup_data.server.channels.secret_actions_log_channel = null;
+                    setupDate.server.channels.secret_actions_log = null;
+                    setupDate.server.channels.secret_actions_log_channel = null;
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []
@@ -319,7 +319,7 @@ export default {
                     break;
 
                 case "setup_events_channels":
-                    setup_data.server.channels.events = i.values;
+                    setupDate.server.channels.events = i.values;
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -347,7 +347,7 @@ export default {
                     break;
                 
                 case "setup_skip_countries_category":
-                    setup_data.server.channels.countries_category = null;
+                    setupDate.server.channels.countries_category = null;
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []
@@ -374,7 +374,7 @@ export default {
                     break;
 
                 case "setup_countries_category":
-                    setup_data.server.channels.countries_category = i.values[0];
+                    setupDate.server.channels.countries_category = i.values[0];
                     await i.message?.edit({
                         content: `Setup em andamento...`,
                         components: []
@@ -401,7 +401,7 @@ export default {
                     break;
                 
                 case "setup_skip_country_picking_channel":
-                    setup_data.server.channels.country_picking = null;
+                    setupDate.server.channels.country_picking = null;
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -422,7 +422,7 @@ export default {
                     break;
 
                 case "setup_country_picking_channel":
-                    setup_data.server.channels.country_picking = i.values[0];
+                    setupDate.server.channels.country_picking = i.values[0];
 
                     i.guild.channels.cache.get(i.values[0]).send({
                         embeds: [
@@ -464,7 +464,7 @@ export default {
                     break;
                 
                 case "setup_picked_countries_channel":
-                    setup_data.server.channels.picked_countries = i.values[0];
+                    setupDate.server.channels.picked_countries = i.values[0];
 
                     await i.message?.edit({
                         content: `Setup em andamento...`,
@@ -485,21 +485,21 @@ export default {
                     break;
 
                 case "setup_actions_channels":
-                    setup_data.server.channels.actions = i.values;
+                    setupDate.server.channels.actions = i.values;
 
                     await i.update({
                         content: `Finalizando setup...`,
                         components: []
                     });
 
-                    delete setup_data.server_setup_step;
+                    delete setupDate.server_setup_step;
 
                     try {
                         await mongo_client.connect();
 
                         await mongo_client.db("Salazar").collection("configuration").updateOne(
                             { server_id: interaction.guildId },
-                            { $set: setup_data },
+                            { $set: setupDate },
                             { upsert: true }
                         );
 

@@ -54,9 +54,9 @@ export default {
         if(!countryChat) return interaction.editReply("Não encontrei o chat desse país.")
 
         const senderName = interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(interaction.channel.parent.name)) || simplifyString(r.name).includes(simplifyString(interaction.channel.name))).name;
-        const servidor_data_roleplay = (await (await interaction.guild.channels.fetch((await serverConfig)?.server?.channels?.time)).messages.fetch()).first() || 'antiga';
+        const serverRoleplayDate = (await (await interaction.guild.channels.fetch((await serverConfig)?.server?.channels?.time)).messages.fetch()).first() || 'antiga';
 
-        await gis(`Bandeira ${senderName} ${servidor_data_roleplay}`, async (error, results) => {
+        await gis(`Bandeira ${senderName} ${serverRoleplayDate}`, async (error, results) => {
             // Aceita SVG, PNG, JPG
             const validResult = results[0];
 

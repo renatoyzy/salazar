@@ -133,11 +133,11 @@ export default {
                     msg.delete().catch(() => {});
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
             
-                const acao_jogador = message.member.displayName;
-                const acao_contexto = await getContext(message.guild);
-                const servidor_data_roleplay = await getCurrentDate(message.guild);
-                const servidor_pais_jogadores = await getAllPlayers(message.guild);
-                const prompt_adicional = serverConfig?.server?.extra_prompt || '';
+                const actionPlayer = message.member.displayName;
+                const actionContext = await getContext(message.guild);
+                const serverRoleplayDate = await getCurrentDate(message.guild);
+                const serverOwnedCountries = await getAllPlayers(message.guild);
+                const extraPrompt = serverConfig?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
                     msg.react('📝')
@@ -200,11 +200,11 @@ export default {
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
 
-                    const novo_contexto = await aiGenerate(contexto_prompt).catch(error => {
+                    const novoContexto = await aiGenerate(contexto_prompt).catch(error => {
                         console.error("Erro ao gerar contexto:", error);
                     });
 
-                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
+                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text).then(() => {
                         msg.delete();
                     });
 
@@ -246,9 +246,9 @@ export default {
                     msg.delete().catch(() => {});
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
 
-                const evento_contexto = await getContext(message.guild);
-                const servidor_data_roleplay = await getCurrentDate(message.guild);
-                const servidor_pais_jogadores = await getAllPlayers(message.guild);
+                const eventContext = await getContext(message.guild);
+                const serverRoleplayDate = await getCurrentDate(message.guild);
+                const serverOwnedCountries = await getAllPlayers(message.guild);
 
                 collector.on('collect', msg => {
                     msg.react('📝')
@@ -305,7 +305,7 @@ export default {
             serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', ano)}`);
 
             if(!serverConfig?.server?.experiments?.disable_year_summary) {
-                const acao_contexto = await getContext(message.guild);
+                const actionContext = await getContext(message.guild);
                 const periodo_anterior = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
                 const periodo_atual = simplifyString(message.cleanContent);
 
@@ -351,10 +351,10 @@ export default {
             message.reply('-# Analisando ação...').then(async msg => {
 
                 const acao = message.cleanContent;
-                const acao_contexto = await getContext(message.guild);
-                const acao_jogador = message.member.displayName;
-                const servidor_data_roleplay = await getCurrentDate(message.guild);
-                const servidor_pais_jogadores = await getAllPlayers(message.guild);
+                const actionContext = await getContext(message.guild);
+                const actionPlayer = message.member.displayName;
+                const serverRoleplayDate = await getCurrentDate(message.guild);
+                const serverOwnedCountries = await getAllPlayers(message.guild);
 
                 const prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY + "`");
 
@@ -370,7 +370,7 @@ export default {
 
                 if(simplifyString(json['resposta']) !== 'nao') {
 
-                    await gis(`Bandeira ${json['pais']} ${servidor_data_roleplay}`, async (error, results) => {
+                    await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
                         
                         const validResult = results[0];
 
@@ -392,11 +392,11 @@ export default {
 
                         const contexto_prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY_CONTEXT + "`");
 
-                        const novo_contexto = await aiGenerate(contexto_prompt).catch(error => {
+                        const novoContexto = await aiGenerate(contexto_prompt).catch(error => {
                             console.error("Erro ao gerar contexto:", error);
                         });
 
-                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
+                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text).then(() => {
                             msg.delete();
                         });
 

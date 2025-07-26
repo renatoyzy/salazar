@@ -102,9 +102,9 @@ export default {
                     });
 
                     // Criar bandeira emoji
-                    const servidor_data_roleplay = getCurrentDate(interaction.guild);
+                    const serverRoleplayDate = getCurrentDate(interaction.guild);
                     
-                    await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
+                    await gis(`Bandeira ${role.name} ${serverRoleplayDate}`, async (error, results) => {
 
                         const validResult = results[0];
 
