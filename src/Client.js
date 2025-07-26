@@ -198,7 +198,7 @@ function compareCommands(currentCommands, newCommands) {
 export async function deployCommands(serverId) {
 
     const serverConfig = await config(serverId);
-    const server_setup = !serverConfig && await setup(serverId);
+    const serverSetup = !serverConfig && await setup(serverId);
 
     let commands = [];
     const commandFiles = getFiles("./commands");
@@ -210,10 +210,10 @@ export async function deployCommands(serverId) {
             command.min_tier<=serverConfig?.server_tier || 
             !command.min_tier
         ) && (
-            command.setup_step<=server_setup?.server_setup_step || 
-            !command.setup_step && command.setup_step!==0 && !server_setup && serverConfig || 
+            command.setup_step<=serverSetup?.server_setup_step || 
+            !command.setup_step && command.setup_step!==0 && !serverSetup && serverConfig || 
             command.setup_step<0 || 
-            command.setup_step===0 && !server_setup && !serverConfig
+            command.setup_step===0 && !serverSetup && !serverConfig
         )) {
             commands.push(command.data.toJSON());
         }

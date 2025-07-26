@@ -3,8 +3,7 @@ import {
     EmbedBuilder, 
     Colors, 
     PermissionsBitField,
-    WebhookClient,
-    ChannelType
+    WebhookClient
 } from "discord.js";
 import { 
     MongoClient, 
@@ -32,7 +31,7 @@ export default {
         if (message.author.bot || message.author.id === botConfig.id) return;
 
         const serverConfig = await Server.config(message.guildId);
-        const server_setup = !serverConfig && await Server.setup(message.guildId);
+        const serverSetup = !serverConfig && await Server.setup(message.guildId);
 
         // Aviso de servidor não configurado
         if((botConfig.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !serverConfig) {
@@ -59,13 +58,13 @@ export default {
                     'Planos diferentes para o quão completo você quiser o seu servidor'
                 ].join('\n');
 
-                if(server_setup && server_setup.server_tier>0 && server_setup.server_setup_step==0) { // pago ja
+                if(serverSetup && serverSetup.server_tier>0 && serverSetup.server_setup_step==0) { // pago ja
                     message.reply(`${defaultMessage}\n-# Como você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o ${botConfig.name} está operando no seu servidor!   `);
-                } else if(server_setup && server_setup.server_tier==0 && server_setup.server_setup_step==0 || !server_setup) { // n pago nao
+                } else if(serverSetup && serverSetup.server_tier==0 && serverSetup.server_setup_step==0 || !serverSetup) { // n pago nao
                     message.reply(`${defaultMessage}\n-# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o ${botConfig.name}.`);
                 }
 
-                server_setup ? 
+                serverSetup ? 
                     await mongoClient.db('Salazar').collection('setup').findOneAndUpdate({ server_id: message.guildId }, { $set: { server_setup_step: 1 } })
                 :
                     await mongoClient.db('Salazar').collection('setup').insertOne({
@@ -117,12 +116,11 @@ export default {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
             
             const filter = msg => msg.author.id == message.author.id;
-            if(message.channel.type != ChannelType.GuildText) return;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
             
             collectingUsers.add(message.author.id);
 
-            message.react('📝')
+            await message.react('📝')
             .catch(() => {})
             .then((reaction) => {
                 setTimeout(() => {
@@ -130,7 +128,7 @@ export default {
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
             })
 
-            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
+            await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
                     msg.delete().catch(() => {});
                 }, (serverConfig?.server?.action_timing * 1000) || 20_000);
@@ -249,13 +247,7 @@ export default {
                 const serverOwnedCountries = await getAllPlayers(message.guild);
 
                 collector.on('collect', msg => {
-                    msg.react('📝')
-                    .catch(() => {})
-                    .then((reaction) => {
-                        setTimeout(() => {
-                            reaction.remove().catch(() => {}); 
-                        }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-                    })
+                    msg.react('📝').catch(() => {});
                 });
 
                 collector.on('end', async (collected) => {
@@ -267,10 +259,12 @@ export default {
                     const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
 
                     console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
-
+                    
                     const response = await aiGenerate(prompt).catch(error => {
                         console.error("Erro ao gerar contexto de evento:", error);
                     });
+
+                    collected.forEach(msg => msg.reactions.removeAll());
 
                     if (response.text === "IRRELEVANTE!!!") return;
 
@@ -337,8 +331,6 @@ export default {
                 }
 
                 chunks.forEach(chunk => contextChannel.send(chunk));
-
-                if(contextChannel.type != ChannelType.GuildText) return;
 
                 contextChannel.threads.create({
                     name: tituloResumo.replace('# ', ''),

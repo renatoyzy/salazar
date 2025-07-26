@@ -71,7 +71,7 @@ export async function setup(serverId) {
  */
 export async function paid(serverId, tier) {
     const serverConfig = await config(serverId);
-    const server_setup = !serverConfig && await setup(serverId);
+    const serverSetup = !serverConfig && await setup(serverId);
 
     const client = new MongoClient(process.env.DB_URI, {
         serverApi: {

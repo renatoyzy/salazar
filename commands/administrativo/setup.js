@@ -48,7 +48,7 @@ export default {
             )
         );
 
-        const server_setup = await Server.setup(interaction.guildId);
+        const serverSetup = await Server.setup(interaction.guildId);
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
             serverApi: {
@@ -58,7 +58,7 @@ export default {
             },
         });
 
-        let setupDate = server_setup || {
+        let setupDate = serverSetup || {
             server_id: interaction.guildId,
             server_tier: 0,
             server: {}
