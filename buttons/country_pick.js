@@ -19,7 +19,7 @@ export default {
 
         const USE_COOLDOWN = 10 * 60 * 1000;
 
-        if(Object.keys(cooldownUsers).includes(interaction.user.id)) return interaction.reply({
+        if(!process.env.MAINTENANCE && Object.keys(cooldownUsers).includes(interaction.user.id)) return interaction.reply({
             flags: [MessageFlags.Ephemeral],
             content: `Você só poderá usar esse botão novamente <t:${Math.floor(cooldownUsers[interaction.user.id]/1000)}:R>`
         });
