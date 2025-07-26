@@ -79,7 +79,7 @@ export default {
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
-        const server_config = await Server.config(interaction.guildId);
+        const serverConfig = await Server.config(interaction.guildId);
         const option = interaction.options.get('opção')?.value;
 
         const options_alike = {
@@ -168,7 +168,7 @@ export default {
 
             if (array_options.includes(option)) {
                 // Verifica se o valor já existe no array
-                const current = server_config?.server?.[option.split('.')[0]]?.[option.split('.')[1]] || [];
+                const current = serverConfig?.server?.[option.split('.')[0]]?.[option.split('.')[1]] || [];
 
                 if (current.includes(value)) {
                     // Valor já existe → remove
@@ -182,7 +182,7 @@ export default {
 
             } else {
                 // Campo simples → apenas set, mas se o valor já for igual ao atual, deixa undefined
-                const currentValue = server_config?.server?.[option.split('.')[0]]?.[option.split('.')[1]] ?? server_config?.server?.[option];
+                const currentValue = serverConfig?.server?.[option.split('.')[0]]?.[option.split('.')[1]] ?? serverConfig?.server?.[option];
                 if (currentValue === value) {
                     updateQuery = { $set: { [`server.${option}`]: undefined } };
                     action = `${option_labels[option] || option} já estava definido como ${fake_value}, valor removido (undefined)`;

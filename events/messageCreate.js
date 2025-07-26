@@ -27,11 +27,11 @@ export default {
     async execute(message) {
         if (message.author.bot || message.author.id === bot_config.id) return;
 
-        const server_config = await Server.config(message.guildId);
-        const server_setup = !server_config && await Server.setup(message.guildId);
+        const serverConfig = await Server.config(message.guildId);
+        const server_setup = !serverConfig && await Server.setup(message.guildId);
 
         // Aviso de servidor não configurado
-        if((bot_config.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !server_config) {
+        if((bot_config.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !serverConfig) {
             const mongoClient = new MongoClient(process.env.DB_URI, {
                 serverApi: {
                     version: ServerApiVersion.v1,
@@ -77,8 +77,8 @@ export default {
         };
 
         // Ações secretas
-        if (message.member?.roles?.cache.has(server_config?.server?.roles?.player) && message.channelId == server_config?.server?.channels?.secret_actions) {
-            message.guild.channels.cache.get(server_config?.server?.channels?.secret_actions_log)?.send({
+        if (message.member?.roles?.cache.has(serverConfig?.server?.roles?.player) && message.channelId == serverConfig?.server?.channels?.secret_actions) {
+            message.guild.channels.cache.get(serverConfig?.server?.channels?.secret_actions_log)?.send({
                 embeds: [
                     new EmbedBuilder()
                     .setTitle(`Nova ação secreta de ${message.author.displayName}`)
@@ -102,17 +102,17 @@ export default {
             !collectingUsers.has(message.author.id)
             &&
             (
-                server_config?.server?.channels?.actions?.includes(message.channelId) ||
-                server_config?.server?.channels?.actions?.includes(message.channel?.parentId) ||
-                server_config?.server?.channels?.countries_category?.includes(message.channelId) ||
-                server_config?.server?.channels?.countries_category?.includes(message.channel?.parentId) ||
-                server_config?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
+                serverConfig?.server?.channels?.actions?.includes(message.channelId) ||
+                serverConfig?.server?.channels?.actions?.includes(message.channel?.parentId) ||
+                serverConfig?.server?.channels?.countries_category?.includes(message.channelId) ||
+                serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parentId) ||
+                serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
             )
         ) {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${bot_config.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
             
             const filter = msg => msg.author.id == message.author.id;
-            const collector = await message.channel.createMessageCollector({ filter, time: (server_config?.server?.action_timing * 1000) || 20_000 });
+            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
             
             collectingUsers.add(message.author.id);
 
@@ -121,18 +121,18 @@ export default {
             .then((reaction) => {
                 setTimeout(() => {
                     reaction.remove().catch(() => {}); 
-                }, (server_config?.server?.action_timing * 1000) || 20_000);
+                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
             })
 
-            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((server_config?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
+            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
                     msg.delete().catch(() => {});
-                }, (server_config?.server?.action_timing * 1000) || 20_000);
+                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
             
                 const acao_jogador = message.author.displayName;
                 const acao_contexto = await getContext(message.guild);
-                const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
-                const prompt_adicional = server_config?.server?.extra_prompt || '';
+                const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const prompt_adicional = serverConfig?.server?.extra_prompt || '';
 
                 collector.on('collect', msg => {
                     msg.react('📝')
@@ -140,7 +140,7 @@ export default {
                     .then((reaction) => {
                         setTimeout(() => {
                             reaction.remove().catch(() => {}); 
-                        }, (server_config?.server?.action_timing * 1000) || 20_000);
+                        }, (serverConfig?.server?.action_timing * 1000) || 20_000);
                     })
                 });
 
@@ -179,7 +179,7 @@ export default {
                     if (diffChunk) chunks.push(diffChunk);
                     chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${bot_config.site})`);
 
-                    const narrationsChannel = message.guild.channels.cache.get(server_config?.server?.channels?.narrations);
+                    const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
                     chunks.forEach(chunk => {
                         narrationsChannel?.send(chunk);
                     });
@@ -190,7 +190,7 @@ export default {
                         console.error("Erro ao gerar contexto:", error);
                     });
 
-                    message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
+                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
                         msg.delete();
                     });
 
@@ -205,12 +205,12 @@ export default {
             !message.author.bot &&
             message.author.id !== bot_config.id &&
             (
-                server_config?.server?.channels?.events?.includes(message.channelId) ||
-                server_config?.server?.channels?.events?.includes(message.channel?.parentId)
+                serverConfig?.server?.channels?.events?.includes(message.channelId) ||
+                serverConfig?.server?.channels?.events?.includes(message.channel?.parentId)
             )
         ) {
             const acao_contexto = await getContext(message.guild);
-            const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+            const servidor_data_roleplay = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
 
@@ -222,11 +222,11 @@ export default {
 
             if (response.text === "IRRELEVANTE!!!") return;
 
-            message.guild.channels.cache.get(server_config?.server?.channels?.context)?.send(response.text);
+            message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(response.text);
         }
 
         // Passagem de ano
-        else if (message.channelId === server_config?.server?.channels?.time) {
+        else if (message.channelId === serverConfig?.server?.channels?.time) {
             const ano = parseInt(message.cleanContent.match(/\d+/)?.[0]);
             const ano_atual = parseInt(message.guild.name.match(/\d+/)?.[0]);
             if (!ano) return;
@@ -243,10 +243,10 @@ export default {
                 periodoCompleto = false;
             }
 
-            server_config?.server?.name?.includes('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
+            serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', ano)}`);
 
             const acao_contexto = await getContext(message.guild);
-            const periodo_anterior = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+            const periodo_anterior = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
             const periodo_atual = simplifyString(message.cleanContent);
 
             const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
@@ -257,7 +257,7 @@ export default {
                 console.error("Erro ao gerar resumo de período:", error);
             });
 
-            const contextChannel = message.guild.channels.cache.get(server_config?.server?.channels?.context);
+            const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
             if (!contextChannel) return;
 
             let tituloResumo = periodoCompleto

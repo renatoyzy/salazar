@@ -119,8 +119,8 @@ function compareCommands(currentCommands, newCommands) {
  */
 export default async function deploy_commands(serverId) {
 
-    const server_config = await Server.config(serverId);
-    const server_setup = !server_config && await Server.setup(serverId);
+    const serverConfig = await Server.config(serverId);
+    const server_setup = !serverConfig && await Server.setup(serverId);
 
     let commands = [];
     const commandFiles = getFiles("./commands");
@@ -129,13 +129,13 @@ export default async function deploy_commands(serverId) {
         // Use import dinâmico em ES module
         const command = (await import(path.resolve(file))).default;
         if((
-            command.min_tier<=server_config?.server_tier || 
+            command.min_tier<=serverConfig?.server_tier || 
             !command.min_tier
         ) && (
             command.setup_step<=server_setup?.server_setup_step || 
-            !command.setup_step && command.setup_step!==0 && !server_setup && server_config || 
+            !command.setup_step && command.setup_step!==0 && !server_setup && serverConfig || 
             command.setup_step<0 || 
-            command.setup_step===0 && !server_setup && !server_config
+            command.setup_step===0 && !server_setup && !serverConfig
         )) {
             commands.push(command.data.toJSON());
         }

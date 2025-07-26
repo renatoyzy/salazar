@@ -28,14 +28,14 @@ export default {
             flags: [MessageFlags.Ephemeral]
         });
 
-        const server_config = (await Server.config(interaction.guildId)).server;
+        const serverConfig = (await Server.config(interaction.guildId)).server;
 
         const unfiltered_country = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
         const country = simplifyString(unfiltered_country);
         const player = await interaction.guild.members.fetch(interaction.message.embeds[0].fields.find(f => f.name === '👥 ID do jogador')?.value);
 
         // Busca todos os cargos de país baseados nos canais da categoria
-        const countryCategory = await interaction.guild.channels.fetch(server_config?.channels?.country_category);
+        const countryCategory = await interaction.guild.channels.fetch(serverConfig?.channels?.country_category);
         const countryChannels = await countryCategory?.children?.cache;
         const countryRoleNames = countryChannels?.map(c => simplifyString(c.name)) || [];
 
@@ -61,7 +61,7 @@ export default {
                 await interaction.guild.channels.create({
                     name: unfiltered_country.toLowerCase().replaceAll(' ', '-'),
                     type: ChannelType.GuildForum,
-                    parent: server_config?.channels?.country_category,
+                    parent: serverConfig?.channels?.country_category,
                     permissionOverwrites: [
                         {
                             id: countryRole.id,
@@ -87,7 +87,7 @@ export default {
                     await interaction.guild.channels.create({
                         name: unfiltered_country.toLowerCase().replaceAll(' ', '-'),
                         type: ChannelType.GuildForum,
-                        parent: server_config?.channels?.country_category,
+                        parent: serverConfig?.channels?.country_category,
                         permissionOverwrites: [
                             {
                                 id: role.id,
@@ -101,7 +101,7 @@ export default {
                     });
 
                     // Criar bandeira emoji
-                    const servidor_data_roleplay = (await (await interaction.guild.channels.fetch(server_config?.channels?.time)).messages.fetch()).first() || 'antiga';
+                    const servidor_data_roleplay = (await (await interaction.guild.channels.fetch(serverConfig?.channels?.time)).messages.fetch()).first() || 'antiga';
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
@@ -128,12 +128,12 @@ export default {
         }
         
         // Garante que o cargo de jogador seja adicionado
-        if (server_config?.roles?.player && !player.roles.cache.has(server_config.roles.player)) {
-            await player.roles.add(server_config.roles.player).catch(() => {});
+        if (serverConfig?.roles?.player && !player.roles.cache.has(serverConfig.roles.player)) {
+            await player.roles.add(serverConfig.roles.player).catch(() => {});
         }
 
         // Atualiza o canal de países escolhidos
-        const pickedCountriesChannel = await interaction.guild.channels.fetch(server_config?.channels?.picked_countries);
+        const pickedCountriesChannel = await interaction.guild.channels.fetch(serverConfig?.channels?.picked_countries);
         if (pickedCountriesChannel && pickedCountriesChannel.isTextBased()) {
             // Busca todas as mensagens do canal
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });

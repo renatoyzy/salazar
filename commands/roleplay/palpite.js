@@ -30,17 +30,17 @@ export default {
      */
     async execute(interaction) {
 
-        const server_config = await Server.config(interaction.guildId);
+        const serverConfig = await Server.config(interaction.guildId);
 
-        if(!server_config) return interaction.editReply({
+        if(!serverConfig) return interaction.editReply({
             content: `Esse servidor não está configurado corretamente. Contate um administrador.`
         });
         
-        if(!server_config?.server_tier >= 2) return interaction.editReply({
+        if(!serverConfig?.server_tier >= 2) return interaction.editReply({
             content: `Este servidor não possui o tier necessário para usar esse comando.`
         });
 
-        if (server_config.server_tier<4 && !interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.editReply({
+        if (serverConfig.server_tier<4 && !interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.editReply({
             content: "No plano atual deste servidor, este comando é apenas para administradores."
         });
 

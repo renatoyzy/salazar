@@ -11,10 +11,10 @@ export default {
         // Remove o jogador da lista de players do país no canal de países escolhidos
         try {
             // Busca configuração do servidor
-            const server_config = await Server.config(member.guild.id);
-            if (!server_config?.server?.channels?.picked_countries) return;
+            const serverConfig = await Server.config(member.guild.id);
+            if (!serverConfig?.server?.channels?.picked_countries) return;
 
-            const pickedCountriesChannel = await member.guild.channels.fetch(server_config.server.channels.picked_countries).catch(() => null);
+            const pickedCountriesChannel = await member.guild.channels.fetch(serverConfig.server.channels.picked_countries).catch(() => null);
             if (!pickedCountriesChannel || !pickedCountriesChannel.isTextBased()) return;
 
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });

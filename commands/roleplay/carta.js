@@ -46,15 +46,15 @@ export default {
      * @param {ChatInputCommandInteraction} interaction
      */
     async execute(interaction) {
-        const server_config = Server.config(interaction.guildId);
-        if(!interaction.member.roles.cache.has((await server_config)?.server?.roles?.player)) return interaction.editReply(`Este comando é restrito para jogadores do RP (<@&${(await server_config)?.server?.roles?.player}>).`);
-        if((interaction.channel.parentId != (await server_config)?.server?.channels?.country_category) && interaction.channel.parent.parentId != (await server_config)?.server?.channels?.country_category) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
+        const serverConfig = Server.config(interaction.guildId);
+        if(!interaction.member.roles.cache.has((await serverConfig)?.server?.roles?.player)) return interaction.editReply(`Este comando é restrito para jogadores do RP (<@&${(await serverConfig)?.server?.roles?.player}>).`);
+        if((interaction.channel.parentId != (await serverConfig)?.server?.channels?.country_category) && interaction.channel.parent.parentId != (await serverConfig)?.server?.channels?.country_category) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
 
         const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('destinatario').value)));
         if(!countryChat) return interaction.editReply("Não encontrei o chat desse país.")
 
         const senderName = interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(interaction.channel.parent.name)) || simplifyString(r.name).includes(simplifyString(interaction.channel.name))).name;
-        const servidor_data_roleplay = (await (await interaction.guild.channels.fetch((await server_config)?.server?.channels?.time)).messages.fetch()).first() || 'antiga';
+        const servidor_data_roleplay = (await (await interaction.guild.channels.fetch((await serverConfig)?.server?.channels?.time)).messages.fetch()).first() || 'antiga';
 
         await gis(`Bandeira ${senderName} ${servidor_data_roleplay}`, async (error, results) => {
             // Aceita SVG, PNG, JPG
@@ -180,13 +180,13 @@ export default {
      * @param {AutocompleteInteraction} interaction
      */
     async autocomplete(interaction) {
-        const server_config = Server.config(interaction.guildId);
+        const serverConfig = Server.config(interaction.guildId);
         const focusedOption = interaction.options.getFocused(true);
         let choices;
 
         switch (focusedOption.name) {
             case 'destinatario':
-                choices = interaction.guild.channels.cache.get((await server_config)?.server?.channels?.country_category).children.cache.map(c => c.name);
+                choices = interaction.guild.channels.cache.get((await serverConfig)?.server?.channels?.country_category).children.cache.map(c => c.name);
                 break;
         
             default:

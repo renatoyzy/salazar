@@ -72,8 +72,8 @@ async function handleChatInput(interaction) {
         console.error(error);
     }
 
-    const server_config = await Server.config(interaction.guildId);
-    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    const serverConfig = await Server.config(interaction.guildId);
+    const logChannel = interaction.guild.channels.cache.get(serverConfig?.server?.channels?.logs);
 
     if (logChannel) {
         const fields = [
@@ -120,8 +120,8 @@ async function handleButton(interaction) {
 
     await buttonHandler.execute(interaction);
 
-    const server_config = await Server.config(interaction.guildId);
-    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    const serverConfig = await Server.config(interaction.guildId);
+    const logChannel = interaction.guild.channels.cache.get(serverConfig?.server?.channels?.logs);
 
     if (logChannel) {
         await logChannel.send({
@@ -177,10 +177,10 @@ async function handleSelectMenu(interaction) {
 
     await selectHandler.execute(interaction);
 
-    const server_config = await Server.config(interaction.guildId);
+    const serverConfig = await Server.config(interaction.guildId);
 
     // Log igual antes
-    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    const logChannel = interaction.guild.channels.cache.get(serverConfig?.server?.channels?.logs);
     if (logChannel) {
         await logChannel.send({
             embeds: [
@@ -224,10 +224,10 @@ async function handleModalSubmit(interaction) {
 
     await modalHandler.execute(interaction);
 
-    const server_config = await Server.config(interaction.guildId);
+    const serverConfig = await Server.config(interaction.guildId);
 
     // Log igual antes
-    const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
+    const logChannel = interaction.guild.channels.cache.get(serverConfig?.server?.channels?.logs);
     if (logChannel) {
         await logChannel.send({
             embeds: [

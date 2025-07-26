@@ -23,8 +23,8 @@ export async function config(serverId) {
     try {
         await client.connect();
 
-        const server_config = await client.db('Salazar').collection('configuration').findOne({ server_id: serverId });
-        const plainObject = server_config ? JSON.parse(JSON.stringify(server_config)) : undefined;
+        const serverConfig = await client.db('Salazar').collection('configuration').findOne({ server_id: serverId });
+        const plainObject = serverConfig ? JSON.parse(JSON.stringify(serverConfig)) : undefined;
 
         return plainObject || undefined;
 
@@ -51,8 +51,8 @@ export async function setup(serverId) {
     try {
         await client.connect();
 
-        const server_config = await client.db('Salazar').collection('setup').findOne({ server_id: serverId });
-        const plainObject = server_config ? JSON.parse(JSON.stringify(server_config)) : undefined;
+        const serverConfig = await client.db('Salazar').collection('setup').findOne({ server_id: serverId });
+        const plainObject = serverConfig ? JSON.parse(JSON.stringify(serverConfig)) : undefined;
 
         return plainObject || undefined;
 
@@ -70,8 +70,8 @@ export async function setup(serverId) {
  * @returns {{} | undefined} Objeto das configurações do servidor (ou undefined se não existirem)
  */
 export async function paid(serverId, tier) {
-    const server_config = await Server.config(serverId);
-    const server_setup = !server_config && await Server.setup(serverId);
+    const serverConfig = await Server.config(serverId);
+    const server_setup = !serverConfig && await Server.setup(serverId);
 
     const client = new MongoClient(process.env.DB_URI, {
         serverApi: {
@@ -84,7 +84,7 @@ export async function paid(serverId, tier) {
     try {
         await client.connect();
 
-        return server_config ?
+        return serverConfig ?
             await client.db('Salazar').collection('configuration')
             .findOneAndUpdate(
                 { server_id: serverId }, 

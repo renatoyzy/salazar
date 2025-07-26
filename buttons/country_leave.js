@@ -14,23 +14,23 @@ export default {
      */
     async execute(interaction) {
 
-        const server_config = await Server.config(interaction.guildId);
+        const serverConfig = await Server.config(interaction.guildId);
 
-        if (!server_config?.server?.channels?.picked_countries) return;
-        if(server_config?.server_tier<=2) return interaction.reply({content: 'Essa funcionalidade não está disponível no plano atual do servidor.', flags: [MessageFlags.Ephemeral]});
+        if (!serverConfig?.server?.channels?.picked_countries) return;
+        if(serverConfig?.server_tier<=2) return interaction.reply({content: 'Essa funcionalidade não está disponível no plano atual do servidor.', flags: [MessageFlags.Ephemeral]});
 
-        const memberCountry = interaction.member.roles.cache.find(r => interaction.guild.channels.cache.find(c => c.parentId == server_config?.server?.channels?.country_category && simplifyString(r.name).includes(simplifyString(c.name))));
+        const memberCountry = interaction.member.roles.cache.find(r => interaction.guild.channels.cache.find(c => c.parentId == serverConfig?.server?.channels?.country_category && simplifyString(r.name).includes(simplifyString(c.name))));
 
         try {
 
-            const pickedCountriesChannel = await interaction.guild.channels.fetch(server_config.server.channels.picked_countries).catch(() => null);
+            const pickedCountriesChannel = await interaction.guild.channels.fetch(serverConfig.server.channels.picked_countries).catch(() => null);
             if (!pickedCountriesChannel || !pickedCountriesChannel.isTextBased()) return;
 
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });
             for (const msg of msgs.values()) {
                 if (!msg.editable) continue;
                 if (msg.content.includes(`<@${interaction.member.id}>`)) {
-                    await interaction.member.roles.remove(server_config?.server?.roles?.player);
+                    await interaction.member.roles.remove(serverConfig?.server?.roles?.player);
                     await interaction.reply({content: 'Você deixou o seu país com sucesso. Se quiser pegar outro, ou ficar apenas espectando, a escolha é sua.', flags: [MessageFlags.Ephemeral]})
                     
                     if(memberCountry) interaction.member.roles.remove(memberCountry);

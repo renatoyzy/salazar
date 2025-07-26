@@ -15,8 +15,8 @@ export default {
     async execute(guild) {
         deploy_commands(guild.id);
 
-        const server_config = await Server.config(guild.id);
-        const server_setup = !server_config && await Server.setup(guild.id);
+        const serverConfig = await Server.config(guild.id);
+        const server_setup = !serverConfig && await Server.setup(guild.id);
 
         const mongoClient = new MongoClient(process.env.DB_URI, {
             serverApi: {
@@ -40,7 +40,7 @@ export default {
             await mongoClient.close();
         }
 
-        if((!server_config && (!server_setup || server_setup.server_tier==0)) || server_config.server_tier==0) {
+        if((!serverConfig && (!server_setup || server_setup.server_tier==0)) || serverConfig.server_tier==0) {
             const channel = guild.systemChannel || guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has("CREATE_INSTANT_INVITE"));
             const invite = (await guild.invites.fetch())?.first()?.url || (await channel?.createInvite({ maxAge: 0, maxUses: 1 }))?.url || `Não achei um convite do servidor, mas o ID é ${guild.id}`;
             (await client.users.fetch(bot_config.owners[0])).send(`# Entra aí pra dar uma olhada.\nO ${bot_config.name} foi adicionado em um servidor que não pagou ainda, é melhor você ir dar uma olhada.\n> ${invite}`);
