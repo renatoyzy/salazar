@@ -5,7 +5,6 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from "discord.js";
-import * as Server from "../src/StringUtils.js";
 import { countryPickDialog } from "../src/Roleplay.js";
 
 export default {
@@ -35,6 +34,7 @@ export default {
                     )
                 )
             );
+            await interaction.editReply({ content: 'Diálogo aberto para que você escolha seu país.', components: [] });
 
         } else {
             const selectedChannel = await interaction.guild.channels.fetch(selected);
