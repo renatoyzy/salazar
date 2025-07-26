@@ -3,8 +3,7 @@ import {
     EmbedBuilder, 
     Colors, 
     PermissionsBitField,
-    WebhookClient,
-    AttachmentBuilder
+    WebhookClient
 } from "discord.js";
 import { 
     MongoClient, 
@@ -18,7 +17,6 @@ import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 import gis from "g-i-s";
-import { fetchImageAsPngBuffer, isImageSafe } from "../src/VisualUtils.js";
 
 const collectingUsers = new Set();
 const collectingAdmins = new Set();
@@ -378,7 +376,7 @@ export default {
 
                         let webhookContent = {
                             username: json['pais'],
-                            content: json['resposta'],
+                            content: json['resposta'] + `\n<@${message.author.id}>`,
                         };
 
                         if(validResult) webhookContent['avatarURL'] = validResult?.url
