@@ -104,9 +104,8 @@ export default {
             (
                 serverConfig?.server?.channels?.actions?.includes(message.channelId) ||
                 serverConfig?.server?.channels?.actions?.includes(message.channel?.parentId) ||
-                serverConfig?.server?.channels?.countries_category?.includes(message.channelId) ||
-                serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parentId) ||
-                serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
+                serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
+                serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
             )
         ) {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
@@ -180,9 +179,19 @@ export default {
                     chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
                     const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
-                    chunks.forEach(chunk => {
-                        narrationsChannel?.send(chunk);
-                    });
+                    
+                    if (
+                        serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
+                        serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
+                    ) {
+                        chunks.forEach(chunk => {
+                            narrationsChannel?.send(chunk);
+                        });
+                    } else {
+                        chunks.forEach(chunk => {
+                            message.channel?.send(chunk);
+                        });
+                    } 
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
 
