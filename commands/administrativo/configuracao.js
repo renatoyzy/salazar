@@ -15,7 +15,7 @@ import {
     MongoClient,
     ServerApiVersion
 } from "mongodb";
-import { config } from "../../src/server_info.js";
+import * as Server from "../../src/Server.js";
 import bot_config from "../../config.json" with { type: "json" };
 import { inspect } from "util";
 
@@ -79,7 +79,7 @@ export default {
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
         const option = interaction.options.get('opção')?.value;
 
         const options_alike = {

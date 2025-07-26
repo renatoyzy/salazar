@@ -6,9 +6,9 @@ import {
     PermissionsBitField,
     ChannelType
 } from 'discord.js';
-import { config } from '../src/server_info.js';
-import { simplifyString } from "../src/string_functions.js";
-import { getAverageColor, makeRoundFlag, isImageSafe, fetchImageAsPngBuffer } from "../src/visual_functions.js";
+import * as Server from '../src/Server.js';
+import { simplifyString } from "../src/StringUtils.js";
+import { getAverageColor, makeRoundFlag, isImageSafe, fetchImageAsPngBuffer } from "../src/VisualUtils.js";
 import gis from "g-i-s";
 
 export default {
@@ -28,7 +28,7 @@ export default {
             flags: [MessageFlags.Ephemeral]
         });
 
-        const server_config = (await config(interaction.guildId)).server;
+        const server_config = (await Server.config(interaction.guildId)).server;
 
         const unfiltered_country = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
         const country = simplifyString(unfiltered_country);

@@ -8,8 +8,8 @@ import {
     PermissionsBitField,
     ActionRowBuilder
 } from "discord.js";
-import { simplifyString } from "../src/string_functions.js";
-import { config } from "../src/server_info.js";
+import { simplifyString } from "../src/StringUtils.js";
+import * as Server from "../src/Server.js";
 
 export default {
 
@@ -26,7 +26,7 @@ export default {
         const country = simplifyString(unfiltered_country);
         if (!country) return;
 
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
         const countryCategory = interaction.guild.channels.cache.get(server_config?.server?.channels?.country_category);
         
         const existingChannel = countryCategory?.children?.cache.find(c => simplifyString(c.name).includes(country));

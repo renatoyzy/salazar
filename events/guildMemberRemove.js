@@ -1,5 +1,5 @@
 import { GuildMember } from "discord.js";
-import { config } from "../src/server_info.js";
+import * as Server from "../src/Server.js";
 
 export default {
     name: 'guildMemberRemove',
@@ -11,7 +11,7 @@ export default {
         // Remove o jogador da lista de players do país no canal de países escolhidos
         try {
             // Busca configuração do servidor
-            const server_config = await config(member.guild.id);
+            const server_config = await Server.config(member.guild.id);
             if (!server_config?.server?.channels?.picked_countries) return;
 
             const pickedCountriesChannel = await member.guild.channels.fetch(server_config.server.channels.picked_countries).catch(() => null);

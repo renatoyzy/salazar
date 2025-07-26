@@ -9,12 +9,12 @@ import {
     ServerApiVersion 
 } from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
-import { config, setup } from "../src/server_info.js";
+import * as Server from "../src/Server.js";
 import client from "../src/client.js";
 import "dotenv/config";
-import { GetContext } from "../src/roleplay.js";
+import { getContext } from "../src/Roleplay.js";
 import ai_generate from "../src/ai_generate.js";
-import { simplifyString, chunkifyText, isLikelyAI } from "../src/string_functions.js";
+import { simplifyString, chunkifyText, isLikelyAI } from "../src/StringUtils.js";
 
 const collectingUsers = new Set();
 
@@ -27,8 +27,8 @@ export default {
     async execute(message) {
         if (message.author.bot || message.author.id === bot_config.id) return;
 
-        const server_config = await config(message.guildId);
-        const server_setup = !server_config && await setup(message.guildId);
+        const server_config = await Server.config(message.guildId);
+        const server_setup = !server_config && await Server.setup(message.guildId);
 
         // Aviso de servidor não configurado
         if((bot_config.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !server_config) {
@@ -130,7 +130,7 @@ export default {
                 }, (server_config?.server?.action_timing * 1000) || 20_000);
             
                 const acao_jogador = message.author.displayName;
-                const acao_contexto = await GetContext(message.guild);
+                const acao_contexto = await getContext(message.guild);
                 const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
                 const prompt_adicional = server_config?.server?.extra_prompt || '';
 
@@ -209,7 +209,7 @@ export default {
                 server_config?.server?.channels?.events?.includes(message.channel?.parentId)
             )
         ) {
-            const acao_contexto = await GetContext(message.guild);
+            const acao_contexto = await getContext(message.guild);
             const servidor_data_roleplay = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
 
             const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
@@ -245,7 +245,7 @@ export default {
 
             server_config?.server?.name?.includes('{ano}') && await message.guild.setName(`${server_config?.server?.name?.replace('{ano}', ano)}`);
 
-            const acao_contexto = await GetContext(message.guild);
+            const acao_contexto = await getContext(message.guild);
             const periodo_anterior = (await (await message.guild.channels.fetch(server_config?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
             const periodo_atual = simplifyString(message.cleanContent);
 

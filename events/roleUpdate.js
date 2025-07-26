@@ -1,6 +1,6 @@
 import { ChannelType, Role } from "discord.js";
-import { simplifyString } from "../src/string_functions.js";
-import { config } from "../src/server_info.js";
+import { simplifyString } from "../src/StringUtils.js";
+import * as Server from "../src/Server.js";
 
 export default {
     name: 'roleUpdate',
@@ -13,7 +13,7 @@ export default {
 
         if(oldRole.name == newRole.name) return;
 
-        const serverConfig = await config(newRole.guild.id);
+        const serverConfig = await Server.config(newRole.guild.id);
         
         const equivalentChannel = newRole.guild.channels.cache.find(c => simplifyString(oldRole.name).includes(simplifyString(c.name)));
 

@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import bot_config from "../config.json" with { type: "json" };
-import { config } from "../src/server_info.js";
+import * as Server from "../src/Server.js";
 import client from "../src/client.js";
 import { inspect } from "util";
 
@@ -72,7 +72,7 @@ async function handleChatInput(interaction) {
         console.error(error);
     }
 
-    const server_config = await config(interaction.guildId);
+    const server_config = await Server.config(interaction.guildId);
     const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
 
     if (logChannel) {
@@ -120,7 +120,7 @@ async function handleButton(interaction) {
 
     await buttonHandler.execute(interaction);
 
-    const server_config = await config(interaction.guildId);
+    const server_config = await Server.config(interaction.guildId);
     const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
 
     if (logChannel) {
@@ -177,7 +177,7 @@ async function handleSelectMenu(interaction) {
 
     await selectHandler.execute(interaction);
 
-    const server_config = await config(interaction.guildId);
+    const server_config = await Server.config(interaction.guildId);
 
     // Log igual antes
     const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);
@@ -224,7 +224,7 @@ async function handleModalSubmit(interaction) {
 
     await modalHandler.execute(interaction);
 
-    const server_config = await config(interaction.guildId);
+    const server_config = await Server.config(interaction.guildId);
 
     // Log igual antes
     const logChannel = interaction.guild.channels.cache.get(server_config?.server?.channels?.logs);

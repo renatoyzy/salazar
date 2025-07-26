@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../../config.json" with { type: "json" };
-import { setup } from "../../src/server_info.js";
+import * as Server from "../../src/Server.js";
 import deploy_commands from "../../src/deploy_commands.js";
 
 export default {
@@ -48,7 +48,7 @@ export default {
             )
         );
 
-        const server_setup = await setup(interaction.guildId);
+        const server_setup = await Server.setup(interaction.guildId);
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
             serverApi: {

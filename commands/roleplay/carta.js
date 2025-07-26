@@ -9,11 +9,11 @@ import {
     SlashCommandBuilder,
     SlashCommandStringOption
 } from "discord.js";
-import { config } from "../../src/server_info.js";
+import * as Server from "../../src/Server.js";
 import bot_config from "../../config.json" with { type: "json" };
-import { simplifyString } from "../../src/string_functions.js";
+import { simplifyString } from "../../src/StringUtils.js";
 import gis from "g-i-s";
-import { getAverageColor, isImageSafe, fetchImageAsPngBuffer } from "../../src/visual_functions.js";
+import { getAverageColor, isImageSafe, fetchImageAsPngBuffer } from "../../src/VisualUtils.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -46,7 +46,7 @@ export default {
      * @param {ChatInputCommandInteraction} interaction
      */
     async execute(interaction) {
-        const server_config = config(interaction.guildId);
+        const server_config = Server.config(interaction.guildId);
         if(!interaction.member.roles.cache.has((await server_config)?.server?.roles?.player)) return interaction.editReply(`Este comando é restrito para jogadores do RP (<@&${(await server_config)?.server?.roles?.player}>).`);
         if((interaction.channel.parentId != (await server_config)?.server?.channels?.country_category) && interaction.channel.parent.parentId != (await server_config)?.server?.channels?.country_category) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
 
@@ -180,7 +180,7 @@ export default {
      * @param {AutocompleteInteraction} interaction
      */
     async autocomplete(interaction) {
-        const server_config = config(interaction.guildId);
+        const server_config = Server.config(interaction.guildId);
         const focusedOption = interaction.options.getFocused(true);
         let choices;
 

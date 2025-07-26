@@ -10,9 +10,9 @@ import {
     Colors
 } from "discord.js";
 import Canvas from "canvas";
-import { config } from "../../src/server_info.js";
-import { makeRoundFlag, isImageSafe } from "../../src/visual_functions.js";
-import { simplifyString } from "../../src/string_functions.js";
+import * as Server from "../../src/Server.js";
+import { makeRoundFlag, isImageSafe } from "../../src/VisualUtils.js";
+import { simplifyString } from "../../src/StringUtils.js";
 
 export default {
 
@@ -43,7 +43,7 @@ export default {
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
 
         if(!server_config) return interaction.editReply({
             content: `Esse servidor não está configurado corretamente. Contate um administrador.`,

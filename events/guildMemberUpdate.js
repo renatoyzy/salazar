@@ -1,6 +1,6 @@
 import { GuildMember } from "discord.js";
-import { config } from "../src/server_info.js";
-import { simplifyString } from "../src/string_functions.js";
+import * as Server from "../src/Server.js";
+import { simplifyString } from "../src/StringUtils.js";
 
 export default {
     name: 'guildMemberUpdate',
@@ -12,7 +12,7 @@ export default {
     async execute(oldMember, newMember) {
         if(oldMember.roles.cache == newMember.roles.cache) return;
 
-        const serverConfig = await config(newMember.guild.id);
+        const serverConfig = await Server.config(newMember.guild.id);
         if (!serverConfig?.server?.channels?.picked_countries) return;
 
         // Busca todos os cargos de país

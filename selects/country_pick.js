@@ -10,8 +10,8 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from "discord.js";
-import { config } from "../src/server_info.js";
-import { simplifyString } from "../src/string_functions.js";
+import { config } from "../src/Server.js";
+import * as Server from "../src/StringUtils.js";
 
 export default {
 
@@ -21,7 +21,7 @@ export default {
     async execute(interaction) {
 
         const selected = interaction.values[0];
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
 
         if (selected === "outro") {
             

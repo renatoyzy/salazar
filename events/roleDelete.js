@@ -1,6 +1,6 @@
 import { ChannelType, Role } from "discord.js";
-import { simplifyString } from "../src/string_functions.js";
-import { config } from "../src/server_info.js";
+import { simplifyString } from "../src/StringUtils.js";
+import * as Server from "../src/Server.js";
 
 export default {
     name: 'roleDelete',
@@ -10,7 +10,7 @@ export default {
      */
     async execute(role) {
 
-        const serverConfig = await config(role.guild.id);
+        const serverConfig = await Server.config(role.guild.id);
         
         const equivalentChannel = role.guild.channels.cache.find(c => simplifyString(role.name).includes(simplifyString(c.name)));
 

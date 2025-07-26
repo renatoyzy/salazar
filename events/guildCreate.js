@@ -1,6 +1,6 @@
 import deploy_commands from "../src/deploy_commands.js";
 import client from "../src/client.js";
-import { config, setup } from "../src/server_info.js";
+import * as Server from "../src/Server.js";
 import { Guild } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import bot_config from "../config.json" with { type: "json" };
@@ -15,8 +15,8 @@ export default {
     async execute(guild) {
         deploy_commands(guild.id);
 
-        const server_config = await config(guild.id);
-        const server_setup = !server_config && await setup(guild.id);
+        const server_config = await Server.config(guild.id);
+        const server_setup = !server_config && await Server.setup(guild.id);
 
         const mongoClient = new MongoClient(process.env.DB_URI, {
             serverApi: {

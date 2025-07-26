@@ -3,7 +3,7 @@ import path from "path";
 import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
 import bot_config from "../config.json" with { type: "json" };
-import { config, setup } from "./server_info.js";
+import * as Server from "./Server.js";
 import "dotenv/config";
 import client from "./client.js";
 
@@ -119,8 +119,8 @@ function compareCommands(currentCommands, newCommands) {
  */
 export default async function deploy_commands(serverId) {
 
-    const server_config = await config(serverId);
-    const server_setup = !server_config && await setup(serverId);
+    const server_config = await Server.config(serverId);
+    const server_setup = !server_config && await Server.setup(serverId);
 
     let commands = [];
     const commandFiles = getFiles("./commands");

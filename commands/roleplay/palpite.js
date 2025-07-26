@@ -7,9 +7,9 @@ import {
     ChatInputCommandInteraction
 } from "discord.js";
 import bot_config from "../../config.json" with { type: "json" };
-import { config } from "../../src/server_info.js";
+import * as Server from "../../src/Server.js";
 import 'dotenv/config';
-import { GetContext } from "../../src/roleplay.js";
+import { getContext } from "../../src/Roleplay.js";
 import ai_generate from "../../src/ai_generate.js";
 
 export default {
@@ -30,7 +30,7 @@ export default {
      */
     async execute(interaction) {
 
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
 
         if(!server_config) return interaction.editReply({
             content: `Esse servidor não está configurado corretamente. Contate um administrador.`
@@ -51,7 +51,7 @@ export default {
                 .setDescription("Gerando seu palpite...")
             ],
         }).then(async () => {
-            let acao_contexto = await GetContext(interaction.guild);
+            let acao_contexto = await getContext(interaction.guild);
 
             if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 

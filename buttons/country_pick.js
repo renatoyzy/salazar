@@ -6,7 +6,7 @@ import {
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder
 } from 'discord.js';
-import { config } from '../src/server_info.js';
+import * as Server from '../src/Server.js';
 
 const cooldownUsers = {};
 
@@ -29,7 +29,7 @@ export default {
             delete cooldownUsers[interaction.user.id];    
         }, USE_COOLDOWN);
 
-        const server_config = await config(interaction.guildId);
+        const server_config = await Server.config(interaction.guildId);
 
         if (!server_config?.server?.channels?.picked_countries) return;
         if(server_config?.server_tier<=2) return interaction.reply({content: 'Essa funcionalidade não está disponível no plano atual do servidor.', flags: [MessageFlags.Ephemeral]});

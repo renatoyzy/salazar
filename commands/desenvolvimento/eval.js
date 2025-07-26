@@ -13,12 +13,12 @@ import 'dotenv/config';
 import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
-import { config, setup } from "../../src/server_info.js";
+import * as Server from "../../src/Server.js";
 import project_package from "../../package.json" with { type: "json" };
 import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
-import server_paid from "../../src/server_paid.js";
-import { GetContext } from "../../src/roleplay.js";
+
+import { getContext } from "../../src/Roleplay.js";
 import ai_generate from "../../src/ai_generate.js";
 import {
     chunkifyText,
@@ -29,13 +29,13 @@ import {
     createDetector,
     detectAIBatch,
     AITextDetector
-} from "../../src/string_functions.js";
+} from "../../src/StringUtils.js";
 import {
     getAverageColor,
     fetchImageAsPngBuffer,
     isImageSafe,
     makeRoundFlag
-} from "../../src/visual_functions.js";
+} from "../../src/VisualUtils.js";
 import gis from "g-i-s";
 
 /**

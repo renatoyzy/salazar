@@ -1,6 +1,6 @@
 import { ChannelType, GuildChannel } from "discord.js";
-import { simplifyString } from "../src/string_functions.js";
-import { config } from "../src/server_info.js";
+import { simplifyString } from "../src/StringUtils.js";
+import * as Server from "../src/Server.js";
 
 export default {
     name: 'channelUpdate',
@@ -13,7 +13,7 @@ export default {
 
         if(oldChannel.name == newChannel.name) return;
 
-        const serverConfig = await config(newChannel.guild.id);
+        const serverConfig = await Server.config(newChannel.guild.id);
 
         if(newChannel.parentId != serverConfig?.server?.channels?.country_category &&
             newChannel.parent?.parentId != serverConfig?.server?.channels?.country_category
