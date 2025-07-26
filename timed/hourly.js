@@ -2,10 +2,15 @@ import client from "../src/Client.js"
 import { config } from "../src/Server.js";
 import botConfig from "../config.json" with {type: "json"};
 import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
+import { aiGenerate } from "../src/AIUtils.js";
+import gis from "g-i-s";
+import "dotenv/config";
+import { WebhookClient } from "discord.js";
+import { chunkifyText } from "../src/StringUtils.js";
 
 export default {
     name: 'hourly',
-    cron: '* * * * * *', // 0 */1 * * *
+    cron: '0 */1 * * *',
 
     async execute() {
 
@@ -13,12 +18,63 @@ export default {
         client.guilds.cache.forEach(async guild => {
 
             const serverConfig = await config(guild.id);
+            const randomActionsChannel = guild.channels.cache.get(serverConfig?.server?.channels?.npc_random_actions);
+
+            if(!randomActionsChannel) return;
+
             const actionContext = await getContext(guild);
             const serverRoleplayDate = await getCurrentDate(guild);
             const serverOwnedCountries = await getAllPlayers(guild);
 
-            serverConfig?.server?.channels?.npc_random_actions &&
-            guild.channels.cache.get(serverConfig?.server?.channels?.npc_random_actions).send('teste ação npc aleatória horária')
+            console.log(`- Ação NPC aleatória sendo executada em ${guild.name} (${guild.id})`);
+
+            const prompt = eval("`" + process.env.PROMPT_NPC_RANDOM_ACTION_MAKE + "`");
+            const response = await aiGenerate(prompt);
+
+            const json = JSON.parse("{"+response.text.split('{')[1].split('}')[0]+"}");
+            if( !json || !json['pais'] || !json['acao'] || !json['narracao'] || !json['resultado'] ) return console.error(response.text);
+
+            await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
+                
+                const validResult = results[0];
+
+                let webhookContent = {
+                    username: json['pais'],
+                    content: json['acao'],
+                };
+
+                if(validResult) webhookContent['avatarURL'] = validResult?.url
+
+                const webhookUrl = (await randomActionsChannel.fetchWebhooks()).find(w => w.owner == client.user.id) ? 
+                    (await randomActionsChannel.fetchWebhooks()).find(w => w.owner == client.user.id).url
+                :
+                    (await randomActionsChannel.createWebhook({name: 'Webhook do salazar'})).url
+
+                const webhookClient = new WebhookClient({ url: webhookUrl });
+
+                const actionMessage = await webhookClient.send(webhookContent);
+
+                const narrationsChannel = guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
+                const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
+
+                // Se houver bloco diff, ele fica em um chunk separado
+                const diffStart = json['acao'].indexOf('```diff');
+                let mainText = json['acao'];
+                let diffChunk = null;
+                if (diffStart !== -1) {
+                    mainText = json['acao'].slice(0, diffStart);
+                    diffChunk = json['acao'].slice(diffStart);
+                }
+
+                let finaltext = `# Ação de ${json['pais']} (NPC)\n- Ação original: https://discord.com/channels/${guild.id}/${actionMessage.channel_id}/${actionMessage.id}\n${mainText}`;
+                const chunks = chunkifyText(finaltext);
+                if (diffChunk) chunks.push(diffChunk);
+                chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
+
+                chunkifyText(json['narracao']).forEach(chunk => narrationsChannel?.send(chunk));
+                chunkifyText(json['resultado']).forEach(chunk => contextChannel?.send(chunk));
+
+            });
 
         });
 

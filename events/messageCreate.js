@@ -348,6 +348,8 @@ export default {
             message.content.length >= process.env.MIN_DIPLOMACY_LENGTH
         ) {
 
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
+
             message.reply('-# Analisando ação...').then(async msg => {
 
                 const acao = message.cleanContent;
@@ -364,7 +366,7 @@ export default {
                     console.error("Erro ao gerar contexto de evento:", error);
                 });
 
-                const json = JSON.parse(response.text.replace('```json', '').replace('```', ''));
+                const json = JSON.parse("{"+response.text.split("{")[1].split("}")[0]+"}");
 
                 if(!json || !json['pais'] || !json['resposta']) return console.error(response.text);
 
@@ -396,15 +398,15 @@ export default {
                             console.error("Erro ao gerar contexto:", error);
                         });
 
-                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text).then(() => {
-                            msg.delete();
-                        });
+                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text);
 
                     });
 
                 } else {
-                    console.log('-- '+(JSON.parse(response.text.replace('```json', '').replace('```', ''))['pais']));
+                    console.log('-- '+json['pais']);
                 }
+
+                msg?.deletable && msg.delete();
 
             });
 
