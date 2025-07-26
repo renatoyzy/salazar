@@ -34,7 +34,8 @@ export default {
         const equivalentMessage = (await pickCountryChannel.messages.fetch({limit: 100})).find(m => simplifyString(m.content).includes(simplifyString(oldRole.name)));
         if(equivalentMessage) {
             let newContent = equivalentMessage.content.split('\n');
-            newContent.unshift(`## ${simplifyString(newRole.name, true, true, false).toUpperCase()}`)
+            newContent.splice(0,1);
+            newContent.unshift(`## ${simplifyString(newRole.name, true, true, false).toUpperCase()}`);
             equivalentMessage.editable && equivalentMessage.edit(newContent.join('\n'))
         }
 

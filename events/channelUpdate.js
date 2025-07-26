@@ -23,8 +23,8 @@ export default {
         if(equivalentRole) {
 
             await equivalentRole.setName(simplifyString(newChannel.name, true, true).toUpperCase()).catch(() => {});
-            
-        } else  {
+
+        } else if(!newChannel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(newChannel.name)))) {
 
             const pickCountryChannel = newChannel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
@@ -33,7 +33,8 @@ export default {
             const equivalentMessage = (await pickCountryChannel.messages.fetch({limit: 100})).find(m => simplifyString(m.content).includes(simplifyString(oldChannel.name)));
             if(equivalentMessage) {
                 let newContent = equivalentMessage.content.split('\n');
-                newContent.unshift(`## ${simplifyString(newChannel.name, true, true, false).toUpperCase()}`)
+                newContent.splice(0,1);
+                newContent.unshift(`## ${simplifyString(newChannel.name, true, true, false).toUpperCase()}`);
                 equivalentMessage.editable && equivalentMessage.edit(newContent.join('\n'))
             }
 
