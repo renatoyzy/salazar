@@ -21,20 +21,22 @@ export default {
 
         const equivalentRole = newChannel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(oldChannel.name)));
         if(equivalentRole) {
+
             await equivalentRole.setName(simplifyString(newChannel.name, true, true).toUpperCase()).catch(() => {});
-        }
+            
+        } else  {
 
-        if(equivalentRole) return;
+            const pickCountryChannel = newChannel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
-        const pickCountryChannel = newChannel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
+            if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
 
-        if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
+            const equivalentMessage = (await pickCountryChannel.messages.fetch({limit: 100})).find(m => simplifyString(m.content).includes(simplifyString(oldChannel.name)));
+            if(equivalentMessage) {
+                let newContent = equivalentMessage.content.split('\n');
+                newContent.unshift(`## ${simplifyString(newChannel.name, true, true, false).toUpperCase()}`)
+                equivalentMessage.editable && equivalentMessage.edit(newContent.join('\n'))
+            }
 
-        const equivalentMessage = (await pickCountryChannel.messages.fetch({limit: 100})).find(m => simplifyString(m.content).includes(simplifyString(oldChannel.name)));
-        if(equivalentMessage) {
-            let newContent = equivalentMessage.content.split('\n');
-            newContent.unshift(`## ${simplifyString(newChannel.name, true, true, false).toUpperCase()}`)
-            equivalentMessage.editable && equivalentMessage.edit(newContent.join('\n'))
         }
         
     }
