@@ -96,8 +96,8 @@ export default {
         // Narração de IA
         else if (
             (
-                message.cleanContent.length >= 500 || 
-                message.content.toLowerCase().includes("ação: ")
+                message.cleanContent.length >= process.env.MIN_ACTION_LENGTH || 
+                simplifyString(message.cleanContent).includes("acao: ")
             ) 
             &&
             !collectingUsers.has(message.author.id)
@@ -173,7 +173,6 @@ export default {
                         diffChunk = response.text.slice(diffStart);
                     }
 
-                    const max_length = 2000;
                     let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
                     const chunks = chunkifyText(finaltext);
                     if (diffChunk) chunks.push(diffChunk);
@@ -211,7 +210,7 @@ export default {
 
         // Contextualização e eventos
         else if (
-            message.cleanContent.length >= 300 &&
+            message.cleanContent.length >= process.env.MIN_EVENT_LENGTH &&
             !message.author.bot &&
             message.author.id !== botConfig.id &&
             (
