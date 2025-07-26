@@ -1,8 +1,8 @@
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
-import bot_config from "../config.json" with { type: "json" };
+import botConfig from "../config.json" with { type: "json" };
 import 'dotenv/config';
 
-const ai = new GoogleGenAI({
+export const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
@@ -13,7 +13,7 @@ const ai = new GoogleGenAI({
  * @returns {Promise<GenerateContentResponse>} - A resposta da IA
  * @throws {Error} - Se ocorrer um erro ao enviar a requisição
  */
-async function sendRequisition(prompt, model) {
+export async function sendRequisition(prompt, model) {
     try {
         const response = await ai.models.generateContent({
             model: model,
@@ -31,12 +31,12 @@ async function sendRequisition(prompt, model) {
  * @returns {Promise<GenerateContentResponse>} - A resposta da IA
  * @throws {Error} - Se o prompt for inválido ou se ocorrer um erro na geração
  */
-export default async function aiGenerate(prompt) {
+export async function aiGenerate(prompt) {
     if (!prompt || typeof prompt !== 'string') {
         throw new Error("O prompt deve ser uma string não vazia.");
     }
 
-    const models = Array.isArray(bot_config.model) ? bot_config.model : [bot_config.model];
+    const models = Array.isArray(botConfig.model) ? botConfig.model : [botConfig.model];
 
     let lastError;
     for (const model of models) {

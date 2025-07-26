@@ -16,13 +16,13 @@ import {
     ServerApiVersion
 } from "mongodb";
 import * as Server from "../../src/Server.js";
-import bot_config from "../../config.json" with { type: "json" };
+import botConfig from "../../config.json" with { type: "json" };
 import { inspect } from "util";
 
 export default {
     data: new SlashCommandBuilder()
         .setName('configuração')
-        .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${bot_config.name} no seu servidor`)
+        .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${botConfig.name} no seu servidor`)
         .addStringOption(
             new SlashCommandStringOption()
             .setName(`opção`)

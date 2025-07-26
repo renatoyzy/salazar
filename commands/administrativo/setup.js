@@ -13,14 +13,14 @@ import {
     ButtonStyle
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
-import bot_config from "../../config.json" with { type: "json" };
+import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import deploy_commands from "../../src/deploy_commands.js";
 
 export default {
     data: new SlashCommandBuilder()
         .setName("setup")
-        .setDescription(`[Administrativo] Inicie o processo de instalação do ${bot_config.name} no seu servidor.`),
+        .setDescription(`[Administrativo] Inicie o processo de instalação do ${botConfig.name} no seu servidor.`),
 
     setup_step: 0,
     disable_defer: true,
@@ -83,7 +83,7 @@ export default {
         setup_data.server.name = serverName;
 
         await modalSubmit.reply({
-            content: `Nome do servidor salvo como: **${serverName}**!\nSe você usar \`{ano}\` no nome, o ${bot_config.name} atualizará automaticamente o nome do servidor toda vez que o ano passar!`,
+            content: `Nome do servidor salvo como: **${serverName}**!\nSe você usar \`{ano}\` no nome, o ${botConfig.name} atualizará automaticamente o nome do servidor toda vez que o ano passar!`,
         });
 
         // Agora segue para o primeiro seletor: cargo dos jogadores
@@ -193,7 +193,7 @@ export default {
                         components: []
                     });
                     await i.update({
-                        content: `Agora selecione o **canal de narrações**. Toda ação que um jogador fizer, que se encaixe no mínimo de 500 caracteres, o ${bot_config.name} vai narrar e publicar lá as narrações`,
+                        content: `Agora selecione o **canal de narrações**. Toda ação que um jogador fizer, que se encaixe no mínimo de 500 caracteres, o ${botConfig.name} vai narrar e publicar lá as narrações`,
                         components: [
                             new ActionRowBuilder().addComponents(
                                 new ChannelSelectMenuBuilder()
@@ -214,7 +214,7 @@ export default {
                         components: []
                     });
                     await i.update({
-                        content: `Agora selecione o **canal de passagem de tempo**. O chat em que você anuncia toda vez que o ano, semestre, ou período acaba. (O ${bot_config.name} não vai passar o ano contra sua vontade! Isso é só pra ele atualizar o tempo)`,
+                        content: `Agora selecione o **canal de passagem de tempo**. O chat em que você anuncia toda vez que o ano, semestre, ou período acaba. (O ${botConfig.name} não vai passar o ano contra sua vontade! Isso é só pra ele atualizar o tempo)`,
                         components: [
                             new ActionRowBuilder().addComponents(
                                 new ChannelSelectMenuBuilder()
@@ -510,7 +510,7 @@ export default {
                                 new EmbedBuilder()
                                     .setTitle("Setup concluído!")
                                     .setColor(Colors.Green)
-                                    .setDescription(`O **${bot_config.name}** foi configurado com sucesso neste servidor`)
+                                    .setDescription(`O **${botConfig.name}** foi configurado com sucesso neste servidor`)
                                     .addFields([
                                         {
                                             name: 'Configurações adicionais!',

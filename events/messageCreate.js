@@ -8,7 +8,7 @@ import {
     MongoClient, 
     ServerApiVersion 
 } from "mongodb";
-import bot_config from "../config.json" with { type: "json" };
+import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
 import client from "../src/client.js";
 import "dotenv/config";
@@ -25,13 +25,13 @@ export default {
      * @param {Message} message 
      */
     async execute(message) {
-        if (message.author.bot || message.author.id === bot_config.id) return;
+        if (message.author.bot || message.author.id === botConfig.id) return;
 
         const serverConfig = await Server.config(message.guildId);
         const server_setup = !serverConfig && await Server.setup(message.guildId);
 
         // Aviso de servidor não configurado
-        if((bot_config.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !serverConfig) {
+        if((botConfig.owners.includes(message.author.id) || message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) && !serverConfig) {
             const mongoClient = new MongoClient(process.env.DB_URI, {
                 serverApi: {
                     version: ServerApiVersion.v1,
@@ -45,7 +45,7 @@ export default {
 
                 let defaultMessage = [
                     '# Obrigado por me adicionar!',
-                    `Configure o ${bot_config.name} para iniciar os trabalhos!`,
+                    `Configure o ${botConfig.name} para iniciar os trabalhos!`,
                     '## Narração automatizada',
                     'Não perca tempo com o trabalho difícil que é narrar um roleplay. Agora, você tem uma IA a sua disposição para isso!',
                     '## Features secundárias',
@@ -56,9 +56,9 @@ export default {
                 ].join('\n');
 
                 if(server_setup && server_setup.server_tier>0 && server_setup.server_setup_step==0) { // pago ja
-                    message.reply(`${defaultMessage}\n-# Como você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o ${bot_config.name} está operando no seu servidor!   `);
+                    message.reply(`${defaultMessage}\n-# Como você já fez o pagamento, pode começar a configuração do servidor o quanto antes com o comando **/setup**, ou pedir para outro administrador fazer. Assim que concluído, o ${botConfig.name} está operando no seu servidor!   `);
                 } else if(server_setup && server_setup.server_tier==0 && server_setup.server_setup_step==0 || !server_setup) { // n pago nao
-                    message.reply(`${defaultMessage}\n-# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o ${bot_config.name}.`);
+                    message.reply(`${defaultMessage}\n-# Não foi detectado pagamento para esse servidor... Entre em contato com o meu dono se você quiser começar a configurar o ${botConfig.name}.`);
                 }
 
                 server_setup ? 
@@ -109,7 +109,7 @@ export default {
                 serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.parentId)
             )
         ) {
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${bot_config.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
             
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
@@ -177,7 +177,7 @@ export default {
                     let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
                     const chunks = chunkifyText(finaltext);
                     if (diffChunk) chunks.push(diffChunk);
-                    chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${bot_config.site})`);
+                    chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
                     const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
                     chunks.forEach(chunk => {
@@ -203,7 +203,7 @@ export default {
         else if (
             message.cleanContent.length >= 300 &&
             !message.author.bot &&
-            message.author.id !== bot_config.id &&
+            message.author.id !== botConfig.id &&
             (
                 serverConfig?.server?.channels?.events?.includes(message.channelId) ||
                 serverConfig?.server?.channels?.events?.includes(message.channel?.parentId)

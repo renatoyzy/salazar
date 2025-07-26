@@ -7,7 +7,7 @@ import {
     ChatInputCommandInteraction
 } from "discord.js";
 import { inspect } from "util";
-import bot_config from "../../config.json" with { type: "json" };
+import botConfig from "../../config.json" with { type: "json" };
 import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 import Canvas from "canvas";
@@ -19,16 +19,10 @@ import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
 
 import { getContext } from "../../src/Roleplay.js";
-import { aiGenerate } from "../../src/AIUtils.js";
+import { aiGenerate, isLikelyAI, detectAI } from "../../src/AIUtils.js";
 import {
     chunkifyText,
-    simplifyString,
-    detectAI,
-    isLikelyAI,
-    analyzeTextQuality,
-    createDetector,
-    detectAIBatch,
-    AITextDetector
+    simplifyString
 } from "../../src/StringUtils.js";
 import {
     getAverageColor,
@@ -171,7 +165,7 @@ export default {
     async execute(interaction) {
         try {
             // Verifica se o usuário tem permissão
-            if (!bot_config.owners.includes(interaction.user.id)) {
+            if (!botConfig.owners.includes(interaction.user.id)) {
                 return await interaction.editReply('Você não tem permissão para usar este comando de desenvolvimento.');
             }
 

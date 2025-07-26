@@ -1,12 +1,12 @@
 import { 
     SlashCommandBuilder, 
     SlashCommandStringOption, 
-    Colors, MessageFlags, 
+    Colors, 
     EmbedBuilder, 
     PermissionsBitField,
     ChatInputCommandInteraction
 } from "discord.js";
-import bot_config from "../../config.json" with { type: "json" };
+import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
 import { getContext } from "../../src/Roleplay.js";
@@ -15,7 +15,7 @@ import { aiGenerate } from "../../src/AIUtils.js";
 export default {
     data: new SlashCommandBuilder()
         .setName("palpite")
-        .setDescription(`[Administrativo] Peça palpites do roleplay ao ${bot_config.name}.`)
+        .setDescription(`[Administrativo] Peça palpites do roleplay ao ${botConfig.name}.`)
         .addStringOption(
             new SlashCommandStringOption()
             .setName("prompt")
@@ -65,7 +65,7 @@ export default {
                 embeds: [
                     new EmbedBuilder()
                     .setColor(Colors.Blurple)
-                    .setTitle(`Palpites do ${bot_config.name}`)
+                    .setTitle(`Palpites do ${botConfig.name}`)
                     .setDescription(response.text)
                 ]
             }).catch(() => {});

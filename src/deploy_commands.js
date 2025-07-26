@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { REST } from "@discordjs/rest";
 import { SnowflakeUtil, Routes } from "discord.js";
-import bot_config from "../config.json" with { type: "json" };
+import botConfig from "../config.json" with { type: "json" };
 import * as Server from "./Server.js";
 import "dotenv/config";
 import client from "./client.js";
@@ -156,7 +156,7 @@ export default async function deploy_commands(serverId) {
     // Registra os comandos apenas se forem diferentes
     try {
         await rest.put(
-            Routes.applicationGuildCommands(bot_config.id, serverId),
+            Routes.applicationGuildCommands(botConfig.id, serverId),
             { body: commands }
         );
         console.log(`- Comandos registrados em ${guild.name} (${serverId})`);

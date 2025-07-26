@@ -10,7 +10,7 @@ import {
     SlashCommandStringOption
 } from "discord.js";
 import * as Server from "../../src/Server.js";
-import bot_config from "../../config.json" with { type: "json" };
+import botConfig from "../../config.json" with { type: "json" };
 import { simplifyString } from "../../src/StringUtils.js";
 import gis from "g-i-s";
 import { getAverageColor, isImageSafe, fetchImageAsPngBuffer } from "../../src/VisualUtils.js";
@@ -90,7 +90,7 @@ export default {
                         } else {
                             countryChat.threads.create({
                                 name: `Caixa de Entrada`,
-                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${botConfig.name}`
                             }).then(inbox => {
                                 inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
                                 inbox.send({content: responseContent, embeds: [responseEmbed], files: [attachment]});
@@ -122,7 +122,7 @@ export default {
                         } else {
                             countryChat.threads.create({
                                 name: `Caixa de Entrada`,
-                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${botConfig.name}`
                             }).then(inbox => {
                                 inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
                                 inbox.send({content: responseContent, embeds: [responseEmbed]});
@@ -148,7 +148,7 @@ export default {
                         } else {
                             countryChat.threads.create({
                                 name: `Caixa de Entrada`,
-                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${bot_config.name}`
+                                message: `Canal destinado à caixa de entrada de cartas enviadas através do comando do ${botConfig.name}`
                             }).then(inbox => {
                                 inbox.send(`-# <@&${interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(countryChat.name))).id}>`);
                                 inbox.send({content: responseContent, embeds: [responseEmbed]});

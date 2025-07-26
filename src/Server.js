@@ -105,3 +105,81 @@ export async function paid(serverId, tier) {
         await client.close();
     }
 }
+
+/**
+ * Configuração padrão e labels
+ */
+export const defaultConfiguration = {
+    name: {
+        label: "Nome do servidor",
+        input: "texto",
+    },
+    extra_prompt: {
+        label: "Prompt adicional",
+        input: "texto",
+    },
+    action_timing: {
+        label: "Segundos para enviar partes da ação",
+        input: "tempo",
+    },
+    roles: {
+        player: {
+            label: "Cargo de jogador",
+            input: "cargo"
+        },
+        non_player: {
+            label: "Cargo de não jogador",
+            input: "cargo"
+        },
+    },
+    channels: {
+        staff: {
+            label: "Canal da administração",
+            input: "canal",
+        },
+        logs: {
+            label: "Canal de registros",
+            input: "canal",
+        },
+        context: {
+            label: "Canal da memória do bot",
+            input: "canal",
+        },
+        actions: {
+            label: "Canais de ações",
+            input: "canal",
+        },
+        events: {
+            label: "Canais de eventos",
+            input: "canal",
+        },
+        narrations: {
+            label: "Canal de narrações",
+            input: "canal",
+        },
+        time: {
+            label: "Canal de passagem do tempo",
+            input: "canal",
+        },
+        secret_actions: {
+            label: "Canal de ações secretas",
+            input: "canal",
+        },
+        secret_actions_log: {
+            label: "Canal administrativo de ações secretas",
+            input: "canal",
+        },
+        country_category: {
+            label: "Categoria de chat dos países",
+            input: "canal",
+        },
+        country_picking: {
+            label: "Canal de escolha de país",
+            input: "canal",
+        },
+        picked_countries: {
+            label: "Canal de países escolhidos",
+            input: "canal",
+        },
+    },
+};

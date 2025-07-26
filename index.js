@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import bot_config from "./config.json" with { type: "json" };
+import botConfig from "./config.json" with { type: "json" };
 import client from "./src/client.js";
 import "dotenv/config";
 
