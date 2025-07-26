@@ -24,7 +24,7 @@ export async function getContext(guild) {
     if (!serverConfig?.server?.channels?.context) return undefined;
     if (!guild.channels.cache.has(serverConfig.server.channels.context)) return undefined;
     
-    return (await guild.channels.cache.get(serverConfig?.server?.channels?.context)?.messages?.fetch())
+    return (await guild.channels.cache.get(serverConfig?.server?.channels?.context)?.messages?.fetch({ limit: 100 }))
         ?.sort()
         ?.map(msg => msg.content.split('\n').filter(line => !line.includes('-# RG-')).join('\n'))
         ?.join('\n\n');
