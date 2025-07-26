@@ -9,7 +9,7 @@ import {
 import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
-import { getContext } from "../../src/Roleplay.js";
+import { getAllPlayers, getContext, getCurrentDate } from "../../src/Roleplay.js";
 import { aiGenerate } from "../../src/AIUtils.js";
 
 export default {
@@ -51,7 +51,9 @@ export default {
                 .setDescription("Gerando seu palpite...")
             ],
         }).then(async () => {
-            let acao_contexto = await getContext(interaction.guild);
+            const acao_contexto = await getContext(interaction.guild);
+            const servidor_data_roleplay = await getCurrentDate(interaction.guild);
+            const servidor_pais_jogadores = await getAllPlayers(interaction.guild);
 
             if(!acao_contexto) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 

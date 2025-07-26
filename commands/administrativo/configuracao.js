@@ -221,8 +221,9 @@ export default {
                 updateQuery,
                 { returnDocument: "after", upsert: true }
             );
-
-            let responseCode = `${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
+            
+            const fullConfig = buildFullConfig(reply_config?.server);
+            let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);

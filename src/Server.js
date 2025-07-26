@@ -183,6 +183,14 @@ export const defaultConfiguration = {
             label: "Canal de países escolhidos",
             input: "canal",
         },
+        npc_random_actions: {
+            label: "NPC - Ações aleatórias",
+            input: "canal",
+        },
+        npc_diplomacy: {
+            label: "NPC - Diplomacia",
+            input: "canal",
+        },
     },
     experiments: {
         disable_year_summary: {

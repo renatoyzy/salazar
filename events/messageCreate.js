@@ -2,7 +2,9 @@ import {
     Message, 
     EmbedBuilder, 
     Colors, 
-    PermissionsBitField, 
+    PermissionsBitField,
+    WebhookClient,
+    AttachmentBuilder
 } from "discord.js";
 import { 
     MongoClient, 
@@ -15,6 +17,8 @@ import "dotenv/config";
 import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
+import gis from "g-i-s";
+import { fetchImageAsPngBuffer, isImageSafe } from "../src/VisualUtils.js";
 
 const collectingUsers = new Set();
 const collectingAdmins = new Set();
@@ -99,6 +103,8 @@ export default {
                 message.cleanContent.length >= process.env.MIN_ACTION_LENGTH || 
                 simplifyString(message.cleanContent).includes("acao: ")
             ) 
+            &&
+            !simplifyString(message.cleanContent).includes('nao narr')
             &&
             !collectingUsers.has(message.author.id)
             &&
@@ -336,6 +342,74 @@ export default {
             };
 
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
+        }
+
+        // Interação com NPC
+        else if (
+            serverConfig?.server?.channels?.npc_diplomacy?.includes(message.channelId) &&
+            message.content.length >= process.env.MIN_DIPLOMACY_LENGTH
+        ) {
+
+            message.reply('-# Analisando ação...').then(async msg => {
+
+                const acao = message.cleanContent;
+                const acao_contexto = await getContext(message.guild);
+                const acao_jogador = message.member.displayName;
+                const servidor_data_roleplay = await getCurrentDate(message.guild);
+                const servidor_pais_jogadores = await getAllPlayers(message.guild);
+
+                const prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY + "`");
+
+                console.log(`- Diplomacia NPC de ${message.author.username} sendo narrada em ${message.guild.name} (${message.guildId})`);
+
+                const response = await aiGenerate(prompt).catch(error => {
+                    console.error("Erro ao gerar contexto de evento:", error);
+                });
+
+                const json = JSON.parse(response.text.replace('```json', '').replace('```', ''));
+
+                if(!json || !json['pais'] || !json['resposta']) return console.error(response.text);
+
+                if(simplifyString(json['resposta']) !== 'nao') {
+
+                    await gis(`Bandeira ${json['pais']} ${servidor_data_roleplay}`, async (error, results) => {
+                        
+                        const validResult = results[0];
+
+                        let webhookContent = {
+                            username: json['pais'],
+                            content: json['resposta'],
+                        };
+
+                        if(validResult) webhookContent['avatarURL'] = validResult?.url
+
+                        const webhookUrl = (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id) ? 
+                            (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id).url
+                        :
+                            (await message.channel.createWebhook({name: 'Webhook do salazar'})).url
+
+                        const webhookClient = new WebhookClient({ url: webhookUrl });
+
+                        await webhookClient.send(webhookContent);
+
+                        const contexto_prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY_CONTEXT + "`");
+
+                        const novo_contexto = await aiGenerate(contexto_prompt).catch(error => {
+                            console.error("Erro ao gerar contexto:", error);
+                        });
+
+                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novo_contexto.text).then(() => {
+                            msg.delete();
+                        });
+
+                    });
+
+                } else {
+                    console.log('-- '+(JSON.parse(response.text.replace('```json', '').replace('```', ''))['pais']));
+                }
+
+            });
+
         }
     }
 };

@@ -10,6 +10,7 @@ import * as Server from '../src/Server.js';
 import { simplifyString } from "../src/StringUtils.js";
 import { getAverageColor, makeRoundFlag, isImageSafe, fetchImageAsPngBuffer } from "../src/VisualUtils.js";
 import gis from "g-i-s";
+import { getCurrentDate } from '../src/Roleplay.js';
 
 export default {
 
@@ -101,7 +102,7 @@ export default {
                     });
 
                     // Criar bandeira emoji
-                    const servidor_data_roleplay = (await (await interaction.guild.channels.fetch(serverConfig?.channels?.time)).messages.fetch()).first() || 'antiga';
+                    const servidor_data_roleplay = getCurrentDate(interaction.guild);
                     
                     await gis(`Bandeira ${role.name} ${servidor_data_roleplay}`, async (error, results) => {
 
