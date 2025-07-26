@@ -114,20 +114,15 @@ export default {
                 serverConfig?.server?.channels?.country_category == message.channel?.parent?.parent?.id
             )
         ) {
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
             
             const filter = msg => msg.author.id == message.author.id;
+            if(message.channel.type != ChannelType.GuildText) return;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
             
             collectingUsers.add(message.author.id);
 
-            message.react('📝')
-            .catch(() => {})
-            .then((reaction) => {
-                setTimeout(() => {
-                    reaction.remove().catch(() => {}); 
-                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-            })
+            message.react('📝').catch(() => {})
 
             message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
                 setTimeout(() => {
@@ -198,6 +193,8 @@ export default {
                             message.channel?.send(chunk);
                         });
                     } 
+
+                    collected.forEach(msg => msg.reactions.removeAll());
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
 
@@ -363,7 +360,7 @@ export default {
             message.content.length >= process.env.MIN_DIPLOMACY_LENGTH
         ) {
 
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
 
             message.reply('-# Analisando ação...').then(async msg => {
 
