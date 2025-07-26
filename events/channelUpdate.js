@@ -24,6 +24,8 @@ export default {
             await equivalentRole.setName(simplifyString(newChannel.name, true, true).toUpperCase()).catch(() => {});
         }
 
+        if(equivalentRole) return;
+
         const pickCountryChannel = newChannel.guild.channels.cache.get(serverConfig?.server?.channels?.picked_countries);
 
         if(!pickCountryChannel || pickCountryChannel.type != ChannelType.GuildText) return;
