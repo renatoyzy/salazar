@@ -1,16 +1,10 @@
 import { 
     SnowflakeUtil,
-    Routes 
 } from "discord.js";
 import { 
     MongoClient, 
     ServerApiVersion 
 } from "mongodb";
-import fs from "fs";
-import path from "path";
-import { REST } from "@discordjs/rest";
-import botConfig from "../config.json" with { type: "json" };
-import client from "./Client.js";
 import "dotenv/config";
 
 /**
