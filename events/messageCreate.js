@@ -13,8 +13,8 @@ import * as Server from "../src/Server.js";
 import client from "../src/client.js";
 import "dotenv/config";
 import { getContext } from "../src/Roleplay.js";
-import ai_generate from "../src/ai_generate.js";
-import { simplifyString, chunkifyText, isLikelyAI } from "../src/StringUtils.js";
+import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
+import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 
 const collectingUsers = new Set();
 
@@ -156,7 +156,7 @@ export default {
 
                     console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
 
-                    const response = await ai_generate(prompt).catch(error => {
+                    const response = await aiGenerate(prompt).catch(error => {
                         console.error("Erro ao gerar narração:", error);
                     });
 
@@ -186,7 +186,7 @@ export default {
 
                     const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
 
-                    const novo_contexto = await ai_generate(contexto_prompt).catch(error => {
+                    const novo_contexto = await aiGenerate(contexto_prompt).catch(error => {
                         console.error("Erro ao gerar contexto:", error);
                     });
 
@@ -216,7 +216,7 @@ export default {
 
             console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
 
-            const response = await ai_generate(prompt).catch(error => {
+            const response = await aiGenerate(prompt).catch(error => {
                 console.error("Erro ao gerar contexto de evento:", error);
             });
 
@@ -253,7 +253,7 @@ export default {
 
             console.log(`- O período está sendo passado em ${message.guild.name} (${message.guildId})`);
 
-            const response = await ai_generate(prompt).catch(error => {
+            const response = await aiGenerate(prompt).catch(error => {
                 console.error("Erro ao gerar resumo de período:", error);
             });
 

@@ -19,7 +19,7 @@ import deploy_commands from "../../src/deploy_commands.js";
 import client, { announce } from "../../src/client.js";
 
 import { getContext } from "../../src/Roleplay.js";
-import ai_generate from "../../src/ai_generate.js";
+import { aiGenerate } from "../../src/AIUtils.js";
 import {
     chunkifyText,
     simplifyString,

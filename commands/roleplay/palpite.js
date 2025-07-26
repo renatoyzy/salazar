@@ -10,7 +10,7 @@ import bot_config from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
 import { getContext } from "../../src/Roleplay.js";
-import ai_generate from "../../src/ai_generate.js";
+import { aiGenerate } from "../../src/AIUtils.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -57,7 +57,7 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
 
-            const response = await ai_generate(prompt).catch(error => {
+            const response = await aiGenerate(prompt).catch(error => {
                 console.error("Erro ao gerar palpite:", error);
             });
 
