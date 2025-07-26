@@ -19,59 +19,64 @@ import * as Server from "../../src/Server.js";
 import botConfig from "../../config.json" with { type: "json" };
 import { inspect } from "util";
 
+// Função para criar opções dinamicamente
+function buildOptions(builder) {
+    // Opção principal para escolher o campo a alterar
+    builder.addStringOption(option =>
+        option.setName('opção')
+            .setDescription('Qual opção deve ser alterada')
+            .setRequired(false)
+            .setChoices(
+                Object.entries(Server.optionLabels).map(([key, label]) => ({
+                    name: label,
+                    value: key // aqui já está channels.nome, roles.player, etc.
+                }))
+            )
+    );
+
+    // Para cada tipo de argumento, adiciona a opção correspondente
+    const types = {
+        canal: SlashCommandChannelOption,
+        cargo: SlashCommandRoleOption,
+        texto: SlashCommandStringOption,
+        tempo: SlashCommandIntegerOption
+    };
+
+    Object.entries(types).forEach(([type, OptionClass]) => {
+        const methodName = `add${OptionClass.name.replace('SlashCommand', '').replace('Option', '')}Option`;
+        builder[methodName](
+            new OptionClass()
+                .setName(type)
+                .setDescription(`Defina o valor para opções do tipo ${type}`)
+                .setRequired(false)
+        );
+    });
+
+    return builder;
+}
+
+// Função recursiva para montar objeto de resposta
+function buildFullConfig(dbConfig, defaultConfig = Server.defaultConfiguration) {
+    const result = {};
+    for (const key in defaultConfig) {
+        const value = defaultConfig[key];
+        if (typeof value === "object" && value.input) {
+            // Campo simples
+            result[key] = dbConfig?.[key] ?? undefined;
+        } else if (typeof value === "object") {
+            // Subcampo/categoria
+            result[key] = buildFullConfig(value, dbConfig?.[key]);
+        }
+    }
+    return result;
+}
+
 export default {
-    data: new SlashCommandBuilder()
-        .setName('configuração')
-        .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${botConfig.name} no seu servidor`)
-        .addStringOption(
-            new SlashCommandStringOption()
-            .setName(`opção`)
-            .setDescription(`Qual opção deve ser alterada`)
-            .setRequired(false)
-            .setChoices([
-                { name: 'Nome do servidor', value: 'name' },
-                { name: 'Prompt adicional', value: 'extra_prompt' },
-                { name: 'Segundos para enviar partes da ação', value: 'action_timing' },
-                { name: 'Cargo de jogador', value: 'roles.player' },
-                { name: 'Cargo de não jogador', value: 'roles.non_player' },
-                { name: 'Canal da administração', value: 'channels.staff' },
-                { name: 'Canal de registros', value: 'channels.logs' },
-                { name: 'Canal da memória do bot', value: 'channels.context' },
-                { name: 'Canais de ações', value: 'channels.actions' },
-                { name: 'Canais de eventos', value: 'channels.events' },
-                { name: 'Canal de narrações', value: 'channels.narrations' },
-                { name: 'Canal de passagem do tempo', value: 'channels.time' },
-                { name: 'Canal de ações secretas', value: 'channels.secret_actions' },
-                { name: 'Canal administrativo de ações secretas', value: 'channels.secret_actions_log' },
-                { name: 'Canal de escolha de país', value: 'channels.country_picking' },
-                { name: 'Canal de países escolhidos', value: 'channels.picked_countries' },
-                { name: 'Categoria de chat dos países ', value: 'channels.country_category' },
-            ])
-        )
-        .addChannelOption(
-            new SlashCommandChannelOption()
-            .setName('canal')
-            .setDescription('O canal ou categoria que será definido para essa opção')
-            .setRequired(false)
-        )
-        .addRoleOption(
-            new SlashCommandRoleOption()
-            .setName('cargo')
-            .setDescription('O cargo que será definido para essa opção')
-            .setRequired(false)
-        )
-        .addStringOption(
-            new SlashCommandStringOption()
-            .setName('texto')
-            .setDescription('O texto que será definido para essa opção')
-            .setRequired(false)
-        )
-        .addIntegerOption(
-            new SlashCommandIntegerOption()
-            .setName('tempo')
-            .setDescription('O tempo em segundos que será definido para essa opção')
-            .setRequired(false)
-        ),
+    data: buildOptions(
+        new SlashCommandBuilder()
+            .setName('configuração')
+            .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${botConfig.name} no seu servidor`)
+    ),
 
     min_tier: 1,
 
@@ -82,39 +87,11 @@ export default {
         const serverConfig = await Server.config(interaction.guildId);
         const option = interaction.options.get('opção')?.value;
 
-        const options_alike = {
-            'channels': 'canal',
-            'roles': 'cargo',
-
-            'name': 'texto',
-            'extra_prompt': 'texto',
-            'action_timing': 'tempo'
-        };
         // Verifica se a opção é um campo de array
         const array_options = [
             'channels.actions',
             'channels.events'
         ];
-
-        const option_labels = {
-            "name": "Nome do servidor",
-            "extra_prompt": "Prompt adicional",
-            "action_timing": "Segundos para enviar partes da ação",
-            "roles.player": "Cargo de jogador",
-            "roles.non_player": "Cargo de não jogador",
-            "channels.staff": "Canal da administração",
-            "channels.logs": "Canal de registros",
-            "channels.context": "Canal da memória do bot",
-            "channels.actions": "Canais de ações",
-            "channels.events": "Canais de eventos",
-            "channels.narrations": "Canal de narrações",
-            "channels.time": "Canal de passagem do tempo",
-            "channels.secret_actions": "Canal de ações secretas",
-            "channels.secret_actions_log": "Canal administrativo de ações secretas",
-            "channels.country_category": "Categoria de chat dos países",
-            "channels.country_picking": "Canal de escolha de país",
-            "channels.picked_countries": "Canal de países escolhidos"
-        };
 
         const mongo_client = new MongoClient(process.env.DB_URI, {
             serverApi: {
@@ -131,30 +108,29 @@ export default {
 
             // Exibir configuração atual
             if(!option) {
-                const reply_config = await collection.findOne(
-                    { server_id: interaction.guildId }
-                );
+                const reply_config = await collection.findOne({ server_id: interaction.guildId });
+                const fullConfig = buildFullConfig(reply_config?.server);
 
-                let response_code = `\`\`\`json\n${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
+                let responseCode = `\`\`\`json\n${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
 
-                Object.keys(option_labels).reverse().forEach(key => {
-                    response_code = response_code.replace(`${key.includes('.') ? key.split('.')[1] : key}`, option_labels[key]);
+                Object.keys(Server.optionLabels).reverse().forEach(key => {
+                    responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
                 });
 
                 return await interaction.editReply({embeds: [
                     new EmbedBuilder()
                     .setTitle(`Configuração atual do servidor`)
                     .setColor(Colors.Blurple)
-                    .setDescription(response_code)
+                    .setDescription(responseCode)
                     .setTimestamp(interaction.createdAt)
                 ]})
             }
 
-            const value = interaction.options.get(options_alike[option.split('.')[0]])?.value;
+            const value = interaction.options.get(Server.optionsAlike[option.split('.')[0]])?.value;
 
             if (!value) return interaction.editReply({embeds: [
                 new EmbedBuilder()
-                .setDescription(`Para alterar o **${option_labels[option] || option}**, você precisa definir o argumento de **${options_alike[option.split('.')[0]]}** no comando, e não o que você definiu.`)
+                .setDescription(`Para alterar o **${Server.optionLabels[option] || option}**, você precisa definir o argumento de **${Server.optionsAlike[option.split('.')[0]]}** no comando, e não o que você definiu.`)
                 .setColor(Colors.Red)
             ]});
 
@@ -173,11 +149,11 @@ export default {
                 if (current.includes(value)) {
                     // Valor já existe → remove
                     updateQuery = { $pull: { [`server.${option}`]: value } };
-                    action = `${fake_value} removido de ${option_labels[option] || option}`;
+                    action = `${fake_value} removido de ${Server.optionLabels[option] || option}`;
                 } else {
                     // Valor não existe → adiciona
                     updateQuery = { $push: { [`server.${option}`]: value } };
-                    action = `${fake_value} adicionado de ${option_labels[option] || option}`;
+                    action = `${fake_value} adicionado de ${Server.optionLabels[option] || option}`;
                 }
 
             } else {
@@ -185,10 +161,10 @@ export default {
                 const currentValue = serverConfig?.server?.[option.split('.')[0]]?.[option.split('.')[1]] ?? serverConfig?.server?.[option];
                 if (currentValue === value) {
                     updateQuery = { $set: { [`server.${option}`]: undefined } };
-                    action = `${option_labels[option] || option} já estava definido como ${fake_value}, valor removido (undefined)`;
+                    action = `${Server.optionLabels[option] || option} já estava definido como ${fake_value}, valor removido (undefined)`;
                 } else {
                     updateQuery = { $set: { [`server.${option}`]: value } };
-                    action = `${option_labels[option] || option} redefinido para ${fake_value}`;
+                    action = `${Server.optionLabels[option] || option} redefinido para ${fake_value}`;
                 }
             }
 
@@ -228,15 +204,15 @@ export default {
                 { returnDocument: "after", upsert: true }
             );
 
-            let response_code = `\`\`\`json\n${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
+            let responseCode = `\`\`\`json\n${inspect(JSON.parse(JSON.stringify(reply_config.server)), { depth: 2 })?.slice(0, 990)}\n\`\`\``.replace('channels', 'Canais').replace('roles', 'Cargos');
 
-            Object.keys(option_labels).reverse().forEach(key => {
-                response_code = response_code.replace(`${key.includes('.') ? key.split('.')[1] : key}`, option_labels[key]);
+            Object.keys(Server.optionLabels).reverse().forEach(key => {
+                responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
             });
 
             let embed_fields = [{
                 name: `Configuração atual do servidor`,
-                value: response_code
+                value: responseCode
             }];
 
             array_options.includes(option) && embed_fields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})

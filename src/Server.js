@@ -183,3 +183,32 @@ export const defaultConfiguration = {
         },
     },
 };
+
+/**
+ * Gera os mapeamentos de argumentos e labels a partir do defaultConfiguration
+ */
+function getOptionsAlikeAndLabels(config = defaultConfiguration) {
+    const optionsAlike = {};
+    const optionLabels = {};
+
+    function traverse(obj, prefix = "") {
+        for (const key in obj) {
+            const value = obj[key];
+            const path = prefix ? `${prefix}.${key}` : key;
+
+            if (typeof value === "object" && value.input) {
+                // Mapeia tipo de input para argumento
+                optionsAlike[path] = value.input;
+                optionLabels[path] = value.label || key;
+            } else if (typeof value === "object") {
+                traverse(value, path);
+            }
+        }
+    }
+
+    traverse(config);
+    return { optionsAlike, optionLabels };
+}
+
+// Exporte também os objetos prontos para uso
+export const { optionsAlike, optionLabels } = getOptionsAlikeAndLabels(defaultConfiguration);
