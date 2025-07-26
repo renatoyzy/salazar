@@ -14,7 +14,7 @@ import Canvas from "canvas";
 import fs from "fs";
 import path from "path";
 import * as Server from "../../src/Server.js";
-import project_package from "../../package.json" with { type: "json" };
+import projectPackage from "../../package.json" with { type: "json" };
 import client, { announce } from "../../src/Client.js";
 
 import { getContext } from "../../src/Roleplay.js";
