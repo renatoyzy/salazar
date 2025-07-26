@@ -58,20 +58,20 @@ export default {
                 const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
 
                 // Se houver bloco diff, ele fica em um chunk separado
-                const diffStart = json['acao'].indexOf('```diff');
-                let mainText = json['acao'];
+                const diffStart = json['narracao'].indexOf('```diff');
+                let mainText = json['narracao'];
                 let diffChunk = null;
                 if (diffStart !== -1) {
-                    mainText = json['acao'].slice(0, diffStart);
-                    diffChunk = json['acao'].slice(diffStart);
+                    mainText = json['narracao'].slice(0, diffStart);
+                    diffChunk = json['narracao'].slice(diffStart);
                 }
 
-                let finaltext = `# Ação de ${json['pais']} (NPC)\n- Ação original: https://discord.com/channels/${guild.id}/${actionMessage.channel_id}/${actionMessage.id}\n${mainText}`;
-                const chunks = chunkifyText(finaltext);
+                let finalText = `# Ação de ${json['pais']} (NPC)\n- Ação original: https://discord.com/channels/${guild.id}/${actionMessage.channel_id}/${actionMessage.id}\n${mainText}`;
+                const chunks = chunkifyText(finalText);
                 if (diffChunk) chunks.push(diffChunk);
                 chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
-                chunkifyText(json['narracao']).forEach(chunk => narrationsChannel?.send(chunk));
+                chunks.forEach(chunk => narrationsChannel?.send(chunk));
                 chunkifyText(json['resultado']).forEach(chunk => contextChannel?.send(chunk));
 
             });
