@@ -109,7 +109,7 @@ export default {
                 serverConfig?.server?.channels?.country_category == message.channel?.parent?.parent?.id
             )
         ) {
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada.`).then(msg => setTimeout(() => msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
             
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
@@ -220,6 +220,8 @@ export default {
             &&
             !collectingAdmins.has(message.author.id)
         ) {
+
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e não produzirá contexto para esse evento. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
 
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
