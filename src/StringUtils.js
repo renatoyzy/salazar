@@ -1,5 +1,3 @@
-import { createHash } from "crypto";
-
 /**
  * Simplifica ao máximo uma string
  * @param {string} string - Texto a ser simplificado

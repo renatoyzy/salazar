@@ -1,5 +1,6 @@
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 import botConfig from "../config.json" with { type: "json" };
+import { createHash } from "crypto";
 import 'dotenv/config';
 
 export const ai = new GoogleGenAI({
