@@ -245,38 +245,41 @@ export default {
 
             serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', ano)}`);
 
-            const acao_contexto = await getContext(message.guild);
-            const periodo_anterior = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
-            const periodo_atual = simplifyString(message.cleanContent);
+            if(!serverConfig?.server?.experiments?.disable_year_summary) {
+                const acao_contexto = await getContext(message.guild);
+                const periodo_anterior = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
+                const periodo_atual = simplifyString(message.cleanContent);
 
-            const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
+                const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
 
-            console.log(`- O período está sendo passado em ${message.guild.name} (${message.guildId})`);
+                console.log(`- O período está sendo passado em ${message.guild.name} (${message.guildId})`);
 
-            const response = await aiGenerate(prompt).catch(error => {
-                console.error("Erro ao gerar resumo de período:", error);
-            });
+                const response = await aiGenerate(prompt).catch(error => {
+                    console.error("Erro ao gerar resumo de período:", error);
+                });
 
-            const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-            if (!contextChannel) return;
+                const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
+                if (!contextChannel) return;
 
-            let tituloResumo = periodoCompleto
-                ? `# Resumo geral do ano de ${ano_atual}`
-                : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
-            let finaltext = `${tituloResumo}\n${response.text}`;
-            const chunks = chunkifyText(finaltext, `\n-# RG-${ano_atual}`);
+                let tituloResumo = periodoCompleto
+                    ? `# Resumo geral do ano de ${ano_atual}`
+                    : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
+                let finaltext = `${tituloResumo}\n${response.text}`;
+                const chunks = chunkifyText(finaltext, `\n-# RG-${ano_atual}`);
 
-            const msgs = await contextChannel.messages.fetch({ limit: 100 }); // Limite máximo do bulkDelete
-            const deletable = msgs.filter(msg =>
-                (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
-                !msg.content.includes('-# RG-')
-            );
+                const msgs = await contextChannel.messages.fetch({ limit: 100 }); // Limite máximo do bulkDelete
+                const deletable = msgs.filter(msg =>
+                    (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
+                    !msg.content.includes('-# RG-')
+                );
 
-            if (deletable.size > 0) {
-                await contextChannel.bulkDelete(deletable, true); // true ignora mensagens antigas
-            }
+                if (deletable.size > 0) {
+                    await contextChannel.bulkDelete(deletable, true); // true ignora mensagens antigas
+                }
 
-            chunks.forEach(chunk => contextChannel.send(chunk));
+                chunks.forEach(chunk => contextChannel.send(chunk));
+            };
+
             contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
         }
     }
