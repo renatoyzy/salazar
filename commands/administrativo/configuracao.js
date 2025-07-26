@@ -146,7 +146,7 @@ export default {
 
             const value = interaction.options.get(Server.optionsAlike[option])?.value;
 
-            if (!value) return interaction.editReply({embeds: [
+            if (!value && value !== false) return interaction.editReply({embeds: [
                 new EmbedBuilder()
                 .setDescription(`Para alterar o **${Server.optionLabels[option] || option}**, você precisa definir o argumento de **${Server.optionsAlike[option] || option}** no comando, e não o que você definiu.`)
                 .setColor(Colors.Red)
