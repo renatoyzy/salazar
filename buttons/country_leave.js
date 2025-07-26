@@ -47,7 +47,7 @@ export default {
         } catch (err) {
             console.error('Erro ao remover player da lista de país ao sair:', err);
         } finally {
-            if(!interaction.replied) await interaction.reply('Não achei nenhum país associado ao seu nome. Nada mudou')
+            if(!interaction.replied) await interaction.reply({content: 'Não achei nenhum país associado ao seu nome. Nada mudou', flags: [MessageFlags.Ephemeral]})
         }
 
     }
