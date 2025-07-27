@@ -3,6 +3,7 @@ import {
     BaseInteraction,
     ButtonBuilder,
     ButtonStyle,
+    ChannelType,
     Colors,
     EmbedBuilder,
     Guild,
@@ -22,12 +23,31 @@ export async function getContext(guild) {
 
     const serverConfig = await Server.config(guild.id);
     if (!serverConfig?.server?.channels?.context) return undefined;
-    if (!guild.channels.cache.has(serverConfig.server.channels.context)) return undefined;
     
-    return (await guild.channels.cache.get(serverConfig?.server?.channels?.context)?.messages?.fetch({ limit: 100 }))
-        ?.sort()
-        ?.map(msg => msg.content.split('\n').filter(line => !line.includes('-# RG-')).join('\n'))
-        ?.join('\n\n');
+    const contextChannel = guild.channels.cache.get(serverConfig.server.channels.context);
+    if (!contextChannel) return undefined;
+    if (contextChannel.type != ChannelType.GuildForum) return undefined;
+    
+    await contextChannel.threads.fetch({}, {cache: true});
+
+    // Primeiro, cria um array de Promises
+    const threadPromises = contextChannel.threads.cache
+        .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+        .map(async thread => {
+            const messages = await thread.messages.fetch({limit: 100});
+            return messages
+                .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+                .map(m => m.content)
+                .join('\n');
+        });
+
+    // Aguarda todas as Promises serem resolvidas
+    const threadContents = await Promise.all(threadPromises);
+    
+    // Junta todos os conteúdos das threads
+    const finalContext = threadContents.join('\n\n');
+
+    return finalContext;
 }
 
 /**

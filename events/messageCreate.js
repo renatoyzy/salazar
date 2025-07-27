@@ -3,7 +3,8 @@ import {
     EmbedBuilder, 
     Colors, 
     PermissionsBitField,
-    WebhookClient
+    WebhookClient,
+    ChannelType
 } from "discord.js";
 import { 
     MongoClient, 
@@ -200,7 +201,10 @@ export default {
                         console.error("Erro ao gerar contexto:", error);
                     });
 
-                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text).then(() => {
+                    const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
+                    if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
+
+                    contextChannel.threads.cache.first().send(novoContexto.text).then(() => {
                         msg.delete();
                     });
 
@@ -267,8 +271,11 @@ export default {
                     collected.forEach(msg => msg.reactions.removeAll());
 
                     if (response.text === "IRRELEVANTE!!!") return;
+                    
+                    const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
+                    if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
-                    message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(response.text);
+                    contextChannel.threads.cache.first().send(response.text);
 
                 });
 
@@ -296,7 +303,7 @@ export default {
 
             serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', ano)}`);
 
-            if(!serverConfig?.server?.experiments?.disable_year_summary) {
+            /*if(!serverConfig?.server?.experiments?.disable_year_summary) {
                 const actionContext = await getContext(message.guild);
                 const roleplayPreviousPeriod = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
                 const roleplayCurrentPeriod = simplifyString(message.cleanContent);
@@ -310,7 +317,7 @@ export default {
                 });
 
                 const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-                if (!contextChannel) return;
+                if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
                 let tituloResumo = periodoCompleto
                     ? `# Resumo geral do ano de ${ano_atual}`
@@ -341,9 +348,19 @@ export default {
                     });
                 });
 
-            };
+            };*/
 
-            contextChannel.send(`# ${message.cleanContent}\nTodo o contexto a seguir pertence ao ano de ${ano}.`);
+            const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
+            if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
+
+            if(periodoCompleto) {
+                contextChannel.threads.create({
+                    name: ano_atual || ano,
+                    message: {
+                        content: `Eventos, ações e acontecimentos de ${ano_atual || ano}.`
+                    }
+                });
+            }
         }
 
         // Interação com NPC
