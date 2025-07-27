@@ -1,4 +1,6 @@
 import { 
+    ChannelType,
+    Role,
     SnowflakeUtil,
 } from "discord.js";
 import { 
@@ -33,6 +35,33 @@ export async function config(serverId) {
     } finally {
         await client.close();
     }
+}
+
+/**
+ * Remove do objeto de configuração todos os campos que não existem mais no defaultConfiguration,
+ * preservando apenas os válidos e mantendo a estrutura original.
+ * @param {{}} config - Configuração atual do servidor (da DB)
+ * @param {{}} defaultConfig - Estrutura padrão de configuração
+ * @returns {{}} Configuração limpa
+ */
+export function cleanConfig(config, defaultConfig = defaultConfiguration) {
+    if (!config || typeof config !== "object") return config;
+    const cleaned = {};
+    for (const key in defaultConfig) {
+        if (Object.prototype.hasOwnProperty.call(config, key)) {
+            if (
+                typeof config[key] === "object" &&
+                typeof defaultConfig[key] === "object" &&
+                !defaultConfig[key].input
+            ) {
+                // Recursivo para subcampos/categorias
+                cleaned[key] = cleanConfig(config[key], defaultConfig[key]);
+            } else {
+                cleaned[key] = config[key];
+            }
+        }
+    }
+    return cleaned;
 }
 
 /**
@@ -113,91 +142,104 @@ export const defaultConfiguration = {
     name: {
         label: "Nome do servidor",
         input: "texto",
+        onlyAccepts: [String],
     },
     extra_prompt: {
         label: "Prompt adicional",
         input: "texto",
+        onlyAccepts: [String],
     },
     action_timing: {
         label: "Segundos para enviar partes da ação",
         input: "tempo",
+        onlyAccepts: [Number],
     },
     roles: {
         player: {
             label: "Cargo de jogador",
-            input: "cargo"
+            input: "cargo",
+            onlyAccepts: [Role],
         },
         non_player: {
             label: "Cargo de não jogador",
-            input: "cargo"
+            input: "cargo",
+            onlyAccepts: [Role],
         },
     },
     channels: {
         staff: {
             label: "Canal da administração",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText],
         },
         logs: {
             label: "Canal de registros",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText],
         },
         context: {
             label: "Canal da memória do bot",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildForum],
         },
         actions: {
             label: "Canais de ações",
             input: "canal",
             array: true,
+            onlyAccepts: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildCategory, ChannelType.GuildAnnouncement],
         },
         events: {
             label: "Canais de eventos",
             input: "canal",
             array: true,
+            onlyAccepts: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildCategory, ChannelType.GuildAnnouncement],
         },
         narrations: {
             label: "Canal de narrações",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText, ChannelType.GuildAnnouncement],
         },
         time: {
             label: "Canal de passagem do tempo",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText, ChannelType.GuildAnnouncement],
         },
         secret_actions: {
             label: "Canal de ações secretas",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText],
         },
         secret_actions_log: {
             label: "Canal administrativo de ações secretas",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText],
         },
         country_category: {
             label: "Categoria de chat dos países",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildCategory]
         },
         country_picking: {
             label: "Canal de escolha de país",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText]
         },
         picked_countries: {
             label: "Canal de países escolhidos",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText]
         },
         npc_random_actions: {
             label: "NPC - Ações aleatórias",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText]
         },
         npc_diplomacy: {
             label: "NPC - Diplomacia",
             input: "canal",
+            onlyAccepts: [ChannelType.GuildText]
         },
     },
-    experiments: {
-        disable_year_summary: {
-            label: "(Experimento) Desativar sumário anual",
-            input: "booleano",
-        }
-    }
 };
 
 /**

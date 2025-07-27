@@ -2,6 +2,7 @@ import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    ChannelType,
     ChatInputCommandInteraction,
     Colors,
     EmbedBuilder,
@@ -56,7 +57,7 @@ function buildOptions(builder) {
     });
 
     return builder;
-}
+};
 
 // Função recursiva para montar objeto de resposta, respeitando array e booleano
 function buildFullConfig(dbConfig, defaultConfig = Server.defaultConfiguration) {
@@ -80,13 +81,13 @@ function buildFullConfig(dbConfig, defaultConfig = Server.defaultConfiguration) 
         }
     }
     return result;
-}
+};
 
 export default {
     data: buildOptions(
         new SlashCommandBuilder()
-            .setName('configuração')
-            .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${botConfig.name} no seu servidor`)
+        .setName('configuração')
+        .setDescription(`[Administrativo] Comando para visualizar ou alterar a configuração do ${botConfig.name} no seu servidor`)
     ),
 
     min_tier: 1,
@@ -126,8 +127,8 @@ export default {
 
             // Exibir configuração atual
             if(!option) {
-                const reply_config = await collection.findOne({ server_id: interaction.guildId });
-                const fullConfig = buildFullConfig(reply_config?.server);
+                const replyConfig = await collection.findOne({ server_id: interaction.guildId });
+                const fullConfig = buildFullConfig(replyConfig?.server);
 
                 let responseCode = `${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
 
@@ -151,6 +152,38 @@ export default {
                 .setDescription(`Para alterar o **${Server.optionLabels[option] || option}**, você precisa definir o argumento de **${Server.optionsAlike[option] || option}** no comando, e não o que você definiu.`)
                 .setColor(Colors.Red)
             ]});
+
+            // Busca referência da configuração
+            const parts = option.split('.');
+            let ref = Server.defaultConfiguration;
+            for (const part of parts) {
+                ref = ref?.[part];
+            }
+
+            // Validação do tipo
+            if (ref?.onlyAccepts) {
+                let isValid = false;
+                for (const acceptedType of ref.onlyAccepts) {
+                    if (
+                        (acceptedType === String && typeof value === "string") ||
+                        (acceptedType === Number && typeof value === "number") ||
+                        (acceptedType === Boolean && typeof value === "boolean") ||
+                        (acceptedType.name && value?.constructor?.name === acceptedType.name) // Para Role, ChannelType, etc.
+                    ) {
+                        isValid = true;
+                        break;
+                    }
+                }
+                if (!isValid) {
+                    return interaction.editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setDescription(`O valor informado para **${Server.optionLabels[option] || option}** não é do tipo aceito: **${ref.onlyAccepts.map(t => t.name || ChannelType[t] || t).join(', ')}**.`)
+                                .setColor(Colors.Red)
+                        ]
+                    });
+                }
+            };
 
             let updateQuery;
             let action;
@@ -216,13 +249,13 @@ export default {
                     break;
             }
 
-            const reply_config = await collection.findOneAndUpdate(
+            const replyConfig = await collection.findOneAndUpdate(
                 { server_id: interaction.guildId },
                 updateQuery,
                 { returnDocument: "after", upsert: true }
             );
             
-            const fullConfig = buildFullConfig(reply_config?.server);
+            const fullConfig = buildFullConfig(replyConfig?.server);
             let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {

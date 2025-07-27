@@ -10,7 +10,8 @@ import {
     TextInputBuilder,
     TextInputStyle,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    ChannelType
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import botConfig from "../../config.json" with { type: "json" };
@@ -107,6 +108,57 @@ export default {
 
         collector.on("collect", async (i) => {
 
+            // Mapeamento de campos para validação
+            const fieldMap = {
+                "setup_player_role": { path: ["roles", "player"] },
+                "setup_non_player_role": { path: ["roles", "non_player"] },
+                "setup_admin_channel": { path: ["channels", "staff"] },
+                "setup_logs_channel": { path: ["channels", "logs"] },
+                "setup_context_channel": { path: ["channels", "context"] },
+                "setup_narrations_channel": { path: ["channels", "narrations"] },
+                "setup_time_channel": { path: ["channels", "time"] },
+                "setup_secret_actions_channel": { path: ["channels", "secret_actions"] },
+                "setup_secret_actions_log_channel": { path: ["channels", "secret_actions_log"] },
+                "setup_events_channels": { path: ["channels", "events"], isArray: true },
+                "setup_countries_category": { path: ["channels", "countries_category"] },
+                "setup_country_picking_channel": { path: ["channels", "country_picking"] },
+                "setup_picked_countries_channel": { path: ["channels", "picked_countries"] },
+                "setup_actions_channels": { path: ["channels", "actions"], isArray: true }
+            };
+
+            // Validação de tipo usando onlyAccepts
+            if (fieldMap[i.customId]) {
+                let ref = Server.defaultConfiguration;
+                for (const part of fieldMap[i.customId].path) {
+                    ref = ref?.[part];
+                }
+                if (ref?.onlyAccepts) {
+                    let values = fieldMap[i.customId].isArray ? i.values : [i.values[0]];
+                    let isValid = values.every(val => {
+                        return ref.onlyAccepts.some(acceptedType => {
+                            if (acceptedType === String && typeof val === "string") return true;
+                            if (acceptedType === Number && typeof val === "number") return true;
+                            if (acceptedType === Boolean && typeof val === "boolean") return true;
+                            if (acceptedType.name && i.guild && i.guild.channels.cache.get(val)?.type === acceptedType) return true;
+                            if (acceptedType.name && i.guild && i.guild.roles.cache.get(val)?.constructor?.name === acceptedType.name) return true;
+                            return false;
+                        });
+                    });
+                    if (!isValid) {
+                        await i.reply({
+                            ephemeral: true,
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setDescription(`O valor informado não é do tipo aceito: **${ref.onlyAccepts.map(t => t.name || ChannelType[t] || t).join(', ')}**.`)
+                                    .setColor(Colors.Red)
+                            ]
+                        });
+                        return;
+                    }
+                }
+            };
+
+            // Processo padrão de configuração
             switch (i.customId) {
                 case "setup_player_role":
                     setupDate.server.roles = {};
@@ -537,7 +589,8 @@ export default {
 
                 default:
                     break;
-            }
+            };
+            
         });
 
         collector.on("end", (collected, reason) => {
