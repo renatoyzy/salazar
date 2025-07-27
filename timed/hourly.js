@@ -5,7 +5,7 @@ import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate } from "../src/AIUtils.js";
 import gis from "g-i-s";
 import "dotenv/config";
-import { WebhookClient } from "discord.js";
+import { ChannelType, WebhookClient } from "discord.js";
 import { chunkifyText } from "../src/StringUtils.js";
 
 export default {
@@ -56,7 +56,7 @@ export default {
 
                 const narrationsChannel = guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
                 const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
-
+                
                 // Se houver bloco diff, ele fica em um chunk separado
                 const diffStart = json['narracao'].indexOf('```diff');
                 let mainText = json['narracao'];
@@ -72,7 +72,8 @@ export default {
                 chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
                 chunks.forEach(chunk => narrationsChannel?.send(chunk));
-                chunkifyText(json['resultado']).forEach(chunk => contextChannel?.send(chunk));
+                if(contextChannel.type != ChannelType.GuildForum) return;
+                chunkifyText(json['resultado']).forEach(chunk => contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(chunk));
 
             });
 

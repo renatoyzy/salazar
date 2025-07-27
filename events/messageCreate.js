@@ -204,7 +204,7 @@ export default {
                     const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
                     if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
-                    contextChannel.threads.cache.first().send(novoContexto.text).then(() => {
+                    contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(novoContexto.text).then(() => {
                         msg.delete();
                     });
 
@@ -275,7 +275,7 @@ export default {
                     const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
                     if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
-                    contextChannel.threads.cache.first().send(response.text);
+                    contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(response.text);
 
                 });
 
