@@ -11,7 +11,7 @@ import {
     PermissionsBitField
 } from "discord.js";
 import * as Server from "./Server.js";
-import { simplifyString } from "./StringUtils.js";
+import { chunkifyText, simplifyString } from "./StringUtils.js";
 
 /**
  * Obtém o contexto do roleplay para um servidor específico.
@@ -48,6 +48,23 @@ export async function getContext(guild) {
     const finalContext = threadContents.join('\n\n');
 
     return finalContext;
+}
+
+/**
+ * Adiciona ao contexto do roleplay para um servidor específico.
+ * @param {String} text - Contexto a adicionar
+ * @param {Guild} guild - Objeto guild do Discord
+ * @returns {Promise<string | undefined>} Contexto completo do roleplay 
+ */
+export async function addContext(text, guild) {
+    const serverConfig = await Server.config(guild.id);
+    const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
+    if(!contextChannel) return undefined;
+
+    return chunkifyText(text).forEach(async chunk => {
+        await contextChannel.threads.cache.sort((a, b) => b.createdTimestamp - a.createdTimestamp).first().send(chunk);
+    })
+
 }
 
 /**

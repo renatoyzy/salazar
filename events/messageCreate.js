@@ -14,7 +14,7 @@ import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
 import client from "../src/Client.js";
 import "dotenv/config";
-import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
+import { addContext, getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 import gis from "g-i-s";
@@ -201,12 +201,8 @@ export default {
                         console.error("Erro ao gerar contexto:", error);
                     });
 
-                    const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-                    if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
-
-                    contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(novoContexto.text).then(() => {
-                        msg.delete();
-                    });
+                    await addContext(novoContexto.text, message.guild);
+                    await msg.delete();
 
                 });
 
@@ -271,11 +267,8 @@ export default {
                     collected.forEach(msg => msg.reactions.removeAll());
 
                     if (response.text === "IRRELEVANTE!!!") return;
-                    
-                    const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-                    if(!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
-                    contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(response.text);
+                    addContext(response.text, message.guild);
 
                 });
 

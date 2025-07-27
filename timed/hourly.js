@@ -1,7 +1,7 @@
 import client from "../src/Client.js"
 import { config } from "../src/Server.js";
 import botConfig from "../config.json" with {type: "json"};
-import { getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
+import { addContext, getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
 import { aiGenerate } from "../src/AIUtils.js";
 import gis from "g-i-s";
 import "dotenv/config";
@@ -55,8 +55,7 @@ export default {
                 const actionMessage = await webhookClient.send(webhookContent);
 
                 const narrationsChannel = guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
-                const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
-                
+
                 // Se houver bloco diff, ele fica em um chunk separado
                 const diffStart = json['narracao'].indexOf('```diff');
                 let mainText = json['narracao'];
@@ -72,8 +71,7 @@ export default {
                 chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
                 chunks.forEach(chunk => narrationsChannel?.send(chunk));
-                if(contextChannel.type != ChannelType.GuildForum) return;
-                chunkifyText(json['resultado']).forEach(chunk => contextChannel.threads.cache.sort((a, b) => a.createdTimestamp - b.createdTimestamp).first().send(chunk));
+                addContext(json['resultado'], guild);
 
             });
 
