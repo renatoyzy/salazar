@@ -412,7 +412,7 @@ export default {
                             console.error("Erro ao gerar contexto:", error);
                         });
 
-                        message.guild.channels.cache.get(serverConfig?.server?.channels?.context)?.send(novoContexto.text);
+                        addContext(novoContexto.text, message.guild);
 
                     });
 
