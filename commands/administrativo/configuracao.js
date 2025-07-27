@@ -168,8 +168,8 @@ export default {
                         (acceptedType === String && typeof value === "string") ||
                         (acceptedType === Number && typeof value === "number") ||
                         (acceptedType === Boolean && typeof value === "boolean") ||
-                        (typeof acceptedType === "number" && i.guild && i.guild.channels.cache.get(value)?.type === acceptedType) ||
-                        (acceptedType.name && i.guild && i.guild.roles.cache.get(value)?.constructor?.name === acceptedType.name)
+                        (typeof acceptedType === "number" && interaction.guild && interaction.guild.channels.cache.get(value)?.type === acceptedType) ||
+                        (acceptedType.name && interaction.guild && interaction.guild.roles.cache.get(value)?.constructor?.name === acceptedType.name)
                     ) {
                         isValid = true;
                         break;
