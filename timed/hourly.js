@@ -28,11 +28,11 @@ export default {
 
             console.log(`- Ação NPC aleatória sendo executada em ${guild.name} (${guild.id})`);
 
-            const prompt = eval("`" + process.env.PROMPT_NPC_RANDOM_ACTION_MAKE + "`");
+            const prompt = eval("`" + process.env.PROMPT_NPC_ACTION + "`");
             const response = await aiGenerate(prompt);
 
             const json = JSON.parse("{"+response.text.split('{')[1].split('}')[0]+"}");
-            if( !json || !json['pais'] || !json['acao'] || !json['narracao'] || !json['resultado'] ) return console.error(response.text);
+            if( !json || !json['pais'] || !json['acao'] || !json['narracao'] || !json['contexto'] ) return console.error(response.text);
 
             await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
                 
@@ -71,7 +71,7 @@ export default {
                 chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
                 chunks.forEach(chunk => narrationsChannel?.send(chunk));
-                addContext(json['resultado'], guild);
+                addContext(json['contexto'], guild);
 
             });
 

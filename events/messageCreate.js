@@ -113,98 +113,91 @@ export default {
                 serverConfig?.server?.channels?.country_category == message.channel?.parent?.id ||
                 serverConfig?.server?.channels?.country_category == message.channel?.parent?.parent?.id
             )
+            &&
+            (
+                message.channel.type == ChannelType.GuildText || 
+                message.channel.type == ChannelType.PublicThread
+            )
         ) {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
-            
+
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
             
+            collector.on('collect', msg => {
+                msg.react('📝').catch(() => {});
+            });
+
             collectingUsers.add(message.author.id);
 
-            await message.react('📝')
-            .catch(() => {})
-            .then((reaction) => {
-                setTimeout(() => {
-                    reaction.remove().catch(() => {}); 
-                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-            })
+            message.react('📝').catch(() => {});
 
-            await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
-                setTimeout(() => {
-                    msg.delete().catch(() => {});
-                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-            
-                const actionPlayer = message.member.displayName;
-                const actionContext = await getContext(message.guild);
-                const serverRoleplayDate = await getCurrentDate(message.guild);
-                const serverOwnedCountries = await getAllPlayers(message.guild);
-                const extraPrompt = serverConfig?.server?.extra_prompt || '';
+            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>. Se sua ação não for dividida em múltiplas partes, apenas aguarde o tempo acabar.`);
 
-                collector.on('collect', msg => {
-                    msg.react('📝').catch(() => {});
+            const actionPlayer = message.member.displayName;
+            const actionContext = await getContext(message.guild);
+            const serverRoleplayDate = await getCurrentDate(message.guild);
+            const serverOwnedCountries = await getAllPlayers(message.guild);
+            const extraPrompt = serverConfig?.server?.extra_prompt || '';
+
+            collector.on('end', async (collected) => {
+                collectingUsers.delete(message.author.id);
+                const action = message.cleanContent+"\n"+collected.map(msg => msg.cleanContent).join("\n");
+
+                if(isLikelyAI(action)) return waitMessage.edit('-# Foi detectado um teor alto de uso de IA na sua ação. De IA já basta eu. Envie sua ação em um chat de narração humana, ou reescreva ela manualmente.');
+
+                waitMessage.edit('-# Gerando narração...');
+
+                const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
+
+                console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
+
+                const response = await aiGenerate(prompt).catch(error => {
+                    console.error("Erro ao gerar narração:", error);
                 });
 
-                collector.on('end', async (collected) => {
-                    collectingUsers.delete(message.author.id);
-                    const acao = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
+                if (simplifyString(response.text).startsWith("irrelevante")) return msg.delete();
 
-                    if(isLikelyAI(acao)) return msg.edit('-# Foi detectado um teor alto de uso de IA na sua ação. De IA já basta eu. Envie sua ação em um chat de narração humana, ou reescreva ela manualmente.');
+                // Se houver bloco diff, ele fica em um chunk separado
+                const diffStart = response.text.indexOf('```diff');
+                let mainText = response.text;
+                let diffChunk = null;
+                if (diffStart !== -1) {
+                    mainText = response.text.slice(0, diffStart);
+                    diffChunk = response.text.slice(diffStart);
+                };
 
-                    msg.edit('-# Gerando narração...');
+                let finalText = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
+                const chunks = chunkifyText(finalText);
+                if (diffChunk) chunks.push(diffChunk);
+                chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
-                    const prompt = eval("`" + process.env.PROMPT_NARRATION + "`");
-
-                    console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
-
-                    const response = await aiGenerate(prompt).catch(error => {
-                        console.error("Erro ao gerar narração:", error);
+                const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
+                
+                if (
+                    serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
+                    serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
+                ) {
+                    chunks.forEach(chunk => {
+                        narrationsChannel?.send(chunk);
                     });
-
-                    if (response.text === "IRRELEVANTE!!!") {
-                        return msg.delete();
-                    }
-
-                    // Se houver bloco diff, ele fica em um chunk separado
-                    const diffStart = response.text.indexOf('```diff');
-                    let mainText = response.text;
-                    let diffChunk = null;
-                    if (diffStart !== -1) {
-                        mainText = response.text.slice(0, diffStart);
-                        diffChunk = response.text.slice(diffStart);
-                    }
-
-                    let finaltext = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
-                    const chunks = chunkifyText(finaltext);
-                    if (diffChunk) chunks.push(diffChunk);
-                    chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
-
-                    const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
-                    
-                    if (
-                        serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
-                        serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
-                    ) {
-                        chunks.forEach(chunk => {
-                            narrationsChannel?.send(chunk);
-                        });
-                    } else {
-                        chunks.forEach(chunk => {
-                            message.channel?.send(chunk);
-                        });
-                    } 
-
-                    collected.forEach(msg => msg.reactions.removeAll());
-
-                    const contexto_prompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
-
-                    const novoContexto = await aiGenerate(contexto_prompt).catch(error => {
-                        console.error("Erro ao gerar contexto:", error);
+                } else {
+                    chunks.forEach(chunk => {
+                        message.channel?.send(chunk);
                     });
+                } 
 
-                    await addContext(novoContexto.text, message.guild);
-                    await msg.delete();
+                collected.forEach(msg => msg.reactions.removeAll());
+                message?.reactions.removeAll();
+                waitMessage?.deletable && waitMessage.delete().catch(() => {});
 
+                const contextPrompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
+
+                const newContext = await aiGenerate(contextPrompt).catch(error => {
+                    console.error("Erro ao gerar contexto:", error);
                 });
+
+                await addContext(newContext.text, message.guild);
 
             });
         }
@@ -220,6 +213,12 @@ export default {
             )
             &&
             !collectingAdmins.has(message.author.id)
+            &&
+            (
+                message.channel.type == ChannelType.GuildText ||
+                message.channel.type == ChannelType.GuildAnnouncement ||
+                message.channel.type == ChannelType.PublicThread
+            )
         ) {
 
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e não produzirá contexto para esse evento. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
@@ -227,130 +226,75 @@ export default {
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
             
+            collector.on('collect', msg => {
+                msg.react('📝').catch(() => {});
+            });
+
             collectingAdmins.add(message.author.id);
 
-            message.react('📝')
-            .catch(() => {})
-            .then((reaction) => {
-                setTimeout(() => {
-                    reaction.remove().catch(() => {}); 
-                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
-            })
+            message.react('📝').catch(() => {});
 
-            message.reply(`-# A partir de agora, você pode começar a enviar as outras partes do evento. Envie todas as partes desse evento <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`).then(async (msg) => {
-                setTimeout(() => {
-                    msg.delete().catch(() => {});
-                }, (serverConfig?.server?.action_timing * 1000) || 20_000);
+            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes do evento. Envie todas as partes desse evento <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`);
 
-                const eventContext = await getContext(message.guild);
-                const serverRoleplayDate = await getCurrentDate(message.guild);
-                const serverOwnedCountries = await getAllPlayers(message.guild);
+            const eventContext = await getContext(message.guild);
+            const serverRoleplayDate = await getCurrentDate(message.guild);
+            const serverOwnedCountries = await getAllPlayers(message.guild);
 
-                collector.on('collect', msg => {
-                    msg.react('📝').catch(() => {});
+            collector.on('end', async (collected) => {
+                collectingAdmins.delete(message.author.id);
+                const evento = message.cleanContent+"\n"+collected.map(msg => msg.cleanContent).join("\n");
+
+                waitMessage.edit('-# Gerando contextualização...');
+
+                const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
+
+                console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
+                
+                const response = await aiGenerate(prompt).catch(error => {
+                    console.error("Erro ao gerar contexto de evento:", error);
                 });
 
-                collector.on('end', async (collected) => {
-                    collectingAdmins.delete(message.author.id);
-                    const evento = message.cleanContent+"\n"+collected.map(m => m.cleanContent).join("\n");
+                collected.forEach(msg => msg.reactions.removeAll());
+                message?.reactions.removeAll();
+                waitMessage?.deletable && waitMessage.delete();
 
-                    msg.edit('-# Gerando narração...');
+                if (response.text === "IRRELEVANTE!!!") return;
 
-                    const prompt = eval("`" + process.env.PROMPT_EVENT + "`");
-
-                    console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
-                    
-                    const response = await aiGenerate(prompt).catch(error => {
-                        console.error("Erro ao gerar contexto de evento:", error);
-                    });
-
-                    collected.forEach(msg => msg.reactions.removeAll());
-
-                    if (response.text === "IRRELEVANTE!!!") return;
-
-                    addContext(response.text, message.guild);
-
-                });
+                addContext(response.text, message.guild);
 
             });
+
 
         }
 
         // Passagem de ano
         else if (message.channelId === serverConfig?.server?.channels?.time) {
-            const ano = parseInt(message.cleanContent.match(/\d+/)?.[0]);
-            const ano_atual = parseInt(message.guild.name.match(/\d+/)?.[0]);
-            if (!ano) return;
+            const newYear = parseInt(message.cleanContent.match(/\d+/)?.[0]);
+            const currentYear = parseInt(message.guild.name.match(/\d+/)?.[0]);
+            if (!newYear) return;
 
             // Detecta se o período é um ano completo ou parcial
-            let periodoCompleto = false;
+            let fullYearPassed = false;
             // Exemplo: se a mensagem contém "fim do ano" ou "final do ano" ou "ano completo"
             if (/\b(fim|final) do ano\b|ano completo/i.test(message.cleanContent)) {
-                periodoCompleto = true;
-            } else if (ano_atual && ano !== ano_atual) {
+                fullYearPassed = true;
+            } else if (currentYear && newYear !== currentYear) {
                 // Se o ano mudou, provavelmente é um ano completo
-                periodoCompleto = true;
+                fullYearPassed = true;
             } else if (/\bsemestre|trimestre|bimestre|mes(es)?|período|parcial/i.test(message.cleanContent)) {
-                periodoCompleto = false;
+                fullYearPassed = false;
             }
 
-            serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', ano)}`);
-
-            /*if(!serverConfig?.server?.experiments?.disable_year_summary) {
-                const actionContext = await getContext(message.guild);
-                const roleplayPreviousPeriod = (await (await message.guild.channels.fetch(serverConfig?.server?.channels?.time)).messages.fetch()).first() || 'ignore essa linha, não encontrei a data atual do servidor';
-                const roleplayCurrentPeriod = simplifyString(message.cleanContent);
-
-                const prompt = eval("`" + process.env.PROMPT_YEAR_SUMMARY + "`");
-
-                console.log(`- O período está sendo passado em ${message.guild.name} (${message.guildId})`);
-
-                const response = await aiGenerate(prompt).catch(error => {
-                    console.error("Erro ao gerar resumo de período:", error);
-                });
-
-                const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-                if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
-
-                let tituloResumo = periodoCompleto
-                    ? `# Resumo geral do ano de ${ano_atual}`
-                    : `# Resumo do período recente (${message.cleanContent.replace(/[^\d]+/g, ' ').trim()})`;
-                let finaltext = `${tituloResumo}\n${response.text}`;
-                const chunks = chunkifyText(finaltext, `\n-# RG-${ano_atual}`);
-
-                const msgs = await contextChannel.messages.fetch({ limit: 100 }); // Limite máximo do bulkDelete
-                const deletable = msgs.filter(msg =>
-                    (message.createdTimestamp - msg.createdTimestamp <= 7 * 24 * 60 * 60 * 1000) &&
-                    !msg.content.includes('-# RG-')
-                );
-
-                const yearIndividualActions = deletable.sort().map(m => m.content);
-
-                if (deletable.size > 0) {
-                    await contextChannel.bulkDelete(deletable, true); // true ignora mensagens antigas
-                }
-
-                chunks.forEach(chunk => contextChannel.send(chunk));
-
-                contextChannel.threads.create({
-                    name: tituloResumo.replace('# ', ''),
-                    startMessage: `Cada resumo publicado durante esse período do roleplay.`,
-                }).then(yearThread => {
-                    yearIndividualActions.forEach(narrationSum => {
-                        yearThread.send(narrationSum);
-                    });
-                });
-
-            };*/
+            serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', newYear)}`);
 
             const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
             if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
 
-            if(periodoCompleto) {
+            if(fullYearPassed) {
                 contextChannel.threads.create({
-                    name: ano_atual || ano,
+                    name: newYear || currentYear,
                     message: {
-                        content: `Eventos, ações e acontecimentos de ${ano_atual || ano}.`
+                        content: `Eventos, ações e acontecimentos de ${newYear || currentYear}.`
                     }
                 });
             }
@@ -366,7 +310,7 @@ export default {
 
             message.reply('-# Analisando ação...').then(async msg => {
 
-                const acao = message.cleanContent;
+                const action = message.cleanContent;
                 const actionContext = await getContext(message.guild);
                 const actionPlayer = message.member.displayName;
                 const serverRoleplayDate = await getCurrentDate(message.guild);
@@ -382,7 +326,7 @@ export default {
 
                 const json = JSON.parse("{"+response.text.split("{")[1].split("}")[0]+"}");
 
-                if(!json || !json['pais'] || !json['resposta']) return console.error(response.text);
+                if(!json || !json['pais'] || !json['resposta'] || !json['contexto']) return console.error(response.text);
 
                 if(simplifyString(json['resposta']) !== 'nao') {
 
@@ -406,13 +350,7 @@ export default {
 
                         await webhookClient.send(webhookContent);
 
-                        const contexto_prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY_CONTEXT + "`");
-
-                        const novoContexto = await aiGenerate(contexto_prompt).catch(error => {
-                            console.error("Erro ao gerar contexto:", error);
-                        });
-
-                        addContext(novoContexto.text, message.guild);
+                        addContext(json['contexto'], message.guild);
 
                     });
 
