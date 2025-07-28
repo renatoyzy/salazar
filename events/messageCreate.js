@@ -326,7 +326,7 @@ export default {
 
                 const json = JSON.parse("{"+response.text.split("{")[1].split("}")[0]+"}");
 
-                if(!json || !json['pais'] || !json['resposta'] || !json['contexto']) return console.error(response.text);
+                if(!json || !json['pais'] || !json['resposta'] || (json['resposta'] && !json['contexto'])) return console.error(response.text);
 
                 if(simplifyString(json['resposta']) !== 'nao') {
 
@@ -363,5 +363,7 @@ export default {
             });
 
         }
+
+        
     }
 };

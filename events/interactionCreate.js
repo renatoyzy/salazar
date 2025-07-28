@@ -113,7 +113,8 @@ async function handleButton(interaction) {
         client.buttons.set(buttonName, button);
     }
 
-    const buttonHandler = client.buttons.get(interaction.customId);
+    const baseId = interaction.customId.split(":")[0];
+    const buttonHandler = client.buttons.get(baseId);
     if (!buttonHandler) {
         return interaction.reply({ content: `Botão desconhecido.`, flags: [MessageFlags.Ephemeral] });
     }
@@ -217,7 +218,8 @@ async function handleModalSubmit(interaction) {
     }
 
     // Handler pelo customId
-    const modalHandler = client.modals?.get(interaction.customId);
+    const baseId = interaction.customId.split(":")[0];
+    const modalHandler = client.modals?.get(baseId);
     if (!modalHandler) {
         return interaction.reply({ content: `Modal desconhecido.`, flags: [MessageFlags.Ephemeral] });
     }
