@@ -13,11 +13,13 @@ export default {
         const serverConfig = await Server.config(role.guild.id);
         
         const equivalentChannel = role.guild.channels.cache.find(c => simplifyString(role.name).includes(simplifyString(c.name)));
-
+        const countryCategoryId = serverConfig?.server?.channels?.country_category;
+        
         if(
             equivalentChannel &&
-            equivalentChannel.parentId != serverConfig?.server?.channels?.country_category &&
-            equivalentChannel.parent?.parentId != serverConfig?.server?.channels?.country_category
+            (!countryCategoryId ||
+            (equivalentChannel.parentId != countryCategoryId &&
+            equivalentChannel.parent?.parentId != countryCategoryId))
         ) return;
 
         if(equivalentChannel) {

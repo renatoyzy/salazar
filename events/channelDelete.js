@@ -11,9 +11,12 @@ export default {
     async execute(channel) {
 
         const serverConfig = await Server.config(channel.guild.id);
+        const countryCategoryId = serverConfig?.server?.channels?.country_category;
 
-        if(channel.parentId != serverConfig?.server?.channels?.country_category &&
-            channel.parent?.parentId != serverConfig?.server?.channels?.country_category
+        if(
+            !countryCategoryId ||
+            (channel.parentId != countryCategoryId &&
+            channel.parent?.parentId != countryCategoryId)
         ) return;
 
         const equivalentRole = channel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(channel.name)));

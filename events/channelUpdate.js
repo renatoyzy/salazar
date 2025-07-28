@@ -14,9 +14,12 @@ export default {
         if(oldChannel.name == newChannel.name) return;
 
         const serverConfig = await Server.config(newChannel.guild.id);
+        const countryCategoryId = serverConfig?.server?.channels?.country_category;
 
-        if(newChannel.parentId != serverConfig?.server?.channels?.country_category &&
-            newChannel.parent?.parentId != serverConfig?.server?.channels?.country_category
+        if(
+            !countryCategoryId ||
+            (newChannel.parentId != countryCategoryId &&
+            newChannel.parent?.parentId != countryCategoryId)
         ) return;
 
         const equivalentRole = newChannel.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(oldChannel.name)));

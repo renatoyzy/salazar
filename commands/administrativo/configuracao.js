@@ -100,7 +100,7 @@ export default {
         const option = interaction.options.get('opção')?.value;
 
         // Verifica se a opção é um campo de array
-        const array_options = Object.entries(Server.optionsAlike)
+        const arrayOptions = Object.entries(Server.optionsAlike)
         .filter(([key]) => {
             // Busca no defaultConfiguration se tem array: true
             const parts = key.split('.');
@@ -112,7 +112,7 @@ export default {
         })
         .map(([key]) => key);
 
-        const mongo_client = new MongoClient(process.env.DB_URI, {
+        const mongoClient = new MongoClient(process.env.DB_URI, {
             serverApi: {
                 version: ServerApiVersion.v1,
                 strict: true,
@@ -121,9 +121,9 @@ export default {
         });        
 
         try {
-            await mongo_client.connect();
+            await mongoClient.connect();
 
-            const collection = mongo_client.db('Salazar').collection('configuration');
+            const collection = mongoClient.db('Salazar').collection('configuration');
 
             // Exibir configuração atual
             if(!option) {
@@ -188,24 +188,24 @@ export default {
 
             let updateQuery;
             let action;
-            let fake_value;
+            let fakeValue;
 
-            if (option.split('.')[0] == "name") fake_value = value;
-            else if (option.split('.')[0] == "channels") fake_value = "<#"+value+">";
-            else if (option.split('.')[0] == "roles") fake_value = "<@&"+value+">";
+            if (option.split('.')[0] == "name") fakeValue = value;
+            else if (option.split('.')[0] == "channels") fakeValue = "<#"+value+">";
+            else if (option.split('.')[0] == "roles") fakeValue = "<@&"+value+">";
 
-            if (array_options.includes(option)) {
+            if (arrayOptions.includes(option)) {
                 // Verifica se o valor já existe no array
                 const current = serverConfig?.server?.[option.split('.')[0]]?.[option.split('.')[1]] || [];
 
                 if (current.includes(value)) {
                     // Valor já existe → remove
                     updateQuery = { $pull: { [`server.${option}`]: value } };
-                    action = `${fake_value} removido de ${Server.optionLabels[option] || option}`;
+                    action = `${fakeValue} removido de ${Server.optionLabels[option] || option}`;
                 } else {
                     // Valor não existe → adiciona
                     updateQuery = { $push: { [`server.${option}`]: value } };
-                    action = `${fake_value} adicionado de ${Server.optionLabels[option] || option}`;
+                    action = `${fakeValue} adicionado de ${Server.optionLabels[option] || option}`;
                 }
 
             } else {
@@ -213,10 +213,10 @@ export default {
                 const currentValue = serverConfig?.server?.[option.split('.')[0]]?.[option.split('.')[1]] ?? serverConfig?.server?.[option];
                 if (currentValue === value) {
                     updateQuery = { $set: { [`server.${option}`]: undefined } };
-                    action = `${Server.optionLabels[option] || option} já estava definido como ${fake_value}, valor removido (undefined)`;
+                    action = `${Server.optionLabels[option] || option} já estava definido como ${fakeValue}, valor removido (undefined)`;
                 } else {
                     updateQuery = { $set: { [`server.${option}`]: value } };
-                    action = `${Server.optionLabels[option] || option} redefinido para ${fake_value}`;
+                    action = `${Server.optionLabels[option] || option} redefinido para ${fakeValue}`;
                 }
             }
 
@@ -263,17 +263,17 @@ export default {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
             });
 
-            let embed_fields = chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}})
+            let embedFields = chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}})
 
-            array_options.includes(option) && embed_fields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
-            option == "name" && embed_fields.push({name: 'Dica pro nome do servidor', value: 'Se você colocar "{ano}" em alguma parte do nome, toda vez que o ano mudar, o nome do servidor será atualizado!'})
+            arrayOptions.includes(option) && embedFields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
+            option == "name" && embedFields.push({name: 'Dica pro nome do servidor', value: 'Se você colocar "{ano}" em alguma parte do nome, toda vez que o ano mudar, o nome do servidor será atualizado!'})
 
             await interaction.editReply({embeds: [
                 new EmbedBuilder()
                 .setTitle(`Configuração alterada com sucesso!`)
                 .setColor(Colors.Green)
                 .setDescription(action)
-                .addFields(embed_fields)
+                .addFields(embedFields)
                 .setTimestamp(interaction.createdAt)
             ]})
 
@@ -281,7 +281,7 @@ export default {
             console.error(err);
             await interaction.editReply(`Ocorreu um erro ao atualizar a configuração.`);
         } finally {
-            await mongo_client.close();
+            await mongoClient.close();
         }
     }
 

@@ -51,7 +51,7 @@ export default {
 
         const serverSetup = await Server.setup(interaction.guildId);
 
-        const mongo_client = new MongoClient(process.env.DB_URI, {
+        const mongoClient = new MongoClient(process.env.DB_URI, {
             serverApi: {
                 version: ServerApiVersion.v1,
                 strict: true,
@@ -547,15 +547,15 @@ export default {
                     delete setupDate.server_setup_step;
 
                     try {
-                        await mongo_client.connect();
+                        await mongoClient.connect();
 
-                        await mongo_client.db("Salazar").collection("configuration").updateOne(
+                        await mongoClient.db("Salazar").collection("configuration").updateOne(
                             { server_id: interaction.guildId },
                             { $set: setupDate },
                             { upsert: true }
                         );
 
-                        await mongo_client.db('Salazar').collection('setup').deleteOne({ server_id: interaction.guildId });
+                        await mongoClient.db('Salazar').collection('setup').deleteOne({ server_id: interaction.guildId });
 
                         await i.followUp({
                             embeds: [
@@ -580,7 +580,7 @@ export default {
                             content: `❌ Ocorreu um erro ao salvar a configuração.`
                         });
                     } finally {
-                        await mongo_client.close();
+                        await mongoClient.close();
                     }
 
                     collector.stop("completed");

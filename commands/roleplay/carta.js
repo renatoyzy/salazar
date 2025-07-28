@@ -48,7 +48,8 @@ export default {
     async execute(interaction) {
         const serverConfig = Server.config(interaction.guildId);
         if(!interaction.member.roles.cache.has((await serverConfig)?.server?.roles?.player)) return interaction.editReply(`Este comando é restrito para jogadores do RP (<@&${(await serverConfig)?.server?.roles?.player}>).`);
-        if((interaction.channel.parentId != (await serverConfig)?.server?.channels?.country_category) && interaction.channel.parent.parentId != (await serverConfig)?.server?.channels?.country_category) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
+        const countryCategoryId = (await serverConfig)?.server?.channels?.country_category;
+        if(!countryCategoryId || (interaction.channel.parentId != countryCategoryId && interaction.channel.parent.parentId != countryCategoryId)) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
 
         const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('destinatario').value)));
         if(!countryChat) return interaction.editReply("Não encontrei o chat desse país.")
@@ -182,11 +183,14 @@ export default {
     async autocomplete(interaction) {
         const serverConfig = Server.config(interaction.guildId);
         const focusedOption = interaction.options.getFocused(true);
+        const countryCategory = interaction.guild.channels.cache.get((await serverConfig)?.server?.channels?.country_category);
+        if(!countryCategory || countryCategory.type != ChannelType.GuildCategory) return;
+
         let choices;
 
         switch (focusedOption.name) {
             case 'destinatario':
-                choices = interaction.guild.channels.cache.get((await serverConfig)?.server?.channels?.country_category).children.cache.map(c => c.name);
+                choices = countryCategory.children.cache.map(c => c.name);
                 break;
         
             default:

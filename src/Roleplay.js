@@ -80,8 +80,8 @@ export async function countryPickDialog(selectedCountry, interaction) {
     : 
         await interaction.update({ content: responseText, components: [] });
     
-    const unfiltered_country = selectedCountry.replaceAll('-', ' ').toUpperCase();
-    const country = simplifyString(unfiltered_country);
+    const unfilteredCountry = selectedCountry.replaceAll('-', ' ').toUpperCase();
+    const country = simplifyString(unfilteredCountry);
     if (!country) return;
 
     const serverConfig = await Server.config(interaction.guildId);
@@ -92,10 +92,10 @@ export async function countryPickDialog(selectedCountry, interaction) {
     
     let replyEmbed = new EmbedBuilder()
     .setColor(Colors.Yellow)
-    .setTitle(`${interaction.member.displayName} escolheu o país "${unfiltered_country}"`)
+    .setTitle(`${interaction.member.displayName} escolheu o país "${unfilteredCountry}"`)
     .setFooter({text: "Aguarde ou peça para que algum administrador aprove ou não a sua escolha."})
     .addFields([
-        { name: '🎌 País solicitado', value: unfiltered_country, inline: true },
+        { name: '🎌 País solicitado', value: unfilteredCountry, inline: true },
         { name: '👥 ID do jogador', value: interaction.user.id, inline: true }
     ]);
 

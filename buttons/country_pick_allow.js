@@ -31,8 +31,8 @@ export default {
 
         const serverConfig = (await Server.config(interaction.guildId)).server;
 
-        const unfiltered_country = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
-        const country = simplifyString(unfiltered_country);
+        const unfilteredCountry = interaction.message.embeds[0].fields.find(f => f.name === '🎌 País solicitado')?.value;
+        const country = simplifyString(unfilteredCountry);
         const player = await interaction.guild.members.fetch(interaction.message.embeds[0].fields.find(f => f.name === '👥 ID do jogador')?.value);
 
         // Busca todos os cargos de país baseados nos canais da categoria
@@ -60,7 +60,7 @@ export default {
             if(!countryChannel) {
                 // Se o canal não existir, cria um novo canal para o país
                 await interaction.guild.channels.create({
-                    name: unfiltered_country.toLowerCase().replaceAll(' ', '-'),
+                    name: unfilteredCountry.toLowerCase().replaceAll(' ', '-'),
                     type: ChannelType.GuildForum,
                     parent: serverConfig?.channels?.country_category,
                     permissionOverwrites: [
@@ -77,7 +77,7 @@ export default {
             }
         } else {
             interaction.guild.roles.create({
-                name: unfiltered_country,
+                name: unfilteredCountry,
                 permissions: new PermissionsBitField([]),
                 reason: `Cargo criado automaticamente para o país ${country}`,
             }).then(async (role) => {
@@ -86,7 +86,7 @@ export default {
                 if(!countryChannel) {
                     // Se o canal não existir, cria um novo canal para o país
                     await interaction.guild.channels.create({
-                        name: unfiltered_country.toLowerCase().replaceAll(' ', '-'),
+                        name: unfilteredCountry.toLowerCase().replaceAll(' ', '-'),
                         type: ChannelType.GuildForum,
                         parent: serverConfig?.channels?.country_category,
                         permissionOverwrites: [
@@ -113,7 +113,7 @@ export default {
                             const buffer = await makeRoundFlag(await fetchImageAsPngBuffer(validResult.url));
 
                             interaction.guild.emojis.create({
-                                name: `flag_${simplifyString(unfiltered_country).replaceAll(' ', '')}`,
+                                name: `flag_${simplifyString(unfilteredCountry).replaceAll(' ', '')}`,
                                 attachment: buffer
                             })
                             // Calcula e seta a cor média
@@ -138,7 +138,7 @@ export default {
         if (pickedCountriesChannel && pickedCountriesChannel.isTextBased()) {
             // Busca todas as mensagens do canal
             const msgs = await pickedCountriesChannel.messages.fetch({ limit: 100 });
-            const normalizedCountry = simplifyString(unfiltered_country).toUpperCase();
+            const normalizedCountry = simplifyString(unfilteredCountry).toUpperCase();
 
             // Remove o jogador de outros países (edita as mensagens)
             for (const msg of msgs.values()) {
@@ -173,7 +173,7 @@ export default {
                 }
             } else {
                 // Cria nova mensagem para o país
-                await pickedCountriesChannel.send(`## ${unfiltered_country.toUpperCase()}\n- <@${player.id}>`);
+                await pickedCountriesChannel.send(`## ${unfilteredCountry.toUpperCase()}\n- <@${player.id}>`);
             }
         };
         

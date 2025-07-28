@@ -32,7 +32,7 @@ export default {
         .addStringOption(
             new SlashCommandStringOption()
             .setName("nome")
-            .setDescription("Nome do emoji. Recomenda-se colocar um 'flag_' antes.")
+            .setDescription("Nome do país ou entidade representada.")
             .setRequired(true)
         )
     ),

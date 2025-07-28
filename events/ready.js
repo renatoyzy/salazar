@@ -7,7 +7,7 @@ import * as Server from "../src/Server.js";
 
 // Função para limpar configurações inválidas de todos os servidores
 async function cleanAllConfigs() {
-    const mongo_client = new MongoClient(process.env.DB_URI, {
+    const mongoClient = new MongoClient(process.env.DB_URI, {
         serverApi: {
             version: ServerApiVersion.v1,
             strict: true,
@@ -15,8 +15,8 @@ async function cleanAllConfigs() {
         },
     });
     try {
-        await mongo_client.connect();
-        const collection = mongo_client.db('Salazar').collection('configuration');
+        await mongoClient.connect();
+        const collection = mongoClient.db('Salazar').collection('configuration');
         const allConfigs = await collection.find({}).toArray();
 
         for (const configDoc of allConfigs) {
@@ -35,7 +35,7 @@ async function cleanAllConfigs() {
     } catch (err) {
         console.error("- Erro ao limpar configurações:", err);
     } finally {
-        await mongo_client.close();
+        await mongoClient.close();
     }
 };
 
