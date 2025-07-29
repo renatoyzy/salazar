@@ -5,7 +5,9 @@ import {
     PermissionsBitField,
     WebhookClient,
     ChannelType,
-    ActionRowBuilder
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
 } from "discord.js";
 import { 
     MongoClient, 
@@ -316,7 +318,7 @@ export default {
             )
         ) {
 
-            //if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
 
             message.reply('-# Analisando ação...').then(async msg => {
 
@@ -348,15 +350,19 @@ export default {
                     ) || (
                         json['tipo'] == 2 &&
                         (!json['pais'] || !json['narracao'] || !json['contexto'] || !json['guerra'] || !json['sinopse'])
+                    ) || (
+                        json['tipo'] == 3 &&
+                        (!json['pais'] || !json['narracao'] || !json['contexto'] || !json['id'] || !json['sinopse'])
                     )
                 ) return console.error('Algo deu errado em análise de diplomacia: '+response.text);
 
                 switch (json['tipo']) {
-                    case 0: // não é nada
+                    case 0: { // não é nada
                         console.log('-- '+json['motivo']);
                         break;
+                    }
 
-                    case 1: // diplomacia npc
+                    case 1: { // diplomacia npc
                         await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
                             
                             const validResult = results[0];
@@ -381,8 +387,9 @@ export default {
 
                         });
                         break;
+                    }
 
-                    case 2: // guerra declarada
+                    case 2: { // guerra declarada
                         
                         // Se houver bloco diff, ele fica em um chunk separado
                         const diffStart = json['narracao'].indexOf('```diff');
@@ -416,14 +423,59 @@ export default {
                             warThread.send({
                                 embeds: [
                                     new EmbedBuilder()
+                                    .setTitle('Enviar ação')
+                                    .setDescription('Enviar ação')
                                 ],
                                 components: [
                                     new ActionRowBuilder()
+                                    .addComponents([
+                                        new ButtonBuilder()
+                                        .setCustomId('war_action')
+                                        .setStyle(ButtonStyle.Secondary)
+                                        .setLabel('Enviar ação de guerra'),
+                                        new ButtonBuilder()
+                                        .setCustomId('war_narrate')
+                                        .setStyle(ButtonStyle.Success)
+                                        .setLabel('Gerar narração')
+                                    ])
                                 ]
                             })
-                        })
+                        });
+                        
+                        break;
+                    }
+                    
+                    case 3: { // alteração em guerra existente
+                        // Se houver bloco diff, ele fica em um chunk separado
+                        const diffStart = json['narracao'].indexOf('```diff');
+                        let mainText = json['narracao'];
+                        let diffChunk = null;
+                        if (diffStart !== -1) {
+                            mainText = json['narracao'].slice(0, diffStart);
+                            diffChunk = json['narracao'].slice(diffStart);
+                        };
+
+                        let finalText = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
+                        const chunks = chunkifyText(finalText);
+                        if (diffChunk) chunks.push(diffChunk);
+                        chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
+
+                        const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
+
+                        chunks.forEach(chunk => narrationsChannel?.send(chunk));
+
+                        addContext(json['contexto'], message.guild);
+
+                        const warChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
+                        if(!warChannel || warChannel.type != ChannelType.GuildForum) return;
+                        const warThread = warChannel.threads.cache.get(json['id']);
+                        if(!warThread) return;
+                        const warThreadStarterMessage = await warThread.fetchStarterMessage();
+
+                        warThreadStarterMessage.editable && warThreadStarterMessage.edit(json['sinopse']);
 
                         break;
+                    }
                 
                     default:
                         break;
