@@ -11,13 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google/genai": "^1.10.0",
+    "@google/genai": "^1.11.0",
     "canvas": "^3.1.2",
-    "crypto": "^1.0.1",
     "discord.js": "^14.21.0",
     "dotenv": "^16.6.1",
     "g-i-s": "^2.1.7",
-    "mongodb": "^6.17.0",
+    "mongodb": "^6.18.0",
     "node-cron": "^4.2.1",
     "sharp": "^0.34.3"
   },

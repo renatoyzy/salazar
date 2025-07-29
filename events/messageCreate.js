@@ -25,7 +25,7 @@ import {
     getWars,
     warActionSendEmbed
 } from "../src/Roleplay.js";
-import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
+import { aiGenerate } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 import gis from "g-i-s";
 
@@ -154,8 +154,6 @@ export default {
             collector.on('end', async (collected) => {
                 collectingUsers.delete(message.author.id);
                 const action = message.cleanContent+"\n"+collected.map(msg => msg.cleanContent).join("\n");
-
-                if(isLikelyAI(action)) return waitMessage.edit('-# Foi detectado um teor alto de uso de IA na sua ação. De IA já basta eu. Envie sua ação em um chat de narração humana, ou reescreva ela manualmente.');
 
                 waitMessage.edit('-# Gerando narração...');
 
