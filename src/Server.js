@@ -188,11 +188,21 @@ export const defaultConfiguration = {
             array: true,
             onlyAccepts: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildCategory, ChannelType.GuildAnnouncement],
         },
+        diplomacy: {
+            label: "Diplomacia",
+            input: "canal",
+            onlyAccepts: [ChannelType.GuildText]
+        },
         events: {
             label: "Canais de eventos",
             input: "canal",
             array: true,
             onlyAccepts: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildCategory, ChannelType.GuildAnnouncement],
+        },
+        war: {
+            label: "Canal de guerra",
+            input: "canal",
+            onlyAccepts: [ChannelType.GuildForum],
         },
         narrations: {
             label: "Canal de narrações",
@@ -231,11 +241,6 @@ export const defaultConfiguration = {
         },
         npc_random_actions: {
             label: "NPC - Ações aleatórias",
-            input: "canal",
-            onlyAccepts: [ChannelType.GuildText]
-        },
-        npc_diplomacy: {
-            label: "NPC - Diplomacia",
             input: "canal",
             onlyAccepts: [ChannelType.GuildText]
         },

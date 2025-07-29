@@ -164,3 +164,35 @@ export async function getAllPlayers(guild) {
         ?.map(msg => msg.cleanContent)
         ?.join('\n');
 }
+
+/**
+ * Obtém a lista de guerras ativas no roleplay
+ * @param {Guild} guild - Objeto guild do Discord
+ * @returns {Promose<string | undefined>} Lista completa das guerras passadas
+ */
+export async function getWars(guild) {
+    if (typeof guild !== "object") throw new Error("A guild deve ser um objeto de servidor.");
+
+    const serverConfig = await Server.config(guild.id);
+    if (!serverConfig?.server?.channels?.war) return undefined;
+    const warsChannel = guild.channels.cache.get(serverConfig?.server?.channels?.war);
+    if (!warsChannel || warsChannel.type != ChannelType.GuildForum) return undefined;
+
+    await warsChannel.threads.fetch({}, {cache: true});
+
+    // Primeiro, cria um array de Promises
+    const threadPromises = warsChannel.threads.cache
+        .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+        .filter(thread => !thread.locked)
+        .map(async thread => {
+            return `${thread.name}\n${(await thread.fetchStarterMessage()).cleanContent}\n### ID da thread da guerra: ${thread.id}`
+        });
+
+    // Aguarda todas as Promises serem resolvidas
+    const threadContents = await Promise.all(threadPromises);
+    
+    // Junta todos os conteúdos das threads
+    const finalWars = threadContents.join('\n\n');
+
+    return finalWars;
+}

@@ -4,7 +4,8 @@ import {
     Colors, 
     PermissionsBitField,
     WebhookClient,
-    ChannelType
+    ChannelType,
+    ActionRowBuilder
 } from "discord.js";
 import { 
     MongoClient, 
@@ -14,7 +15,13 @@ import botConfig from "../config.json" with { type: "json" };
 import * as Server from "../src/Server.js";
 import client from "../src/Client.js";
 import "dotenv/config";
-import { addContext, getAllPlayers, getContext, getCurrentDate } from "../src/Roleplay.js";
+import {
+    addContext,
+    getAllPlayers,
+    getContext,
+    getCurrentDate,
+    getWars
+} from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 import gis from "g-i-s";
@@ -100,10 +107,10 @@ export default {
         else if (
             (
                 message.cleanContent.length >= process.env.MIN_ACTION_LENGTH || 
-                simplifyString(message.cleanContent).includes("acao: ")
+                simplifyString(message.cleanContent).includes("acao")
             ) 
             &&
-            !simplifyString(message.cleanContent).includes('nao narr')
+            !(simplifyString(message.cleanContent).includes('nao narr'))
             &&
             !collectingUsers.has(message.author.id)
             &&
@@ -300,13 +307,16 @@ export default {
             }
         }
 
-        // Interação com NPC
+        // Interação com NPC e declaração de guerra
         else if (
-            serverConfig?.server?.channels?.npc_diplomacy?.includes(message.channelId) &&
-            message.content.length >= process.env.MIN_DIPLOMACY_LENGTH
+            serverConfig?.server?.channels?.diplomacy?.includes(message.channelId) &&
+            (
+                message.content.length >= process.env.MIN_DIPLOMACY_LENGTH ||
+                simplifyString(message.content).includes('acao')
+            )
         ) {
 
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
+            //if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
 
             message.reply('-# Analisando ação...').then(async msg => {
 
@@ -315,47 +325,108 @@ export default {
                 const actionPlayer = message.member.displayName;
                 const serverRoleplayDate = await getCurrentDate(message.guild);
                 const serverOwnedCountries = await getAllPlayers(message.guild);
+                const serverCurrentWars = await getWars(message.guild);
 
-                const prompt = eval("`" + process.env.PROMPT_NPC_DIPLOMACY + "`");
+                const prompt = eval("`" + process.env.PROMPT_DIPLOMACY + "`");
 
-                console.log(`- Diplomacia NPC de ${message.author.username} sendo narrada em ${message.guild.name} (${message.guildId})`);
+                console.log(`- Diplomacia de ${message.author.username} sendo analisada em ${message.guild.name} (${message.guildId})`);
 
                 const response = await aiGenerate(prompt).catch(error => {
                     console.error("Erro ao gerar contexto de evento:", error);
                 });
 
-                const json = JSON.parse("{"+response.text.split("{")[1].split("}")[0]+"}");
+                const json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
 
-                if(!json || !json['pais'] || !json['resposta'] || (json['resposta'] && !json['contexto'])) return console.error(response.text);
+                if(
+                    !json || json['tipo'] === undefined ||
+                    (
+                        json['tipo'] == 0 &&
+                        !json['motivo'] 
+                    ) || (
+                        json['tipo'] == 1 &&
+                        (!json['pais'] || !json['resposta'] || !json['contexto'])
+                    ) || (
+                        json['tipo'] == 2 &&
+                        (!json['pais'] || !json['narracao'] || !json['contexto'] || !json['guerra'] || !json['sinopse'])
+                    )
+                ) return console.error('Algo deu errado em análise de diplomacia: '+response.text);
 
-                if(simplifyString(json['resposta']) !== 'nao') {
+                switch (json['tipo']) {
+                    case 0: // não é nada
+                        console.log('-- '+json['motivo']);
+                        break;
 
-                    await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
+                    case 1: // diplomacia npc
+                        await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {
+                            
+                            const validResult = results[0];
+
+                            let webhookContent = {
+                                username: json['pais'],
+                                content: json['resposta'] + `\n<@${message.author.id}>`,
+                            };
+
+                            if(validResult) webhookContent['avatarURL'] = validResult?.url
+
+                            const webhookUrl = (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id) ? 
+                                (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id).url
+                            :
+                                (await message.channel.createWebhook({name: 'Webhook do salazar'})).url
+
+                            const webhookClient = new WebhookClient({ url: webhookUrl });
+
+                            await webhookClient.send(webhookContent);
+
+                            addContext(json['contexto'], message.guild);
+
+                        });
+                        break;
+
+                    case 2: // guerra declarada
                         
-                        const validResult = results[0];
-
-                        let webhookContent = {
-                            username: json['pais'],
-                            content: json['resposta'] + `\n<@${message.author.id}>`,
+                        // Se houver bloco diff, ele fica em um chunk separado
+                        const diffStart = json['narracao'].indexOf('```diff');
+                        let mainText = json['narracao'];
+                        let diffChunk = null;
+                        if (diffStart !== -1) {
+                            mainText = json['narracao'].slice(0, diffStart);
+                            diffChunk = json['narracao'].slice(diffStart);
                         };
 
-                        if(validResult) webhookContent['avatarURL'] = validResult?.url
+                        let finalText = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
+                        const chunks = chunkifyText(finalText);
+                        if (diffChunk) chunks.push(diffChunk);
+                        chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
 
-                        const webhookUrl = (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id) ? 
-                            (await message.channel.fetchWebhooks()).find(w => w.owner == client.user.id).url
-                        :
-                            (await message.channel.createWebhook({name: 'Webhook do salazar'})).url
+                        const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
 
-                        const webhookClient = new WebhookClient({ url: webhookUrl });
-
-                        await webhookClient.send(webhookContent);
+                        chunks.forEach(chunk => narrationsChannel?.send(chunk));
 
                         addContext(json['contexto'], message.guild);
 
-                    });
+                        const warChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
+                        if(!warChannel || warChannel.type != ChannelType.GuildForum) return;
 
-                } else {
-                    console.log('-- '+json['pais']);
+                        warChannel.threads.create({
+                            name: json['guerra'],
+                            message: {
+                                content: json['sinopse']
+                            }
+                        }).then(warThread => {
+                            warThread.send({
+                                embeds: [
+                                    new EmbedBuilder()
+                                ],
+                                components: [
+                                    new ActionRowBuilder()
+                                ]
+                            })
+                        })
+
+                        break;
+                
+                    default:
+                        break;
                 }
 
                 msg?.deletable && msg.delete();
@@ -364,6 +435,19 @@ export default {
 
         }
 
-        
+        // Poluição no contexto
+        else if (
+            (
+                serverConfig?.server?.channels?.context?.includes(message.channelId) ||
+                serverConfig?.server?.channels?.context?.includes(message.channel.parentId)
+            )
+            &&
+            (
+                !message.content.includes('###') ||
+                !message.content.includes('**')
+            )
+        ) {
+            message.deletable && message.delete();
+        }
     }
 };
