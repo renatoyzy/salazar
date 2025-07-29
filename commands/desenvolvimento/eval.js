@@ -98,7 +98,7 @@ async function executeCode(code, interaction) {
             setTimeout(() => reject(new Error("Timeout: Código levou mais de 1 minuto para executar")), 60_000);
         });
 
-        const evalPromise = Promise.resolve(eval(code));
+        const evalPromise = await Promise.resolve(eval(code));
         
         output = await Promise.race([evalPromise, timeoutPromise]);
         executionTime = Date.now() - startTime;

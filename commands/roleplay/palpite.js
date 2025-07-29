@@ -9,7 +9,7 @@ import {
 import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
-import { getAllPlayers, getContext, getCurrentDate } from "../../src/Roleplay.js";
+import { getAllPlayers, getContext, getCurrentDate, getWars } from "../../src/Roleplay.js";
 import { aiGenerate } from "../../src/AIUtils.js";
 
 export default {
@@ -54,6 +54,7 @@ export default {
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
+            const serverCurrentWars = await getWars(message.guild);
 
             if(!actionContext) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 

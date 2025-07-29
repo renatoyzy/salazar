@@ -148,6 +148,7 @@ export default {
             const actionContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);
+            const serverCurrentWars = await getWars(message.guild);
             const extraPrompt = serverConfig?.server?.extra_prompt || '';
 
             collector.on('end', async (collected) => {
@@ -249,6 +250,7 @@ export default {
             const eventContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);
+            const serverCurrentWars = await getWars(message.guild);
 
             collector.on('end', async (collected) => {
                 collectingAdmins.delete(message.author.id);
@@ -317,6 +319,7 @@ export default {
                 message.content.length >= process.env.MIN_DIPLOMACY_LENGTH ||
                 simplifyString(message.content).includes('acao')
             )
+            && message.guild.channels.cache.has(serverConfig?.server?.channels?.war)
         ) {
 
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));

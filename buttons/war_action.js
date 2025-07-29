@@ -17,7 +17,7 @@ export default {
 
         const serverConfig = await config(interaction.guildId);
 
-        if(!interaction.member.roles.cache.has(serverConfig?.roles?.player)) return interaction.reply({
+        if(interaction.member?.roles?.cache.has(serverConfig?.server?.roles?.player)) return interaction.reply({
             content: `Essa interação só está disponível para jogadores do roleplay.`,
             flags: [MessageFlags.Ephemeral]
         })
