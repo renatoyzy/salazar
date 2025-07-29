@@ -6,7 +6,7 @@ import {
     TextInputBuilder,
     TextInputStyle
 } from "discord.js"
-import { config } from "../src/Server"
+import { config } from "../src/Server.js"
 
 export default {
 

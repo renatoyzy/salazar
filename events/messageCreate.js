@@ -502,7 +502,7 @@ export default {
             )
             &&
             (
-                !message.content.includes('###') ||
+                !message.content.includes('###') &&
                 !message.content.includes('**')
             )
         ) {
