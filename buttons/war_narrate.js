@@ -41,6 +41,7 @@ export default {
             return console.error('Algo deu errado em análise de diplomacia: '+response.text);
                 
         try {
+            interaction.channel.send(`# Novo turno da guerra:`);
             chunkifyText(json['narracao'])?.forEach(chunk => interaction.channel.send(chunk));
         } finally {
             interaction.channel.send(warActionSendEmbed);

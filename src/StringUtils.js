@@ -26,11 +26,11 @@ export function simplifyString(string, keepNumbers=false, keepAccents=false, low
  * Separa um texto em chunks, priorizando quebras de linha para preservar markdown,
  * e adiciona um sufixo obrigatório em cada chunk sem ultrapassar o limite.
  * @param {string} originalText - Texto completo a ser separado.
- * @param {string} suffix - Sufixo obrigatório em cada chunk.
  * @param {number} maxLength - Tamanho máximo de cada chunk.
+ * @param {string} suffix - Sufixo obrigatório em cada chunk.
  * @returns {string[]} Array de chunks.
  */
-export function chunkifyText(originalText, suffix = "", maxLength = 2000) {
+export function chunkifyText(originalText, maxLength = 2000, suffix = "") {
     const lines = originalText.split('\n');
     const chunks = [];
     let currentChunk = '';

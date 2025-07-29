@@ -140,7 +140,7 @@ export default {
                     new EmbedBuilder()
                     .setTitle(`Configuração atual do servidor`)
                     .setColor(Colors.Blurple)
-                    .addFields(chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}}))
+                    .addFields(chunkifyText(responseCode, 1016, '\n```').map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}}))
                     .setTimestamp(interaction.createdAt)
                 ]})
             }
@@ -263,7 +263,7 @@ export default {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
             });
 
-            let embedFields = chunkifyText(responseCode, '\n```', 1016).map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}})
+            let embedFields = chunkifyText(responseCode, 1016, '\n```').map(chunk => {return {name: 'Configuração atual do servidor', value: "```json\n"+chunk}})
 
             arrayOptions.includes(option) && embedFields.push({name: 'Dica para configurações que aceitam mais de um valor', value: 'Você sabia que quando um elemento (tipo o Canais de Eventos) aceita múltiplos valores, você pode adicionar **ou remover** um valor da lista bastando usar o mesmo comando?'})
             option == "name" && embedFields.push({name: 'Dica pro nome do servidor', value: 'Se você colocar "{ano}" em alguma parte do nome, toda vez que o ano mudar, o nome do servidor será atualizado!'})
