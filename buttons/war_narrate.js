@@ -1,4 +1,9 @@
-import { ButtonInteraction } from "discord.js";
+import { ButtonInteraction, MessageFlags } from "discord.js";
+import 'dotenv/config';
+import { aiGenerate } from "../src/AIUtils.js";
+import { addContext, getAllPlayers, getContext, getCurrentDate, getWars, warActionSendEmbed } from "../src/Roleplay.js";
+import { chunkifyText } from "../src/StringUtils.js";
+import botConfig from "../config.json" with { type: "json" };
 
 export default {
 
@@ -7,6 +12,38 @@ export default {
      */
     async execute(interaction) {
         
+        interaction.reply({ content: 'A narração será enviada em breve. Marque os envolvidos quando isso acontecer.', flags: [MessageFlags.Ephemeral] });
+
+        const actions = interaction.message.embeds[0]?.fields.map(field => `## ${field.name}\n${field.value}`);
+        
+        const actionContext = await getContext(interaction.guild);
+        const serverOwnedCountries = await getAllPlayers(interaction.guild);
+        const serverRoleplayDate = await getCurrentDate(interaction.guild);
+        const serverCurrentWars = await getWars(interaction.guild);
+
+        const prompt = eval("`" + process.env.PROMPT_WAR_NARRATION + "`");
+        
+        console.log(`- Turno de guerra ${interaction.channel.name} sendo narrado em ${interaction.guild.name} (${interaction.guildId})`);
+
+        const response = await aiGenerate(prompt).catch(error => {
+            console.error("Erro ao gerar narração:", error);
+        });
+
+        const json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+
+        if(!json || !json['narracao'] || !json['contexto'])
+            return console.error('Algo deu errado em análise de diplomacia: '+response.text);
+                
+        try {
+            chunkifyText(json['narracao'])?.forEach(chunk => interaction.channel.send(chunk));
+        } finally {
+            interaction.channel.send(warActionSendEmbed);
+        };
+
+        addContext(json['contexto'], interaction.guild);
+
+        interaction.message.deletable && interaction.message.delete();
+
     }
 
 }

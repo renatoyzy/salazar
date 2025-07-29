@@ -412,10 +412,10 @@ export default {
 
                         addContext(json['contexto'], message.guild);
 
-                        const warChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
-                        if(!warChannel || warChannel.type != ChannelType.GuildForum) return;
+                        const warsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
+                        if(!warsChannel || warsChannel.type != ChannelType.GuildForum) return;
 
-                        warChannel.threads.create({
+                        warsChannel.threads.create({
                             name: json['guerra'],
                             message: {
                                 content: json['sinopse']
@@ -448,9 +448,9 @@ export default {
 
                         addContext(json['contexto'], message.guild);
 
-                        const warChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
-                        if(!warChannel || warChannel.type != ChannelType.GuildForum) return;
-                        const warThread = warChannel.threads.cache.get(json['id']);
+                        const warsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.war);
+                        if(!warsChannel || warsChannel.type != ChannelType.GuildForum) return;
+                        const warThread = warsChannel.threads.cache.get(json['id']);
                         if(!warThread) return;
                         const warThreadStarterMessage = await warThread.fetchStarterMessage();
 

@@ -203,19 +203,21 @@ export async function getWars(guild) {
 export const warActionSendEmbed = {
     embeds: [
         new EmbedBuilder()
-        .setTitle('Enviar ação')
-        .setDescription('Enviar ação')
+        .setTitle('Novo turno de guerra')
+        .setDescription('Mande sua ação para a guerra enquanto há tempo!')
+        .setColor(Colors.Red)
+        .setFooter({text: 'Não leia a ação do amiguinho! Eu, o Salazar, irei PREJUDICAR ATIVAMENTE jogadores que fazem metagaming.'})
     ],
     components: [
         new ActionRowBuilder()
         .addComponents([
             new ButtonBuilder()
             .setCustomId('war_action')
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Primary)
             .setLabel('Enviar ação de guerra'),
             new ButtonBuilder()
             .setCustomId('war_narrate')
-            .setStyle(ButtonStyle.Success)
+            .setStyle(ButtonStyle.Secondary)
             .setLabel('Gerar narração')
         ])
     ]
