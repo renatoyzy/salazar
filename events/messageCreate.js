@@ -161,7 +161,7 @@ export default {
 
                 console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
 
-                const response = await aiGenerate(prompt).catch(error => {
+                const response = await aiGenerate(prompt, collected.map(m => m.attachments.map(a => a.url).join('\n')).join('\n').split('\n')).catch(error => {
                     console.error("Erro ao gerar narração:", error);
                 });
 
@@ -260,7 +260,7 @@ export default {
 
                 console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
                 
-                const response = await aiGenerate(prompt).catch(error => {
+                const response = await aiGenerate(prompt, collected.map(m => m.attachments.map(a => a.url).join('\n')).join('\n').split('\n')).catch(error => {
                     console.error("Erro ao gerar contexto de evento:", error);
                 });
 

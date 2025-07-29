@@ -4,7 +4,8 @@ import {
     Colors, 
     EmbedBuilder, 
     PermissionsBitField,
-    ChatInputCommandInteraction
+    ChatInputCommandInteraction,
+    SlashCommandAttachmentOption
 } from "discord.js";
 import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
@@ -21,6 +22,12 @@ export default {
             .setName("prompt")
             .setDescription("O que será perguntado")
             .setRequired(true)
+        )
+        .addAttachmentOption(
+            new SlashCommandAttachmentOption()
+            .setName('imagem')
+            .setDescription('Adicione uma imagem para analisar')
+            .setRequired(false)
         ),
 
     min_tier: 2,
@@ -59,8 +66,9 @@ export default {
             if(!actionContext) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
+            const imageUrl = interaction.options.getAttachment('imagem')?.url; 
 
-            const response = await aiGenerate(prompt).catch(error => {
+            const response = await aiGenerate(prompt, imageUrl).catch(error => {
                 console.error("Erro ao gerar palpite:", error);
             });
 
