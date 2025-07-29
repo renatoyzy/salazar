@@ -31,7 +31,7 @@ export default {
                 .addComponents(
                     new TextInputBuilder()
                     .setCustomId(`action_input`)
-                    .setLabel('Escreva o conteúdo da ação. Seja o mais breve possível.')
+                    .setLabel('Escreva o conteúdo da ação. Seja o mais breve possível, pois a IA não liga pra tamanho do texto, o que vale é a estratégia.')
                     .setStyle(TextInputStyle.Paragraph)
                     .setPlaceholder('Iremos contornar a Linha Maginot pela Bélgica...')
                     .setMaxLength(4000)
