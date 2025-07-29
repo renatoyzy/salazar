@@ -196,3 +196,27 @@ export async function getWars(guild) {
 
     return finalWars;
 }
+
+/**
+ * Embed de enviar ação de guerra
+ */
+export const warActionSendEmbed = {
+    embeds: [
+        new EmbedBuilder()
+        .setTitle('Enviar ação')
+        .setDescription('Enviar ação')
+    ],
+    components: [
+        new ActionRowBuilder()
+        .addComponents([
+            new ButtonBuilder()
+            .setCustomId('war_action')
+            .setStyle(ButtonStyle.Secondary)
+            .setLabel('Enviar ação de guerra'),
+            new ButtonBuilder()
+            .setCustomId('war_narrate')
+            .setStyle(ButtonStyle.Success)
+            .setLabel('Gerar narração')
+        ])
+    ]
+}

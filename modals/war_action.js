@@ -11,16 +11,18 @@ export default {
      */
     async execute(interaction) {
 
-        const side = interaction.customId.split(':')[1];
         const action = interaction.fields.getTextInputValue('action_input');
 
-        const field = interaction.message.embeds[0]?.fields.find(field => side.includes('A') ? field.name.includes('A') : field.name.includes('B'));
         const oldEmbed = interaction.message.embeds[0];
-        const newFields = oldEmbed.fields.map(f => f == field ? {name: field.name, value: action} : f);
-        const newEmbed = new EmbedBuilder(oldEmbed).setFields(newFields);
+        const newEmbed = new EmbedBuilder(oldEmbed);
         
-        interaction.message.editable && interaction.message.edit({embeds: [newEmbed]});
-        interaction.reply({ content: 'ok', flags: [MessageFlags.Ephemeral] })
+        oldEmbed.fields.find(field => field.name.includes(interaction.member.id)) ?
+            newEmbed.setFields(oldEmbed.fields.map(field => field.name.includes(interaction.member.id) ? { name: `Ação de ${interaction.member.displayName} (${interaction.member.id})`, value: action, inline: true } : field))
+        :
+            newEmbed.addFields({ name: `Ação de ${interaction.member.displayName} (${interaction.member.id})`, value: action, inline: true });
+        
+        interaction.message.editable && interaction.message.edit({ embeds: [newEmbed] });
+        interaction.reply({ content: 'Sua ação de guerra foi registrada. Volte quando ocorrer a narração.', flags: [MessageFlags.Ephemeral] })
 
     }
 

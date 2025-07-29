@@ -22,7 +22,8 @@ import {
     getAllPlayers,
     getContext,
     getCurrentDate,
-    getWars
+    getWars,
+    warActionSendEmbed
 } from "../src/Roleplay.js";
 import { aiGenerate, isLikelyAI } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
@@ -420,26 +421,7 @@ export default {
                                 content: json['sinopse']
                             }
                         }).then(warThread => {
-                            warThread.send({
-                                embeds: [
-                                    new EmbedBuilder()
-                                    .setTitle('Enviar ação')
-                                    .setDescription('Enviar ação')
-                                ],
-                                components: [
-                                    new ActionRowBuilder()
-                                    .addComponents([
-                                        new ButtonBuilder()
-                                        .setCustomId('war_action')
-                                        .setStyle(ButtonStyle.Secondary)
-                                        .setLabel('Enviar ação de guerra'),
-                                        new ButtonBuilder()
-                                        .setCustomId('war_narrate')
-                                        .setStyle(ButtonStyle.Success)
-                                        .setLabel('Gerar narração')
-                                    ])
-                                ]
-                            })
+                            warThread.send(warActionSendEmbed);
                         });
                         
                         break;

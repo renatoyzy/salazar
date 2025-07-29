@@ -13,12 +13,10 @@ export default {
      */
     async execute(interaction) {
 
-        const side = interaction.customId.split(':')[1];
-
         await interaction.showModal(
             new ModalBuilder()
-            .setCustomId(`war_action:${side}`)
-            .setTitle('Ação de guerra')
+            .setCustomId(`war_action`)
+            .setTitle('Sua ação de guerra')
             .addComponents(
                 new ActionRowBuilder()
                 .addComponents(
