@@ -1,10 +1,12 @@
 import {
     ActionRowBuilder,
     ButtonInteraction,
+    MessageFlags,
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle
 } from "discord.js"
+import { config } from "../src/Server"
 
 export default {
 
@@ -12,6 +14,13 @@ export default {
      * @param {ButtonInteraction} interaction 
      */
     async execute(interaction) {
+
+        const serverConfig = await config(interaction.guildId);
+
+        if(!interaction.member.roles.cache.has(serverConfig?.roles?.player)) return interaction.reply({
+            content: `Essa interação só está disponível para jogadores do roleplay.`,
+            flags: [MessageFlags.Ephemeral]
+        })
 
         await interaction.showModal(
             new ModalBuilder()

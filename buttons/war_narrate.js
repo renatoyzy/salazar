@@ -1,4 +1,4 @@
-import { ButtonInteraction, MessageFlags } from "discord.js";
+import { ButtonInteraction, MessageFlags, PermissionsBitField } from "discord.js";
 import 'dotenv/config';
 import { aiGenerate } from "../src/AIUtils.js";
 import { addContext, getAllPlayers, getContext, getCurrentDate, getWars, warActionSendEmbed } from "../src/Roleplay.js";
@@ -11,6 +11,11 @@ export default {
      * @param {ButtonInteraction} interaction 
      */
     async execute(interaction) {
+
+        if(!interaction.member.permissions.has(PermissionsBitField.Flags.ManageRoles)) return interaction.reply({
+            content: `Você não tem o cargo necessário para isso.`,
+            flags: [MessageFlags.Ephemeral]
+        });
         
         interaction.reply({ content: 'A narração será enviada em breve. Marque os envolvidos quando isso acontecer.', flags: [MessageFlags.Ephemeral] });
 
