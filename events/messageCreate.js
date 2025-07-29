@@ -354,6 +354,9 @@ export default {
                     ) || (
                         json['tipo'] == 3 &&
                         (!json['pais'] || !json['narracao'] || !json['contexto'] || !json['id'] || !json['sinopse'])
+                    ) || (
+                        json['tipo'] == 4 &&
+                        (!json['narracao'] || !json['contexto'])
                     )
                 ) return console.error('Algo deu errado em análise de diplomacia: '+response.text);
 
@@ -457,6 +460,28 @@ export default {
                         warThreadStarterMessage.editable && warThreadStarterMessage.edit(json['sinopse']);
 
                         break;
+                    }
+
+                    case 4: { // diplomacia importante
+                        // Se houver bloco diff, ele fica em um chunk separado
+                        const diffStart = json['narracao'].indexOf('```diff');
+                        let mainText = json['narracao'];
+                        let diffChunk = null;
+                        if (diffStart !== -1) {
+                            mainText = json['narracao'].slice(0, diffStart);
+                            diffChunk = json['narracao'].slice(diffStart);
+                        };
+
+                        let finalText = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
+                        const chunks = chunkifyText(finalText);
+                        if (diffChunk) chunks.push(diffChunk);
+                        chunks.push(`\n-# Narração gerada por Inteligência Artificial. [Saiba mais](${botConfig.site})`);
+
+                        const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
+
+                        chunks.forEach(chunk => narrationsChannel?.send(chunk));
+
+                        addContext(json['contexto'], message.guild);
                     }
                 
                     default:
