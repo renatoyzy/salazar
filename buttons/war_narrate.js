@@ -22,6 +22,7 @@ export default {
         const actions = interaction.message.embeds[0]?.fields.map(field => `## ${field.name}\n${field.value}`);
         
         const actionContext = await getContext(interaction.guild);
+        const warHistory = (await interaction.channel.messages.fetch({ limit: 100 })).map(msg => msg.cleanContent).join('\n\n');
         const serverOwnedCountries = await getAllPlayers(interaction.guild);
         const serverRoleplayDate = await getCurrentDate(interaction.guild);
         const serverCurrentWars = await getWars(interaction.guild);
@@ -43,6 +44,7 @@ export default {
             chunkifyText(json['narracao'])?.forEach(chunk => interaction.channel.send(chunk));
         } finally {
             interaction.channel.send(warActionSendEmbed);
+            interaction.channel.send(`@here`).then(msg => msg.deletable && msg.delete());
         };
 
         addContext(json['contexto'], interaction.guild);

@@ -426,6 +426,7 @@ export default {
                             }
                         }).then(warThread => {
                             warThread.send(warActionSendEmbed);
+                            warThread.send(`<@${message.author.id}>`).then(msg => msg.deletable && msg.delete());
                         });
                         
                         break;

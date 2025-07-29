@@ -54,7 +54,7 @@ export default {
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
-            const serverCurrentWars = await getWars(message.guild);
+            const serverCurrentWars = await getWars(interaction.guild);
 
             if(!actionContext) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
