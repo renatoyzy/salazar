@@ -47,12 +47,12 @@ for (const file of timedFiles) {
 }
 
 // Crash handle
-process.on('uncaughtException', async (erro, origem) => {
-    console.error(`Exceção não capturada.\n\nErro: ${erro}\n\nOrigem: ${origem}`);
+process.on('uncaughtException', async (err, origin) => {
+    console.error(`Exceção não capturada.`, err, origin);
 });
 
 process.on('unhandledRejection', async (reason, promise) => {
-    console.error(`Rejeição não manuseada: ${reason} ${promise}`);
+    console.error(`Rejeição não manuseada.`, reason, promise);
 });
 
 // Logar o cliente
