@@ -146,22 +146,15 @@ export async function aiGenerate(prompt, imageUrls = undefined) {
     const model = models[i];
     
     try {
-      if (verbose) {
-        console.log(`Tentativa ${i + 1}/${models.length}: Usando modelo ${model}`);
-      }
       
       const response = await sendRequisition(prompt, model, imageUrls);
       
-      console.log(`✅ Salazar está usando o modelo ${model}`);
+      console.log(`-- ${botConfig.name} está usando o modelo ${model}`);
       return response;
       
     } catch (error) {
       const errorMessage = `Modelo ${model}: ${error.message}`;
       errors.push(errorMessage);
-      
-      if (verbose) {
-        console.warn(`❌ Falha no modelo ${model}:`, error.message);
-      }
       
       // Se não é o último modelo, continua tentando
       if (i < models.length - 1) {
