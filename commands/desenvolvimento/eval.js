@@ -58,21 +58,16 @@ function formatOutput(output, maxLength = MAX_FIELD_LENGTH) {
         } else if (output instanceof Error) {
             formatted = `${output.name}: ${output.message}\n${output.stack?.split('\n').slice(0, 3).join('\n') || ''}`;
         } else if (typeof output === 'object') {
-            try {
-                // Tenta JSON.stringify primeiro para objetos simples
-                formatted = JSON.stringify(output, null, 2);
-            } catch {
-                // Fallback para inspect se JSON.stringify falhar
-                formatted = inspect(output, { 
-                    depth: 0, 
-                    colors: false, 
-                    maxArrayLength: 10,
-                    maxStringLength: 200,
-                    breakLength: 80,
-                    compact: false,
-                    showHidden: false
-                });
-            }
+            // Fallback para inspect se JSON.stringify falhar
+            formatted = inspect(output, { 
+                depth: 0, 
+                colors: false, 
+                maxArrayLength: 10,
+                maxStringLength: 200,
+                breakLength: 80,
+                compact: false,
+                showHidden: false
+            });
         } else {
             formatted = String(output);
         }

@@ -105,7 +105,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
 
       } catch (err) {
         // Apenas texto
-        console.error(`-- Ignorando imagens devido ao erro: `, err);
+        console.error(`-- Ignorando imagens devido ao erro: `, err?.message);
         contents = createUserContent(prompt);
       }
 
