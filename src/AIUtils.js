@@ -83,22 +83,32 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
     let contents;
 
     if (imageUrls && (Array.isArray(imageUrls) ? imageUrls.length > 0 : imageUrls)) {
-      // Normaliza imageUrls para array
-      const urlArray = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
-      
-      // Filtra URLs válidas
-      const validUrls = urlArray.filter(url => url && typeof url === 'string');
-      
-      if (validUrls.length === 0) {
-        throw new Error("Nenhuma URL de imagem válida fornecida");
+
+      try {
+
+        // Normaliza imageUrls para array
+        const urlArray = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+        
+        // Filtra URLs válidas
+        const validUrls = urlArray.filter(url => url && typeof url === 'string');
+        
+        if (validUrls.length === 0) {
+          throw new Error("Nenhuma URL de imagem válida fornecida");
+        }
+
+        // Processa imagens
+        const processedImages = await processImages(validUrls);
+        
+        // Cria conteúdo com texto e imagens
+        const userContent = [prompt, ...processedImages];
+        contents = createUserContent(userContent);
+
+      } catch (err) {
+        // Apenas texto
+        console.error(`-- Ignorando imagens devido ao erro: `, err);
+        contents = createUserContent(prompt);
       }
 
-      // Processa imagens
-      const processedImages = await processImages(validUrls);
-      
-      // Cria conteúdo com texto e imagens
-      const userContent = [prompt, ...processedImages];
-      contents = createUserContent(userContent);
     } else {
       // Apenas texto
       contents = createUserContent(prompt);
