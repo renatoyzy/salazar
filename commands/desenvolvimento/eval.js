@@ -125,7 +125,7 @@ async function executeCode(code, interaction) {
             interaction, guild: interaction.guild, channel: interaction.channel,
             user: interaction.user, member: interaction.member,
             // Utilities
-            console, process, require, setTimeout, clearTimeout,
+            console, process, setTimeout, clearTimeout,
             setInterval, clearInterval, Promise, Buffer
         };
 
