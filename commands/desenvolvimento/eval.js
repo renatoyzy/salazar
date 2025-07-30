@@ -102,7 +102,7 @@ function createTimeoutPromise(ms) {
 }
 
 /**
- * Executa código JavaScript com contexto completo
+ * Executa código JavaScript usando eval direto com acesso total ao escopo
  * @param {string} code - Código a ser executado
  * @returns {Promise<{output: any, success: boolean, executionTime: number, isAsync: boolean}>}
  */
@@ -120,26 +120,14 @@ async function executeCode(code) {
         let result;
         
         if (isAsync) {
-            // Para código assíncrono
-            const asyncFunction = new Function(`
-                return (async () => {
-                    ${code}
-                })();
-            `);
-            
+            // Para código assíncrono usando eval
             result = await Promise.race([
-                asyncFunction(),
+                eval(`(async () => { ${code} })()`),
                 createTimeoutPromise(ASYNC_TIMEOUT)
             ]);
         } else {
-            // Para código síncrono
-            const syncFunction = new Function(`
-                return (function() {
-                    ${code}
-                })();
-            `);
-            
-            result = syncFunction();
+            // Para código síncrono usando eval
+            result = eval(code);
             
             // Se retornou uma Promise, resolve ela com timeout
             if (result instanceof Promise) {
@@ -158,7 +146,7 @@ async function executeCode(code) {
     }
 
     const endTime = process.hrtime.bigint();
-    const executionTime = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
+    const executionTime = Number(endTime - startTime) / 1_000_000;
 
     return {
         output,
