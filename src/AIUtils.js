@@ -1,6 +1,5 @@
 import { GenerateContentResponse, GoogleGenAI, createUserContent } from "@google/genai";
 import botConfig from "../config.json" with { type: "json" };
-import { createHash } from "crypto";
 import 'dotenv/config';
 
 export const ai = new GoogleGenAI({
@@ -8,44 +7,111 @@ export const ai = new GoogleGenAI({
 });
 
 /**
+ * Detecta o tipo MIME da imagem com base na URL ou dados
+ * @param {string} imageUrl - URL da imagem
+ * @returns {string} - Tipo MIME detectado
+ */
+function detectMimeType(imageUrl) {
+  const extension = imageUrl.toLowerCase().split('.').pop().split('?')[0];
+  const mimeTypes = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp'
+  };
+  return mimeTypes[extension] || 'image/png';
+}
+
+/**
+ * Processa uma única imagem para inclusão no conteúdo
+ * @param {string} imageUrl - URL da imagem
+ * @returns {Promise<Object>} - Objeto com dados da imagem processada
+ */
+async function processImage(imageUrl) {
+  try {
+    const imageResponse = await fetch(imageUrl);
+    
+    if (!imageResponse.ok) {
+      throw new Error(`Falha ao buscar imagem: ${imageResponse.status} ${imageResponse.statusText}`);
+    }
+
+    const imageArrayBuffer = await imageResponse.arrayBuffer();
+    const base64ImageData = Buffer.from(imageArrayBuffer).toString('base64');
+    const mimeType = detectMimeType(imageUrl);
+
+    return {
+      inlineData: {
+        mimeType,
+        data: base64ImageData,
+      },
+    };
+  } catch (error) {
+    console.error(`Erro ao processar imagem ${imageUrl}:`, error.message);
+    throw new Error(`Falha ao processar imagem: ${error.message}`);
+  }
+}
+
+/**
+ * Processa múltiplas imagens em paralelo
+ * @param {string[]} imageUrls - Array de URLs das imagens
+ * @returns {Promise<Object[]>} - Array com dados das imagens processadas
+ */
+async function processImages(imageUrls) {
+  const imagePromises = imageUrls.map(processImage);
+  return Promise.all(imagePromises);
+}
+
+/**
  * Envia uma requisição para a IA.
  * @param {string} prompt - O prompt a ser enviado para a IA
  * @param {string} model - O modelo de IA a ser utilizado
- * @param {string[]} imageUrl - Incluir uma imagem pra analisar caso suportado
+ * @param {string|string[]} [imageUrls] - URL(s) da(s) imagem(ns) para analisar
  * @returns {Promise<GenerateContentResponse>} - A resposta da IA
  * @throws {Error} - Se ocorrer um erro ao enviar a requisição
  */
-export async function sendRequisition(prompt, model, imageUrl=undefined) {
+export async function sendRequisition(prompt, model, imageUrls = undefined) {
+  if (!prompt || typeof prompt !== 'string') {
+    throw new Error("O prompt deve ser uma string não vazia");
+  }
+
+  if (!model || typeof model !== 'string') {
+    throw new Error("O modelo deve ser uma string não vazia");
+  }
+
   try {
-    if(imageUrl && imageUrl.length>0) {
-      let userContent = [prompt];
-      try {
-        for (const image in imageUrl) {
-          const imageResponse = await fetch(image);
-          const imageArrayBuffer = await imageResponse.arrayBuffer();
-          const base64ImageData = Buffer.from(imageArrayBuffer).toString('base64');
-          userContent.push({
-            inlineData: {
-              mimeType: "image/png",
-              data: base64ImageData,
-            },
-          })
-        }
-      } finally {
-        const response = await ai.models.generateContent({
-          model: model,
-          contents: createUserContent(userContent),
-        });
-        return response;
+    let contents;
+
+    if (imageUrls && (Array.isArray(imageUrls) ? imageUrls.length > 0 : imageUrls)) {
+      // Normaliza imageUrls para array
+      const urlArray = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+      
+      // Filtra URLs válidas
+      const validUrls = urlArray.filter(url => url && typeof url === 'string');
+      
+      if (validUrls.length === 0) {
+        throw new Error("Nenhuma URL de imagem válida fornecida");
       }
+
+      // Processa imagens
+      const processedImages = await processImages(validUrls);
+      
+      // Cria conteúdo com texto e imagens
+      const userContent = [prompt, ...processedImages];
+      contents = createUserContent(userContent);
     } else {
-      const response = await ai.models.generateContent({
-        model: model,
-        contents: prompt
-      });
-      return response;
+      // Apenas texto
+      contents = createUserContent(prompt);
     }
+
+    const response = await ai.models.generateContent({
+      model,
+      contents,
+    });
+
+    return response;
   } catch (error) {
+    console.error(`Erro na requisição para o modelo ${model}:`, error.message);
     throw error;
   }
 }
@@ -53,29 +119,76 @@ export async function sendRequisition(prompt, model, imageUrl=undefined) {
 /**
  * Gera uma resposta da IA com base no prompt fornecido, tentando todos os modelos em ordem.
  * @param {string} prompt - O prompt a ser enviado para a IA
- * @param {string | string[]} imageUrl - Incluir uma imagem pra analisar caso suportado
+ * @param {string|string[]} [imageUrls] - URL(s) da(s) imagem(ns) para analisar
  * @returns {Promise<GenerateContentResponse>} - A resposta da IA
  * @throws {Error} - Se o prompt for inválido ou se ocorrer um erro na geração
  */
-export async function aiGenerate(prompt, imageUrl=undefined) {
+export async function aiGenerate(prompt, imageUrls = undefined) {
+
   if (!prompt || typeof prompt !== 'string') {
-    throw new Error("O prompt deve ser uma string não vazia.");
+    throw new Error("O prompt deve ser uma string não vazia");
   }
 
-  const models = Array.isArray(botConfig.model) ? botConfig.model : [botConfig.model];
+  // Validação da configuração
+  if (!botConfig.model) {
+    throw new Error("Configuração de modelo não encontrada em botConfig");
+  }
 
-  let lastError;
-  for (const model of models) {
+  const models = botConfig?.model;
+  
+  if (!models || models.length === 0) {
+    throw new Error("Nenhum modelo configurado");
+  }
+
+  const errors = [];
+  
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
+    
     try {
-      const response = await sendRequisition(prompt, model, typeof imageUrl == "string" ? [imageUrl] : imageUrl);
-      console.log(`-- O Salazar está usando o modelo ${model}`);
+      if (verbose) {
+        console.log(`Tentativa ${i + 1}/${models.length}: Usando modelo ${model}`);
+      }
+      
+      const response = await sendRequisition(prompt, model, imageUrls);
+      
+      console.log(`✅ Salazar está usando o modelo ${model}`);
       return response;
+      
     } catch (error) {
-      lastError = error;
-      // Tenta o próximo modelo
+      const errorMessage = `Modelo ${model}: ${error.message}`;
+      errors.push(errorMessage);
+      
+      if (verbose) {
+        console.warn(`❌ Falha no modelo ${model}:`, error.message);
+      }
+      
+      // Se não é o último modelo, continua tentando
+      if (i < models.length - 1) {
+        continue;
+      }
     }
   }
-  // Se chegou aqui, todos falharam
-  console.error("Erro ao gerar resposta da IA:", lastError);
-  throw new Error("Não foi possível obter uma resposta da IA em nenhum modelo.");
+
+  // Se chegou aqui, todos os modelos falharam
+  const fullErrorMessage = `Falha em todos os modelos:\n${errors.join('\n')}`;
+  console.error("❌ Erro ao gerar resposta da IA:", fullErrorMessage);
+  
+  throw new Error(`Não foi possível obter resposta da IA. Tentativas falharam: ${errors.length}`);
+}
+
+/**
+ * Função utilitária para testar a conectividade com a IA
+ * @param {string} [testPrompt="Olá"] - Prompt de teste
+ * @returns {Promise<boolean>} - Se a conexão foi bem-sucedida
+ */
+export async function testConnection(testPrompt = "Olá") {
+  try {
+    await aiGenerate(testPrompt);
+    console.log("✅ Conexão com IA testada com sucesso");
+    return true;
+  } catch (error) {
+    console.error("❌ Falha no teste de conexão:", error.message);
+    return false;
+  }
 }
