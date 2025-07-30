@@ -31,7 +31,6 @@ import {
 import gis from "g-i-s";
 
 // Constantes para configuração
-const MAX_OUTPUT_LENGTH = 1800;
 const MAX_FIELD_LENGTH = 1024;
 const SYNC_TIMEOUT = 30_000; // 30 segundos
 const ASYNC_TIMEOUT = 60_000; // 60 segundos
@@ -42,7 +41,7 @@ const ASYNC_TIMEOUT = 60_000; // 60 segundos
  * @param {number} maxLength - Tamanho máximo da string
  * @returns {string} - Saída formatada
  */
-function formatOutput(output, maxLength = MAX_OUTPUT_LENGTH) {
+function formatOutput(output, maxLength = MAX_FIELD_LENGTH) {
     try {
         let formatted;
         
@@ -106,7 +105,7 @@ function createTimeoutPromise(ms) {
  * @param {string} code - Código a ser executado
  * @returns {Promise<{output: any, success: boolean, executionTime: number, isAsync: boolean}>}
  */
-async function executeCode(code) {
+async function executeCode(code, interaction) {
     const startTime = process.hrtime.bigint();
     let output;
     let success = true;
@@ -230,9 +229,9 @@ export default {
     .setDescription("[Desenvolvedor] Executa código JavaScript diretamente pelo Discord")
     .addStringOption(
         new SlashCommandStringOption()
-            .setName("código")
-            .setDescription("Código JavaScript para executar")
-            .setRequired(true)
+        .setName("código")
+        .setDescription("Código JavaScript para executar")
+        .setRequired(true)
     ),
 
     setup_step: -1,
@@ -271,7 +270,7 @@ export default {
 
         try {
             // Executa o código
-            const { output, success, executionTime, isAsync } = await executeCode(code);
+            const { output, success, executionTime, isAsync } = await executeCode(code, interaction);
 
             let embed;
             
