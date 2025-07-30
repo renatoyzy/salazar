@@ -1,4 +1,4 @@
-import * as Discord from "discord.js"
+import * as Discord from "discord.js";
 import { 
     SlashCommandBuilder, 
     SlashCommandStringOption, 
@@ -30,13 +30,19 @@ import {
 } from "../../src/VisualUtils.js";
 import gis from "g-i-s";
 
+// Constantes para configuração
+const MAX_OUTPUT_LENGTH = 1800;
+const MAX_FIELD_LENGTH = 1024;
+const SYNC_TIMEOUT = 30_000; // 30 segundos
+const ASYNC_TIMEOUT = 60_000; // 60 segundos
+
 /**
  * Formata a saída para exibição melhorada
  * @param {any} output - Saída a ser formatada
  * @param {number} maxLength - Tamanho máximo da string
  * @returns {string} - Saída formatada
  */
-function formatOutput(output, maxLength = 1800) {
+function formatOutput(output, maxLength = MAX_OUTPUT_LENGTH) {
     try {
         let formatted;
         
@@ -85,20 +91,22 @@ function formatOutput(output, maxLength = 1800) {
 }
 
 /**
+ * Cria um timeout promise para cancelar execuções longas
+ * @param {number} ms - Milissegundos para timeout
+ * @returns {Promise} - Promise que rejeita após o timeout
+ */
+function createTimeoutPromise(ms) {
+    return new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`⏰ Timeout: Execução cancelada após ${ms/1000} segundos`)), ms)
+    );
+}
+
+/**
  * Executa código JavaScript com contexto completo
  * @param {string} code - Código a ser executado
- * @param {ChatInputCommandInteraction} interaction - Interação do Discord
+ * @returns {Promise<{output: any, success: boolean, executionTime: number, isAsync: boolean}>}
  */
-async function executeCode(code, interaction) {
-    await interaction.editReply({
-        embeds: [
-            new EmbedBuilder()
-            .setColor(Colors.Yellow)
-            .setTitle("⚡ Executando código...")
-            .setDescription(`\`\`\`js\n${code.slice(0, 200)}${code.length > 200 ? '\n...' : ''}\n\`\`\``)
-        ]
-    }).catch(() => {});
-
+async function executeCode(code) {
     const startTime = process.hrtime.bigint();
     let output;
     let success = true;
@@ -109,72 +117,35 @@ async function executeCode(code, interaction) {
         const asyncPattern = /\b(await|async)\b/;
         isAsync = asyncPattern.test(code);
 
-        // Cria contexto de execução com todas as variáveis disponíveis
-        const context = {
-            // Discord imports
-            Discord, SlashCommandBuilder, SlashCommandStringOption, 
-            EmbedBuilder, Colors, ChatInputCommandInteraction,
-            // Utilities
-            inspect, botConfig, GoogleGenAI, Canvas, fs, path,
-            // Project modules
-            Server, projectPackage, client, announce, Roleplay,
-            aiGenerate, sendRequisition, chunkifyText, simplifyString,
-            getAverageColor, fetchImageAsPngBuffer, isImageSafe, makeRoundFlag,
-            gis,
-            // Discord context
-            interaction, guild: interaction.guild, channel: interaction.channel,
-            user: interaction.user, member: interaction.member,
-            // Utilities
-            console, process, setTimeout, clearTimeout,
-            setInterval, clearInterval, Promise, Buffer
-        };
-
-        // Injeta o contexto no código
-        const contextKeys = Object.keys(context);
-        const contextValues = Object.values(context);
-        
         let result;
         
         if (isAsync) {
             // Para código assíncrono
-            const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-            const fn = new AsyncFunction(...contextKeys, `
-                try {
-                    return await (async () => {
-                        ${code}
-                    })();
-                } catch (error) {
-                    throw error;
-                }
+            const asyncFunction = new Function(`
+                return (async () => {
+                    ${code}
+                })();
             `);
             
             result = await Promise.race([
-                fn(...contextValues),
-                new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("⏰ Timeout: Execução cancelada após 30 segundos")), 30000)
-                )
+                asyncFunction(),
+                createTimeoutPromise(ASYNC_TIMEOUT)
             ]);
         } else {
             // Para código síncrono
-            const fn = new Function(...contextKeys, `
-                try {
-                    return (function() {
-                        ${code}
-                    })();
-                } catch (error) {
-                    throw error;
-                }
+            const syncFunction = new Function(`
+                return (function() {
+                    ${code}
+                })();
             `);
             
-            result = fn(...contextValues);
+            result = syncFunction();
             
-            // Se retornou uma Promise, resolve ela
+            // Se retornou uma Promise, resolve ela com timeout
             if (result instanceof Promise) {
                 result = await Promise.race([
                     result,
-                    new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error("⏰ Timeout: Promise não resolvida em 30 segundos")), 30000)
-                    )
+                    createTimeoutPromise(SYNC_TIMEOUT)
                 ]);
             }
         }
@@ -189,71 +160,93 @@ async function executeCode(code, interaction) {
     const endTime = process.hrtime.bigint();
     const executionTime = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
 
-    // Formata saída
-    const formattedOutput = formatOutput(output);
-    const outputType = output === null ? 'null' : 
-                      output === undefined ? 'undefined' : 
-                      output?.constructor?.name || typeof output;
+    return {
+        output,
+        success,
+        executionTime,
+        isAsync
+    };
+}
 
-    // Determina cor e ícone baseado no resultado
-    const embedColor = success ? 
-        (output === undefined ? Colors.Grey : Colors.Green) : Colors.Red;
+/**
+ * Trunca texto para caber nos limites do Discord
+ * @param {string} text - Texto para truncar
+ * @param {number} maxLength - Tamanho máximo
+ * @returns {string} - Texto truncado
+ */
+function truncateForDiscord(text, maxLength = MAX_FIELD_LENGTH) {
+    if (text.length <= maxLength) return text;
     
-    const statusIcon = success ? 
-        (output === undefined ? "📝" : "✅") : "❌";
+    const truncatePoint = maxLength - 20;
+    return text.slice(0, truncatePoint) + "\n... (truncado)";
+}
 
-    // Constrói embed de resposta
-    const embed = new EmbedBuilder()
-        .setColor(embedColor)
-        .setTitle(`${statusIcon} ${success ? 'Executado' : 'Erro'}`)
+/**
+ * Cria embed de sucesso para resultado da execução
+ * @param {string} code - Código executado
+ * @param {any} output - Resultado da execução
+ * @param {number} executionTime - Tempo de execução em ms
+ * @param {boolean} isAsync - Se o código era assíncrono
+ * @returns {EmbedBuilder} - Embed formatado
+ */
+function createSuccessEmbed(code, output, executionTime, isAsync) {
+    const formattedOutput = formatOutput(output);
+    
+    return new EmbedBuilder()
+        .setColor(Colors.Green)
+        .setTitle(`✅ Código ${isAsync ? 'assíncrono' : 'síncrono'} executado com sucesso`)
         .addFields([
             {
-                name: "📥 Entrada",
-                value: `\`\`\`js\n${code.length > 500 ? code.slice(0, 500) + '\n...' : code}\n\`\`\``,
-                inline: false
+                name: '📥 Entrada',
+                value: `\`\`\`js\n${truncateForDiscord(code)}\n\`\`\``
             },
             {
-                name: "📤 Saída",
-                value: formattedOutput.length > 0 ? 
-                    `\`\`\`js\n${formattedOutput}\n\`\`\`` : 
-                    `\`\`\`\n(sem saída)\n\`\`\``,
-                inline: false
+                name: '📤 Saída',
+                value: `\`\`\`js\n${truncateForDiscord(formattedOutput)}\n\`\`\``
             }
         ])
-        .setFooter({
-            text: `${executionTime.toFixed(2)}ms • ${outputType} • ${isAsync ? 'async' : 'sync'}`,
-            iconURL: interaction.user.displayAvatarURL()
-        })
-        .setTimestamp();
+        .setTimestamp()
+        .setFooter({ text: `${output === null ? 'null' : typeof output} obtido em ${executionTime.toFixed(2)}ms` });
+}
 
-    // Adiciona stack trace para erros
-    if (!success && output.stack) {
-        const stackLines = output.stack.split('\n').slice(1, 4);
-        if (stackLines.length > 0) {
-            embed.addFields([{
-                name: "📍 Stack Trace",
-                value: `\`\`\`\n${stackLines.join('\n')}\n\`\`\``,
-                inline: false
-            }]);
-        }
-    }
-
-    await interaction.editReply({
-        embeds: [embed]
-    }).catch(console.error);
+/**
+ * Cria embed de erro para falha na execução
+ * @param {string} code - Código que falhou
+ * @param {Error|any} error - Erro ocorrido
+ * @param {number} executionTime - Tempo de execução em ms
+ * @returns {EmbedBuilder} - Embed formatado
+ */
+function createErrorEmbed(code, error, executionTime) {
+    const formattedError = formatOutput(error);
+    
+    return new EmbedBuilder()
+        .setColor(Colors.Red)
+        .setTitle('❌ Erro na execução do código')
+        .addFields([
+            {
+                name: '📥 Entrada',
+                value: `\`\`\`js\n${truncateForDiscord(code)}\n\`\`\``
+            },
+            {
+                name: '🚫 Erro',
+                value: `\`\`\`js\n${truncateForDiscord(formattedError)}\n\`\`\``
+            }
+        ])
+        .setTimestamp()
+        .setFooter({ text: `${error?.name || 'Erro desconhecido'} detectado em ${executionTime.toFixed(2)}ms.` });
 }
 
 export default {
     data: new SlashCommandBuilder()
-        .setName("eval")
-        .setDescription("[Desenvolvedor] Executa código JavaScript diretamente pelo Discord")
-        .addStringOption(
-            new SlashCommandStringOption()
+    .setName("eval")
+    .setDescription("[Desenvolvedor] Executa código JavaScript diretamente pelo Discord")
+    .addStringOption(
+        new SlashCommandStringOption()
             .setName("código")
             .setDescription("Código JavaScript para executar")
             .setRequired(true)
-        ),
-    
+    ),
+
     setup_step: -1,
     ephemeral: true,
 
@@ -266,33 +259,63 @@ export default {
             return await interaction.editReply({
                 embeds: [
                     new EmbedBuilder()
-                    .setColor(Colors.Red)
-                    .setTitle("🚫 Acesso Negado")
-                    .setDescription("Este comando é restrito aos desenvolvedores do bot.")
+                        .setColor(Colors.Red)
+                        .setTitle("🚫 Acesso negado")
+                        .setDescription("Este comando é restrito aos desenvolvedores do bot.")
+                        .setTimestamp()
                 ]
             });
-        }
+        };
 
         const code = interaction.options.getString("código");
 
+        // Validação básica do código
+        if (!code || code.trim().length === 0) {
+            return await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Orange)
+                        .setTitle("⚠️ Código inválido")
+                        .setDescription("O código fornecido está vazio ou inválido.")
+                ]
+            });
+        };
+
         try {
-            await executeCode(code, interaction);
+            // Executa o código
+            const { output, success, executionTime, isAsync } = await executeCode(code);
+
+            let embed;
+            
+            if (success) {
+                embed = createSuccessEmbed(code, output, executionTime, isAsync);
+            } else {
+                embed = createErrorEmbed(code, output, executionTime);
+            };
+
+            await interaction.editReply({ embeds: [embed] });
+
         } catch (error) {
             console.error("Erro crítico no eval:", error);
             
-            await interaction.editReply({
-                embeds: [
-                    new EmbedBuilder()
-                    .setColor(Colors.Red)
-                    .setTitle("💥 Erro crítico")
-                    .setDescription("Falha interna no sistema de execução")
-                    .addFields([{
-                        name: "Detalhes",
-                        value: `\`\`\`js\n${error.message || 'Erro desconhecido'}\n\`\`\``
-                    }])
-                    .setTimestamp()
-                ]
-            }).catch(() => {});
-        }
+            // Embed para erro crítico do sistema
+            const criticalErrorEmbed = new EmbedBuilder()
+                .setColor(Colors.DarkRed)
+                .setTitle("💥 Erro crítico do sistema")
+                .setDescription("Falha interna no sistema de execução. Verifique os logs do console.")
+                .addFields([
+                    {
+                        name: '📥 Código tentado',
+                        value: `\`\`\`js\n${truncateForDiscord(code)}\n\`\`\``
+                    },
+                    {
+                        name: "🔧 Detalhes técnicos",
+                        value: `\`\`\`js\n${truncateForDiscord(error.message || 'Erro desconhecido')}\n\`\`\``
+                    }
+                ])
+                .setTimestamp()
+
+            await interaction.editReply({ embeds: [criticalErrorEmbed] }).catch(console.error);
+        };
     }
 };
