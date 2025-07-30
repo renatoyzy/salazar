@@ -64,7 +64,7 @@ function formatOutput(output, maxLength = MAX_FIELD_LENGTH) {
             } catch {
                 // Fallback para inspect se JSON.stringify falhar
                 formatted = inspect(output, { 
-                    depth: 2, 
+                    depth: 0, 
                     colors: false, 
                     maxArrayLength: 10,
                     maxStringLength: 200,
