@@ -11,7 +11,7 @@ import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
 import { getAllPlayers, getContext, getCurrentDate, getWars } from "../../src/Roleplay.js";
-import { aiGenerate } from "../../src/AIUtils.js";
+import { aiGenerate, sendRequisition } from "../../src/AIUtils.js";
 import { chunkifyText } from "../../src/StringUtils.js";
 
 export default {
@@ -73,7 +73,7 @@ export default {
             const image = interaction.options.getAttachment('imagem'); 
             const imageUrl = image.contentType.startsWith('image') ? image.url : undefined;
 
-            const response = await aiGenerate(prompt, imageUrl).catch(error => {
+            const response = await sendRequisition(prompt, botConfig.model[2], imageUrl).catch(error => {
                 console.error("Erro ao gerar palpite:", error.message);
             });
 
