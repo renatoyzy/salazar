@@ -42,7 +42,7 @@ function buildOptions(builder) {
         canal: SlashCommandChannelOption,
         cargo: SlashCommandRoleOption,
         texto: SlashCommandStringOption,
-        tempo: SlashCommandIntegerOption,
+        número: SlashCommandIntegerOption,
         booleano: SlashCommandBooleanOption
     };
 

@@ -121,7 +121,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
 
     return response;
   } catch (error) {
-    console.error(`-- Erro na requisição para o modelo ${model}`);
+    //console.error(`-- Erro na requisição para o modelo ${model}`);
     throw error;
   }
 }
@@ -175,23 +175,7 @@ export async function aiGenerate(prompt, imageUrls = undefined) {
 
   // Se chegou aqui, todos os modelos falharam
   const fullErrorMessage = `Falha em todos os modelos:\n${errors.join('\n')}`;
-  console.error("❌ Erro ao gerar resposta da IA:", fullErrorMessage);
+  console.error("Erro ao gerar resposta da IA:", fullErrorMessage);
   
   throw new Error(`Não foi possível obter resposta da IA. Tentativas falharam: ${errors.length}`);
-}
-
-/**
- * Função utilitária para testar a conectividade com a IA
- * @param {string} [testPrompt="Olá"] - Prompt de teste
- * @returns {Promise<boolean>} - Se a conexão foi bem-sucedida
- */
-export async function testConnection(testPrompt = "Olá") {
-  try {
-    await aiGenerate(testPrompt);
-    console.log("✅ Conexão com IA testada com sucesso");
-    return true;
-  } catch (error) {
-    console.error("❌ Falha no teste de conexão:", error.message);
-    return false;
-  }
 }

@@ -4,10 +4,7 @@ import {
     Colors, 
     PermissionsBitField,
     WebhookClient,
-    ChannelType,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle
+    ChannelType
 } from "discord.js";
 import { 
     MongoClient, 
@@ -113,7 +110,7 @@ export default {
         // Narração de IA
         else if (
             (
-                message.cleanContent.length >= process.env.MIN_ACTION_LENGTH || 
+                message.cleanContent.length >= (serverConfig?.server?.preferences?.min_action_length || 500) || 
                 simplifyString(message.cleanContent).includes("acao")
             ) 
             &&
@@ -174,7 +171,7 @@ export default {
                 .split('\n')
 
                 const response = await aiGenerate(prompt, attachmentUrls).catch(error => {
-                    console.error("Erro ao gerar narração:", error);
+                    console.error("-- Erro ao gerar narração:", error);
                 });
 
                 if (simplifyString(response.text).startsWith("irrelevante")) return msg.delete();
@@ -225,7 +222,7 @@ export default {
 
         // Contextualização e eventos
         else if (
-            message.cleanContent.length >= process.env.MIN_EVENT_LENGTH &&
+            message.cleanContent.length >= (serverConfig?.server?.preferences?.min_event_length || 256) &&
             !message.author.bot &&
             message.author.id !== botConfig.id &&
             (
@@ -306,7 +303,7 @@ export default {
         else if (
             serverConfig?.server?.channels?.diplomacy?.includes(message.channelId) &&
             (
-                message.content.length >= process.env.MIN_DIPLOMACY_LENGTH ||
+                message.content.length >= (serverConfig?.server?.preferences?.min_diplomacy_length || 200) ||
                 simplifyString(message.content).includes('acao')
             )
             && message.guild.channels.cache.has(serverConfig?.server?.channels?.war)
@@ -505,14 +502,14 @@ export default {
 
         // Palpite de jogador
         else if (
-            message.mentions.users.has(client.user.id) &&
+            message.content.includes(`<@${client.user.id}>`) &&
             serverConfig?.server_tier >= 2 &&
             serverConfig?.server?.preferences?.global_palpites
         ) {
             message.channel.sendTyping();
 
             if(timedOutAskers.has(message.author.id)) {
-                return message.reply(`-# Eu só respondo de 10 em 10 minutos.`)
+                return message.reply(`-# Foi mal... Aguarde o cooldown individual de 10 minutos para falar comigo de novo.`)
             } else {
                 timedOutAskers.add(message.author.id);
                 setTimeout(() => {
@@ -541,16 +538,14 @@ export default {
             });
 
             const responseTexts = chunkifyText(response.text);
+            let lastMessage = message;
 
             if(responseTexts.length > 1) {
-                let lastMessage = message;
                 for (let i = 0; i < responseTexts.length; i++) {
                     const currentText = responseTexts[i];
-                    lastMessage?.reply({
+                    lastMessage = await lastMessage?.reply({
                         content: currentText
-                    }).then(follow => {
-                        lastMessage = follow;
-                    }).catch(() => {});
+                    });
                 }
             } else if(responseTexts.length == 1) {
                 message?.reply({

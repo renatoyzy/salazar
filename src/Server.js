@@ -152,7 +152,7 @@ export const defaultConfiguration = {
         },
         action_timing: {
             label: "Segundos para enviar partes da ação",
-            input: "tempo",
+            input: "número",
             onlyAccepts: [Number],
         },
         global_palpites: {
@@ -162,7 +162,22 @@ export const defaultConfiguration = {
         },
         days_to_year: {
             label: "Dias para passar um ano",
-            input: "tempo",
+            input: "número",
+            onlyAccepts: [Number],
+        },
+        min_event_length: {
+            label: "Mínimo de caracteres de evento",
+            input: "número",
+            onlyAccepts: [Number],
+        },
+        min_action_length: {
+            label: "Mínimo de caracteres de ação",
+            input: "número",
+            onlyAccepts: [Number],
+        },
+        min_diplomacy_length: {
+            label: "Mínimo de caracteres de diplomacia",
+            input: "número",
             onlyAccepts: [Number],
         },
     },

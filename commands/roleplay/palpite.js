@@ -53,11 +53,7 @@ export default {
         });
 
         interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                .setColor(Colors.DarkGrey)
-                .setDescription("Gerando seu palpite...")
-            ],
+            content: '-# Um segundo. Estou pensando...'
         }).then(async () => {
             const palpiteUser = interaction.member.displayName;
             const palpiteGuildName = interaction.guild.name;
@@ -81,31 +77,16 @@ export default {
             const responseTexts = chunkifyText(response.text);
 
             if(responseTexts.length > 1) {
-                interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                        .setColor(Colors.Blurple)
-                        .setTitle(`Palpites do ${botConfig.name}`)
-                        .setDescription(responseTexts[0])
-                        .setFooter(`Parte 1/${responseTexts.length}`)
-                    ]
-                }).then((interactionResponse) => {
-                    let lastMessage = interactionResponse;
-                    for (let i = 1; i < responseTexts.length; i++) {
-                        const currentText = responseTexts[i];
-                        lastMessage?.reply({
-                            embeds: [
-                                new EmbedBuilder()
-                                .setColor(Colors.Blurple)
-                                .setTitle(`Palpites do ${botConfig.name}`)
-                                .setDescription(currentText)
-                                .setFooter(`Parte ${i+1}/${responseTexts.length}`)
-                            ]
-                        }).then(follow => {
-                            lastMessage = follow;
-                        }).catch(() => {});
-                    }
-                }).catch(() => {});
+                let lastMessage = await interaction.editReply({
+                    content: responseTexts[0]
+                });
+
+                for (let i = 1; i < responseTexts.length; i++) {
+                    const currentText = responseTexts[i];
+                    lastMessage = await lastMessage?.reply({
+                        content: currentText
+                    });
+                }
             } else if(responseTexts.length == 1) {
                 interaction.editReply({
                     embeds: [
