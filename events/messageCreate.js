@@ -90,6 +90,8 @@ export default {
             }
         };
 
+        if(!serverConfig && !serverSetup) return;
+
         // Ações secretas
         if (message.member?.roles?.cache.has(serverConfig?.server?.roles?.player) && message.channelId == serverConfig?.server?.channels?.secret_actions) {
             message.guild.channels.cache.get(serverConfig?.server?.channels?.secret_actions_log)?.send({
@@ -161,7 +163,15 @@ export default {
 
                 console.log(`- Ação sendo narrada em ${message.guild.name} (${message.guildId})`);
 
-                const response = await aiGenerate(prompt, collected.map(m => m.attachments.map(a => a.url).join('\n')).join('\n').split('\n')).catch(error => {
+                const attachmentUrls = collected.map(m => 
+                    m.attachments
+                    .filter(a => a.contentType.startsWith('image'))
+                    .map(a => a.url)
+                    .join('\n'))
+                .join('\n')
+                .split('\n')
+
+                const response = await aiGenerate(prompt, attachmentUrls).catch(error => {
                     console.error("Erro ao gerar narração:", error);
                 });
 
@@ -260,7 +270,15 @@ export default {
 
                 console.log(`- Evento contextualizado em ${message.guild.name} (${message.guildId})`);
                 
-                const response = await aiGenerate(prompt, collected.map(m => m.attachments.map(a => a.url).join('\n')).join('\n').split('\n')).catch(error => {
+                const attachmentUrls = collected.map(m => 
+                    m.attachments
+                    .filter(a => a.contentType.startsWith('image'))
+                    .map(a => a.url)
+                    .join('\n'))
+                .join('\n')
+                .split('\n')
+
+                const response = await aiGenerate(prompt, attachmentUrls).catch(error => {
                     console.error("Erro ao gerar contexto de evento:", error);
                 });
 
@@ -510,5 +528,61 @@ export default {
         ) {
             message.deletable && message.delete();
         }
+
+        // Palpite de jogador
+        else if (
+            message.mentions.members.has(message.guild.members.me) &&
+            serverConfig.server_tier >= 2 &&
+            serverConfig.server.preferences.player_palpites
+        ) {
+            message.channel.sendTyping();
+
+            const palpiteUser = message.member.displayName;
+            const palpitePrompt = message.cleanContent;
+            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `${m.member.displayName}: ${m.cleanContent}`);
+            const actionContext = await getContext(message.guild);
+            const serverRoleplayDate = await getCurrentDate(message.guild);
+            const serverOwnedCountries = await getAllPlayers(message.guild);
+            const serverCurrentWars = await getWars(message.guild);
+
+            if(!actionContext) return;
+
+            const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
+            const imageUrls = message.attachments.filter(m => m.contentType.startsWith('image')).map(m => m.url);
+
+            const response = await aiGenerate(prompt, imageUrls).catch(error => {
+                console.error("Erro ao gerar palpite de jogador:", error.message);
+            });
+
+            const responseTexts = chunkifyText(response.text);
+
+            if(responseTexts.length > 1) {
+                let lastMessage = message;
+                for (let i = 0; i < responseTexts.length; i++) {
+                    const currentText = responseTexts[i];
+                    lastMessage?.reply({
+                        embeds: [
+                            new EmbedBuilder()
+                            .setColor(Colors.Blurple)
+                            .setTitle(`Palpites do ${botConfig.name}`)
+                            .setDescription(currentText)
+                            .setFooter(`Parte ${i+1}/${responseTexts.length}`)
+                        ]
+                    }).then(follow => {
+                        lastMessage = follow;
+                    }).catch(() => {});
+                }
+            } else if(responseTexts.length == 1) {
+                message?.reply({
+                    embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Blurple)
+                        .setTitle(`Palpites do ${botConfig.name}`)
+                        .setDescription(response.text)
+                    ]
+                }).catch(() => {});
+            }
+        }
+
     }
 };

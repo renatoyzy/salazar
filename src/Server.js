@@ -154,6 +154,13 @@ export const defaultConfiguration = {
         input: "tempo",
         onlyAccepts: [Number],
     },
+    preferences: {
+        player_palpites: {
+            label: "Responder jogadores com IA",
+            input: "booleano",
+            onlyAccepts: [Boolean],
+        }
+    },
     roles: {
         player: {
             label: "Cargo de jogador",

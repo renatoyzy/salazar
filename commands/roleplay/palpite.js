@@ -12,6 +12,7 @@ import * as Server from "../../src/Server.js";
 import 'dotenv/config';
 import { getAllPlayers, getContext, getCurrentDate, getWars } from "../../src/Roleplay.js";
 import { aiGenerate } from "../../src/AIUtils.js";
+import { chunkifyText } from "../../src/StringUtils.js";
 
 export default {
     data: new SlashCommandBuilder()
@@ -58,6 +59,9 @@ export default {
                 .setDescription("Gerando seu palpite...")
             ],
         }).then(async () => {
+            const palpiteUser = interaction.member.displayName;
+            const palpitePrompt = interaction.options.get("prompt").value;
+            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).map(m => `${m.member.displayName}: ${m.cleanContent}`);
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
@@ -66,20 +70,51 @@ export default {
             if(!actionContext) return interaction.editReply({embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(`Algo está errado com a configuração do servidor.`)]})
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
-            const imageUrl = interaction.options.getAttachment('imagem')?.url; 
+            const image = interaction.options.getAttachment('imagem'); 
+            const imageUrl = image.contentType.startsWith('image') ? image.url : undefined;
 
             const response = await aiGenerate(prompt, imageUrl).catch(error => {
-                console.error("Erro ao gerar palpite:", error);
+                console.error("Erro ao gerar palpite:", error.message);
             });
 
-            interaction.editReply({
-                embeds: [
-                    new EmbedBuilder()
-                    .setColor(Colors.Blurple)
-                    .setTitle(`Palpites do ${botConfig.name}`)
-                    .setDescription(response.text)
-                ]
-            }).catch(() => {});
+            const responseTexts = chunkifyText(response.text);
+
+            if(responseTexts.length > 1) {
+                interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Blurple)
+                        .setTitle(`Palpites do ${botConfig.name}`)
+                        .setDescription(responseTexts[0])
+                        .setFooter(`Parte 1/${responseTexts.length}`)
+                    ]
+                }).then((interactionResponse) => {
+                    let lastMessage = interactionResponse;
+                    for (let i = 1; i < responseTexts.length; i++) {
+                        const currentText = responseTexts[i];
+                        lastMessage?.reply({
+                            embeds: [
+                                new EmbedBuilder()
+                                .setColor(Colors.Blurple)
+                                .setTitle(`Palpites do ${botConfig.name}`)
+                                .setDescription(currentText)
+                                .setFooter(`Parte ${i+1}/${responseTexts.length}`)
+                            ]
+                        }).then(follow => {
+                            lastMessage = follow;
+                        }).catch(() => {});
+                    }
+                }).catch(() => {});
+            } else if(responseTexts.length == 1) {
+                interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                        .setColor(Colors.Blurple)
+                        .setTitle(`Palpites do ${botConfig.name}`)
+                        .setDescription(response.text)
+                    ]
+                }).catch(() => {});
+            }
         }).catch(() => {});
     }
 };

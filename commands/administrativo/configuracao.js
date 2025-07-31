@@ -130,7 +130,7 @@ export default {
                 const replyConfig = await collection.findOne({ server_id: interaction.guildId });
                 const fullConfig = buildFullConfig(replyConfig?.server);
 
-                let responseCode = `${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
+                let responseCode = `${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
 
                 Object.keys(Server.optionLabels).reverse().forEach(key => {
                     responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
@@ -257,7 +257,7 @@ export default {
             );
             
             const fullConfig = buildFullConfig(replyConfig?.server);
-            let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('experiments', 'Experimentos');
+            let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
