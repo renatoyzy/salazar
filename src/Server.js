@@ -149,17 +149,22 @@ export const defaultConfiguration = {
         input: "texto",
         onlyAccepts: [String],
     },
-    action_timing: {
-        label: "Segundos para enviar partes da ação",
-        input: "tempo",
-        onlyAccepts: [Number],
-    },
     preferences: {
+        action_timing: {
+            label: "Segundos para enviar partes da ação",
+            input: "tempo",
+            onlyAccepts: [Number],
+        },
         global_palpites: {
             label: "Responder jogadores com IA",
             input: "booleano",
             onlyAccepts: [Boolean],
-        }
+        },
+        days_to_year: {
+            label: "Dias para passar um ano",
+            input: "tempo",
+            onlyAccepts: [Number],
+        },
     },
     roles: {
         player: {

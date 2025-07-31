@@ -23,6 +23,7 @@ import {
     getContext,
     getCurrentDate,
     getWars,
+    passYear,
     warActionSendEmbed
 } from "../src/Roleplay.js";
 import { aiGenerate, sendRequisition } from "../src/AIUtils.js";
@@ -31,6 +32,7 @@ import gis from "g-i-s";
 
 const collectingUsers = new Set();
 const collectingAdmins = new Set();
+const timedOutAskers = new Set();
 
 export default {
     name: 'messageCreate',
@@ -134,7 +136,7 @@ export default {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
 
             const filter = msg => msg.author.id == message.author.id;
-            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
+            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.preferences?.action_timing * 1000) || 20_000 });
             
             collector.on('collect', msg => {
                 msg.react('📝').catch(() => {});
@@ -144,7 +146,7 @@ export default {
 
             message.react('📝').catch(() => {});
 
-            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>. Se sua ação não for dividida em múltiplas partes, apenas aguarde o tempo acabar.`);
+            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes da sua ação. Envie todas as partes da sua ação <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.preferences?.action_timing * 1000) || 20_000))/1000)}:R>. Se sua ação não for dividida em múltiplas partes, apenas aguarde o tempo acabar.`);
 
             const actionPlayer = message.member.displayName;
             const actionContext = await getContext(message.guild);
@@ -243,7 +245,7 @@ export default {
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e não produzirá contexto para esse evento. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
 
             const filter = msg => msg.author.id == message.author.id;
-            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.action_timing * 1000) || 20_000 });
+            const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.preferences?.action_timing * 1000) || 20_000 });
             
             collector.on('collect', msg => {
                 msg.react('📝').catch(() => {});
@@ -253,7 +255,7 @@ export default {
 
             message.react('📝').catch(() => {});
 
-            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes do evento. Envie todas as partes desse evento <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.action_timing * 1000) || 20_000))/1000)}:R>`);
+            const waitMessage = await message.reply(`-# A partir de agora, você pode começar a enviar as outras partes do evento. Envie todas as partes desse evento <t:${Math.floor((new Date().getTime() + ((serverConfig?.server?.preferences?.action_timing * 1000) || 20_000))/1000)}:R>`);
 
             const eventContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
@@ -297,35 +299,7 @@ export default {
 
         // Passagem de ano
         else if (message.channelId === serverConfig?.server?.channels?.time) {
-            const newYear = parseInt(message.cleanContent.match(/\d+/)?.[0]);
-            const currentYear = parseInt(message.guild.name.match(/\d+/)?.[0]);
-            if (!newYear) return;
-
-            // Detecta se o período é um ano completo ou parcial
-            let fullYearPassed = false;
-            // Exemplo: se a mensagem contém "fim do ano" ou "final do ano" ou "ano completo"
-            if (/\b(fim|final) do ano\b|ano completo/i.test(message.cleanContent)) {
-                fullYearPassed = true;
-            } else if (currentYear && newYear !== currentYear) {
-                // Se o ano mudou, provavelmente é um ano completo
-                fullYearPassed = true;
-            } else if (/\bsemestre|trimestre|bimestre|mes(es)?|período|parcial/i.test(message.cleanContent)) {
-                fullYearPassed = false;
-            }
-
-            serverConfig?.server?.name?.includes('{ano}') && await message.guild.setName(`${serverConfig?.server?.name?.replace('{ano}', newYear)}`);
-
-            const contextChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.context);
-            if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
-
-            if(fullYearPassed) {
-                contextChannel.threads.create({
-                    name: newYear || currentYear,
-                    message: {
-                        content: `Eventos, ações e acontecimentos de ${newYear || currentYear}.`
-                    }
-                });
-            }
+            passYear(message.guild, parseInt((await getCurrentDate(message.guild)).match(/\d+/)?.[0]), parseInt(message.cleanContent.match(/\d+/)?.[0]));
         }
 
         // Interação com NPC e declaração de guerra
@@ -536,6 +510,16 @@ export default {
             serverConfig?.server?.preferences?.global_palpites
         ) {
             message.channel.sendTyping();
+
+            if(timedOutAskers.has(message.author.id)) {
+                return message.reply(`-# Eu só respondo de 10 em 10 minutos.`)
+            } else {
+                timedOutAskers.add(message.author.id);
+                setTimeout(() => {
+                    timedOutAskers.delete(message.author.id);
+                }, 10 * 60 * 1000);
+            }
+
             console.log(`- Respondendo palpite de jogador de ${message.author.username} em ${message.guild.name}`);
 
             const palpiteUser = message.member.displayName;

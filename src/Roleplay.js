@@ -148,6 +148,42 @@ export async function getCurrentDate(guild) {
 }
 
 /**
+ * Passa o ano do roleplay para um servidor específico.
+ * @param {Guild} guild - Objeto guild do Discord
+ * @param {Number} currentYear - Ano antigo do RP
+ * @param {Number} newYear - Ano novo do RP
+ */
+export async function passYear(guild, currentYear, newYear) {
+    if (typeof guild !== "object") throw new Error("A guild deve ser um objeto de servidor.");
+    if (typeof currentYear !== "number" || typeof newYear !== "number") throw new Error("Um dos parâmetros de ano está incorreto");
+
+    const serverConfig = await Server.config(guild.id);
+    if (!guild || !currentYear || !newYear || !serverConfig) return;
+
+    // Detecta se o período é um ano completo ou parcial
+    let fullYearPassed = false;
+    // Exemplo: se a mensagem contém "fim do ano" ou "final do ano" ou "ano completo"
+    if (newYear !== currentYear) {
+        // Se o ano mudou, provavelmente é um ano completo
+        fullYearPassed = true;
+    }
+
+    serverConfig?.server?.name?.includes('{ano}') && await guild.setName(`${serverConfig?.server?.name?.replace('{ano}', newYear)}`);
+
+    const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
+    if (!contextChannel || contextChannel.type != ChannelType.GuildForum) return;
+
+    if(fullYearPassed) {
+        contextChannel.threads.create({
+            name: newYear || currentYear,
+            message: {
+                content: `Eventos, ações e acontecimentos de ${newYear || currentYear}.`
+            }
+        });
+    }
+}
+
+/**
  * Obtém a lista de jogadores do roleplay para um servidor específico.
  * @param {Guild} guild - Objeto guild do Discord
  * @returns {Promise<string | undefined>} Contexto completo do roleplay 
