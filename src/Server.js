@@ -144,12 +144,12 @@ export const defaultConfiguration = {
         input: "texto",
         onlyAccepts: [String],
     },
-    extra_prompt: {
-        label: "Prompt adicional",
-        input: "texto",
-        onlyAccepts: [String],
-    },
     preferences: {
+        extra_prompt: {
+            label: "Prompt adicional",
+            input: "texto",
+            onlyAccepts: [String],
+        },
         action_timing: {
             label: "Segundos para enviar partes da ação",
             input: "tempo",

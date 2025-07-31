@@ -257,7 +257,7 @@ export default {
             );
             
             const fullConfig = buildFullConfig(replyConfig?.server);
-            let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
+            let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {
                 responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);

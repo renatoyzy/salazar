@@ -153,7 +153,7 @@ export default {
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);
             const serverCurrentWars = await getWars(message.guild);
-            const extraPrompt = serverConfig?.server?.extra_prompt || '';
+            const extraPrompt = serverConfig?.server?.preferences?.extra_prompt || '';
 
             collector.on('end', async (collected) => {
                 collectingUsers.delete(message.author.id);
