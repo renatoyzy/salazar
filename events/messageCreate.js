@@ -525,7 +525,7 @@ export default {
             const palpiteUser = message.member.displayName;
             const palpiteGuildName = message.guild.name;
             const palpitePrompt = message.cleanContent;
-            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `- ${m.member.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
+            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `- ${m.member?.displayName || m.author?.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);

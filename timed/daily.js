@@ -23,7 +23,7 @@ export default {
             if(!lastBotTimePassage) return;
             if((Date.now() - lastBotTimePassage.createdTimestamp) < ((daysToPass * 24 * 60 * 60 * 1000) - (10 * 60 * 1000))) return;
 
-            passYear(guild, parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]), (parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]) + 1));
+            passYear(guild, parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]), (parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]) + 1), true);
             console.log(`- Passando o ano automaticamente em ${guild.name}`);
 
         });

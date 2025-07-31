@@ -62,7 +62,7 @@ export default {
             const palpiteUser = interaction.member.displayName;
             const palpiteGuildName = interaction.guild.name;
             const palpitePrompt = interaction.options.get("prompt").value;
-            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).map(m => `- ${m.member.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
+            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).map(m => `- ${m.member?.displayName || m.author?.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
@@ -72,7 +72,7 @@ export default {
 
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
             const image = interaction.options.getAttachment('imagem'); 
-            const imageUrl = image.contentType.startsWith('image') ? image.url : undefined;
+            const imageUrl = image?.contentType?.startsWith('image') ? image.url : undefined;
 
             const response = await aiGenerate(prompt, imageUrl).catch(error => {
                 console.error("-- Erro ao gerar palpite:", error.message);

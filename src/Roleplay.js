@@ -152,8 +152,9 @@ export async function getCurrentDate(guild) {
  * @param {Guild} guild - Objeto guild do Discord
  * @param {Number} currentYear - Ano antigo do RP
  * @param {Number} newYear - Ano novo do RP
+ * @param {Boolean} auto - Se o bot deve informar o ano ao passar
  */
-export async function passYear(guild, currentYear, newYear) {
+export async function passYear(guild, currentYear, newYear, auto=false) {
     if (typeof guild !== "object") throw new Error("A guild deve ser um objeto de servidor.");
     if (typeof currentYear !== "number" || typeof newYear !== "number") throw new Error("Um dos parâmetros de ano está incorreto");
 
