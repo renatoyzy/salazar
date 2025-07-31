@@ -155,7 +155,7 @@ export const defaultConfiguration = {
         onlyAccepts: [Number],
     },
     preferences: {
-        player_palpites: {
+        global_palpites: {
             label: "Responder jogadores com IA",
             input: "booleano",
             onlyAccepts: [Boolean],

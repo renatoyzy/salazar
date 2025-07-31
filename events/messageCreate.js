@@ -25,7 +25,7 @@ import {
     getWars,
     warActionSendEmbed
 } from "../src/Roleplay.js";
-import { aiGenerate } from "../src/AIUtils.js";
+import { aiGenerate, sendRequisition } from "../src/AIUtils.js";
 import { simplifyString, chunkifyText } from "../src/StringUtils.js";
 import gis from "g-i-s";
 
@@ -531,15 +531,17 @@ export default {
 
         // Palpite de jogador
         else if (
-            message.mentions.members.has(message.guild.members.me) &&
-            serverConfig.server_tier >= 2 &&
-            serverConfig.server.preferences.player_palpites
+            message.mentions.users.has(client.user.id) &&
+            serverConfig?.server_tier >= 2 &&
+            serverConfig?.server?.preferences?.global_palpites
         ) {
             message.channel.sendTyping();
+            console.log(`- Respondendo palpite de jogador de ${message.author.username} em ${message.guild.name}`);
 
             const palpiteUser = message.member.displayName;
+            const palpiteGuildName = message.guild.name;
             const palpitePrompt = message.cleanContent;
-            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `${m.member.displayName}: ${m.cleanContent}`);
+            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `- ${m.member.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);
@@ -550,8 +552,8 @@ export default {
             const prompt = eval("`" + process.env.PROMPT_PALPITE + "`");
             const imageUrls = message.attachments.filter(m => m.contentType.startsWith('image')).map(m => m.url);
 
-            const response = await aiGenerate(prompt, imageUrls).catch(error => {
-                console.error("Erro ao gerar palpite de jogador:", error.message);
+            const response = await sendRequisition(prompt, botConfig.model[2], imageUrls).catch(error => {
+                console.error("-- Erro ao gerar palpite de jogador:", error.message);
             });
 
             const responseTexts = chunkifyText(response.text);
@@ -561,25 +563,14 @@ export default {
                 for (let i = 0; i < responseTexts.length; i++) {
                     const currentText = responseTexts[i];
                     lastMessage?.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                            .setColor(Colors.Blurple)
-                            .setTitle(`Palpites do ${botConfig.name}`)
-                            .setDescription(currentText)
-                            .setFooter(`Parte ${i+1}/${responseTexts.length}`)
-                        ]
+                        content: currentText
                     }).then(follow => {
                         lastMessage = follow;
                     }).catch(() => {});
                 }
             } else if(responseTexts.length == 1) {
                 message?.reply({
-                    embeds: [
-                        new EmbedBuilder()
-                        .setColor(Colors.Blurple)
-                        .setTitle(`Palpites do ${botConfig.name}`)
-                        .setDescription(response.text)
-                    ]
+                    content: response.text
                 }).catch(() => {});
             }
         }

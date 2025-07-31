@@ -11,7 +11,7 @@ import botConfig from "../../config.json" with { type: "json" };
 import * as Server from "../../src/Server.js";
 import 'dotenv/config';
 import { getAllPlayers, getContext, getCurrentDate, getWars } from "../../src/Roleplay.js";
-import { aiGenerate, sendRequisition } from "../../src/AIUtils.js";
+import { aiGenerate } from "../../src/AIUtils.js";
 import { chunkifyText } from "../../src/StringUtils.js";
 
 export default {
@@ -60,8 +60,9 @@ export default {
             ],
         }).then(async () => {
             const palpiteUser = interaction.member.displayName;
+            const palpiteGuildName = interaction.guild.name;
             const palpitePrompt = interaction.options.get("prompt").value;
-            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).map(m => `${m.member.displayName}: ${m.cleanContent}`);
+            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).map(m => `- ${m.member.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
@@ -73,8 +74,8 @@ export default {
             const image = interaction.options.getAttachment('imagem'); 
             const imageUrl = image.contentType.startsWith('image') ? image.url : undefined;
 
-            const response = await sendRequisition(prompt, botConfig.model[2], imageUrl).catch(error => {
-                console.error("Erro ao gerar palpite:", error.message);
+            const response = await aiGenerate(prompt, imageUrl).catch(error => {
+                console.error("-- Erro ao gerar palpite:", error.message);
             });
 
             const responseTexts = chunkifyText(response.text);
