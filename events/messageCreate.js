@@ -325,7 +325,7 @@ export default {
                 console.log(`- Diplomacia de ${message.author.username} sendo analisada em ${message.guild.name} (${message.guildId})`);
 
                 const response = await aiGenerate(prompt).catch(error => {
-                    console.error("Erro ao gerar contexto de evento:", error);
+                    console.error("-- Erro ao gerar contexto de evento:", error.message);
                 });
 
                 const json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
@@ -522,7 +522,7 @@ export default {
             const palpiteUser = message.member.displayName;
             const palpiteGuildName = message.guild.name;
             const palpitePrompt = message.cleanContent;
-            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `- ${m.member?.displayName || m.author?.displayName} às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
+            const palpiteChatHistory = (await message.channel.messages?.fetch()).map(m => `-- ${m.member?.displayName || m.author?.displayName} (ID ${m.author.id}) às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(message.guild);
             const serverRoleplayDate = await getCurrentDate(message.guild);
             const serverOwnedCountries = await getAllPlayers(message.guild);

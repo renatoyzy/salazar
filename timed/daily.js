@@ -25,7 +25,7 @@ export default {
 
             passYear(guild, parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]), (parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]) + 1), true);
             console.log(`- Passando o ano automaticamente em ${guild.name}`);
-
+            
         });
 
     }

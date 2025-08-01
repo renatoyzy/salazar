@@ -114,6 +114,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
       contents = createUserContent(prompt);
     }
 
+    console.log(`-- ${botConfig.name} está usando o modelo ${model}`);
     const response = await ai.models.generateContent({
       model,
       contents,
@@ -159,7 +160,6 @@ export async function aiGenerate(prompt, imageUrls = undefined) {
       
       const response = await sendRequisition(prompt, model, imageUrls);
       
-      console.log(`-- ${botConfig.name} está usando o modelo ${model}`);
       return response;
       
     } catch (error) {
