@@ -1,5 +1,6 @@
 import {
     ActionRowBuilder,
+    AutocompleteInteraction,
     ButtonBuilder,
     ButtonStyle,
     ChannelType,
@@ -29,12 +30,7 @@ function buildOptions(builder) {
         option.setName('opção')
             .setDescription('Qual opção deve ser alterada')
             .setRequired(false)
-            .setChoices(
-                Object.entries(Server.optionLabels).map(([key, label]) => ({
-                    name: label,
-                    value: key // aqui já está channels.nome, roles.player, etc.
-                }))
-            )
+            .setAutocomplete(true)
     );
 
     // Para cada tipo de argumento, adiciona a opção correspondente
@@ -256,7 +252,9 @@ export default {
                 { returnDocument: "after", upsert: true }
             );
             
-            const fullConfig = buildFullConfig(replyConfig?.server);
+            const updatedServerConfig = await Server.config(interaction.guildId);
+            const fullConfig = buildFullConfig(updatedServerConfig?.server);
+
             let responseCode = `${inspect(JSON.parse(JSON.stringify(fullConfig)), { depth: 2 })}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
 
             Object.keys(Server.optionLabels).reverse().forEach(key => {
@@ -283,6 +281,32 @@ export default {
         } finally {
             await mongoClient.close();
         }
+    },
+
+    /**
+     * @param {AutocompleteInteraction} interaction
+     */
+    async autocomplete(interaction) {
+        const focusedOption = interaction.options.getFocused(true);
+        
+        let choices;
+
+        switch (focusedOption.name) {
+            case 'opção':
+                choices = Object.entries(Server.optionLabels).map(([key, label]) => ({
+                    name: label,
+                    value: key
+                }))
+                break;
+        
+            default:
+                break;
+        }
+
+        const filtered = choices.filter(choice => choice.name.toLowerCase().includes(focusedOption.value.toLowerCase()) ).slice(0, 25);
+        await interaction.respond(
+            filtered.sort().map(choice => ({ name: choice, value: choice })),
+        );
     }
 
 }

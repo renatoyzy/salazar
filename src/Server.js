@@ -181,7 +181,7 @@ export const defaultConfiguration = {
             onlyAccepts: [Number],
         },
         action_keyword: {
-            label: "Palavra-chave pra identificar ações",
+            label: "Palavra-chave que identifica ações",
             input: "texto",
             onlyAccepts: [String],
         },
