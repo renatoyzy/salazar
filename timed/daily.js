@@ -21,10 +21,12 @@ export default {
             if(!timePassingChannel || timePassingChannel.type != ChannelType.GuildText) return;
             const lastBotTimePassage = await timePassingChannel.messages.fetch({ limit: 1, author: client.user.id });
             if(!lastBotTimePassage) return;
-            if((Date.now() - lastBotTimePassage.createdTimestamp) < ((daysToPass * 24 * 60 * 60 * 1000) - (10 * 60 * 1000))) return;
+            if((Date.now() - lastBotTimePassage?.createdTimestamp) < ((daysToPass * 24 * 60 * 60 * 1000) - (10 * 60 * 1000))) return;
 
             passYear(guild, parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]), (parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]) + 1), true);
             console.log(`- Passando o ano automaticamente em ${guild.name}`);
+
+            timePassingChannel?.send(`# ${(parseInt((await getCurrentDate(guild)).match(/\d+/)?.[0]) + 1)}`).catch(() => {});
             
         });
 
