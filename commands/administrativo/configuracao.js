@@ -305,7 +305,7 @@ export default {
 
         const filtered = choices.filter(choice => choice.name.toLowerCase().includes(focusedOption.value.toLowerCase()) ).slice(0, 25);
         await interaction.respond(
-            filtered.sort().map(choice => ({ name: choice, value: choice })),
+            filtered.sort(),
         );
     }
 
