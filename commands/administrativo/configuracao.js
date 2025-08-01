@@ -128,7 +128,7 @@ export default {
 
                 let responseCode = `${inspect(fullConfig, { depth: 2 })?.slice(0, 990)}`.replace('channels', 'Canais').replace('roles', 'Cargos').replace('preferences', 'Preferências');
 
-                Object.keys(Server.optionLabels).reverse().forEach(key => {
+                Object.keys(Server.optionLabels).forEach(key => {
                     responseCode = responseCode.replace(`${key.includes('.') ? key.split('.')[1] : key}`, Server.optionLabels[key]);
                 });
 
