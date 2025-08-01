@@ -21,14 +21,14 @@ export default {
         .setDescription("Cria uma carta de roleplay para o jogador")
         .addStringOption(
             new SlashCommandStringOption()
-            .setName('destinatario')
+            .setName('destinatário')
             .setDescription('O destinatário que receberá a carta')
             .setAutocomplete(true)
             .setRequired(true)
         )
         .addStringOption(
             new SlashCommandStringOption()
-            .setName("conteudo")
+            .setName("conteúdo")
             .setDescription("O conteúdo da carta")
             .setRequired(true)
         )
@@ -51,7 +51,7 @@ export default {
         const countryCategoryId = (await serverConfig)?.server?.channels?.country_category;
         if(!countryCategoryId || (interaction.channel.parentId != countryCategoryId && interaction.channel.parent.parentId != countryCategoryId)) return interaction.editReply(`Esse comando só pode ser usado no seu chat privado do país.`);
 
-        const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('destinatario').value)));
+        const countryChat = interaction.guild.channels.cache.find(c => simplifyString(c.name).includes(simplifyString(interaction.options.get('destinatário').value)));
         if(!countryChat) return interaction.editReply("Não encontrei o chat desse país.")
 
         const senderName = interaction.guild.roles.cache.find(r => simplifyString(r.name).includes(simplifyString(interaction.channel.parent.name)) || simplifyString(r.name).includes(simplifyString(interaction.channel.name))).name;
@@ -64,7 +64,7 @@ export default {
             const responseContent = `@here`;
             let responseEmbed = new EmbedBuilder()
                 .setTitle(`Carta enviada por ${senderName}`)
-                .setDescription(interaction.options.get('conteudo').value);
+                .setDescription(interaction.options.get('conteúdo').value);
 
             if (!error && validResult?.url && isImageSafe(validResult.url)) {
                 try {
@@ -189,7 +189,7 @@ export default {
         let choices;
 
         switch (focusedOption.name) {
-            case 'destinatario':
+            case 'destinatário':
                 choices = countryCategory.children.cache.map(c => c.name);
                 break;
         
