@@ -111,7 +111,7 @@ export default {
         else if (
             (
                 message.cleanContent.length >= (serverConfig?.server?.preferences?.min_action_length || 500) || 
-                simplifyString(message.cleanContent).includes("acao")
+                simplifyString(message.cleanContent).includes(simplifyString(serverConfig?.server?.preferences?.action_keyword || 'acao'))
             ) 
             &&
             !(simplifyString(message.cleanContent).includes('nao narr'))
@@ -304,7 +304,7 @@ export default {
             serverConfig?.server?.channels?.diplomacy?.includes(message.channelId) &&
             (
                 message.content.length >= (serverConfig?.server?.preferences?.min_diplomacy_length || 200) ||
-                simplifyString(message.content).includes('acao')
+                simplifyString(message.content).includes(simplifyString(serverConfig?.server?.preferences?.action_keyword || 'acao'))
             )
             && message.guild.channels.cache.has(serverConfig?.server?.channels?.war)
         ) {

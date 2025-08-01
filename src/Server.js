@@ -180,6 +180,11 @@ export const defaultConfiguration = {
             input: "número",
             onlyAccepts: [Number],
         },
+        action_keyword: {
+            label: "Palavra-chave pra identificar ações",
+            input: "texto",
+            onlyAccepts: [String],
+        },
     },
     roles: {
         player: {
