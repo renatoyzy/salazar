@@ -35,7 +35,7 @@ export default {
             try {
                 var json = JSON.parse("{"+response.text.split('{')[1].split('}')[0]+"}");
             } catch (error) {
-                return console.error('Algo deu errado em análise de diplomacia: '+response.text);
+                return console.error('Algo deu errado em ação aleatória NPC: '+response.text);
             }
 
             if( !json || !json['pais'] || !json['acao'] || !json['narracao'] || !json['contexto'] ) return console.error(response.text);
