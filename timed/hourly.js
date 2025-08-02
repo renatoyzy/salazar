@@ -31,7 +31,13 @@ export default {
             const prompt = eval("`" + process.env.PROMPT_NPC_ACTION + "`");
             const response = await aiGenerate(prompt);
 
-            const json = JSON.parse("{"+response.text.split('{')[1].split('}')[0]+"}");
+            var json;
+            try {
+                var json = JSON.parse("{"+response.text.split('{')[1].split('}')[0]+"}");
+            } catch (error) {
+                return console.error('Algo deu errado em análise de diplomacia: '+response.text);
+            }
+
             if( !json || !json['pais'] || !json['acao'] || !json['narracao'] || !json['contexto'] ) return console.error(response.text);
 
             await gis(`Bandeira ${json['pais']} ${serverRoleplayDate}`, async (error, results) => {

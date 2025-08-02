@@ -35,7 +35,12 @@ export default {
             console.error("Erro ao gerar narração:", error);
         });
 
-        const json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+        var json;
+        try {
+            var json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+        } catch (error) {
+            return console.error('Algo deu errado em análise de diplomacia: '+response.text);
+        }
 
         if(!json || !json['narracao'] || !json['contexto'])
             return console.error('Algo deu errado em análise de diplomacia: '+response.text);

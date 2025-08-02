@@ -89,7 +89,7 @@ export default {
             }
         };
 
-        if(!serverConfig && !serverSetup) return;
+        if(!serverConfig || serverConfig?.server_tier<=1 || serverSetup) return;
 
         // Ações secretas
         if (message.member?.roles?.cache.has(serverConfig?.server?.roles?.player) && message.channelId == serverConfig?.server?.channels?.secret_actions) {
@@ -327,8 +327,13 @@ export default {
                 const response = await aiGenerate(prompt).catch(error => {
                     console.error("-- Erro ao gerar contexto de evento:", error.message);
                 });
-
-                const json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+ 
+                var json;
+                try {
+                    var json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+                } catch (error) {
+                    return console.error('Algo deu errado em análise de diplomacia: '+response.text);
+                }
 
                 if(
                     !json || json['tipo'] === undefined ||
