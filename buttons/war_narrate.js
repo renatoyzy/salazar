@@ -20,6 +20,7 @@ export default {
         interaction.reply({ content: 'A narração será enviada em breve. Marque os envolvidos quando isso acontecer.', flags: [MessageFlags.Ephemeral] });
 
         const actions = interaction.message.embeds[0]?.fields.map(field => `## ${field.name}\n${field.value}`);
+        const pings = interaction.message.embeds[0]?.fields.map(field => `<@${field.name.split(' ')[0]}>`).join(' ');
         
         const actionContext = await getContext(interaction.guild);
         const warHistory = (await interaction.channel.messages.fetch({ limit: 100 })).map(msg => msg.cleanContent).join('\n\n');
@@ -50,7 +51,9 @@ export default {
             chunkifyText(json['narracao'])?.forEach(chunk => interaction.channel.send(chunk));
         } finally {
             interaction.channel.send(warActionSendEmbed);
-            interaction.channel.send(`@here`).then(msg => msg.deletable && msg.delete());
+            interaction.channel.send(`@here ${pings}`).then(msg => setTimeout(() => {
+                msg?.deletable && msg?.delete();
+            }, 5_000));
         };
 
         addContext(json['contexto'], interaction.guild);
