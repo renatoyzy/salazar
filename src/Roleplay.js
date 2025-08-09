@@ -219,10 +219,16 @@ export async function getWars(guild) {
 
     // Primeiro, cria um array de Promises
     const threadPromises = warsChannel.threads.cache
-        .sort((a, b) => a.createdTimestamp - b.createdTimestamp)
-        .filter(thread => !thread.locked)
-        .map(async thread => {
-            return `${thread.name}\n${(await thread.fetchStarterMessage()).cleanContent}\n### ID da thread da guerra: ${thread.id}`
+        ?.sort((a, b) => a.createdTimestamp - b.createdTimestamp)
+        ?.filter(thread => !thread.locked)
+        ?.map(async thread => {
+            try {
+                const starterMsg = await thread.fetchStarterMessage();
+                return `${thread.name}\n${starterMsg?.cleanContent}\n### ID da thread da guerra: ${thread.id}`;
+            } catch (err) {
+                // Se a mensagem não existe mais, apenas pula ou retorna info básica
+                return `${thread.name}\n[Mensagem inicial não encontrada]\n### ID da thread da guerra: ${thread.id}`;
+            }
         });
 
     // Aguarda todas as Promises serem resolvidas
