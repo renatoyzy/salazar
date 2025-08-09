@@ -58,7 +58,7 @@ export default {
             const palpiteUser = interaction.member.displayName;
             const palpiteGuildName = interaction.guild.name;
             const palpitePrompt = interaction.options.get("prompt").value;
-            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).sort((a, b) => a.createdTimestamp - b.createdTimestamp).map(m => `-- ${m.member?.displayName || m.author?.displayName} (ID ${m.author.id}) às ${m.createdAt.toLocaleDateString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
+            const palpiteChatHistory = (await interaction.channel.messages?.fetch()).sort((a, b) => a.createdTimestamp - b.createdTimestamp).map(m => `-- ${m.member?.displayName || m.author?.displayName} (ID ${m.author.id}) às ${new Date(m.createdTimestamp).toLocaleString('pt-BR')}: ${m.cleanContent}`).join('\n\n');
             const actionContext = await getContext(interaction.guild);
             const serverRoleplayDate = await getCurrentDate(interaction.guild);
             const serverOwnedCountries = await getAllPlayers(interaction.guild);
