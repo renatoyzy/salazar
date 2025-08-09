@@ -92,7 +92,10 @@ export default {
         if(!serverConfig || serverConfig?.server_tier<=1 || serverSetup) return;
 
         // Ações secretas
-        if (message.member?.roles?.cache.has(serverConfig?.server?.roles?.player) && message.channelId == serverConfig?.server?.channels?.secret_actions) {
+        if (
+            message.member?.roles?.cache.has(serverConfig?.server?.roles?.player) && 
+            serverConfig?.server?.channels?.secret_actions?.includes(message.channelId)
+        ) {
             message.guild.channels.cache.get(serverConfig?.server?.channels?.secret_actions_log)?.send({
                 embeds: [
                     new EmbedBuilder()
@@ -121,8 +124,8 @@ export default {
             (
                 serverConfig?.server?.channels?.actions?.includes(message.channelId) ||
                 serverConfig?.server?.channels?.actions?.includes(message.channel?.parentId) ||
-                serverConfig?.server?.channels?.country_category == message.channel?.parent?.id ||
-                serverConfig?.server?.channels?.country_category == message.channel?.parent?.parent?.id
+                serverConfig?.server?.channels?.country_category?.includes(message.channel?.parent?.id) ||
+                serverConfig?.server?.channels?.country_category?.includes(message.channel?.parent?.parent?.id)
             )
             &&
             (
@@ -130,7 +133,7 @@ export default {
                 message.channel.type == ChannelType.PublicThread
             )
         ) {
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será narrada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5_000));
 
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.preferences?.action_timing * 1000) || 20_000 });
@@ -295,7 +298,7 @@ export default {
         }
 
         // Passagem de ano
-        else if (message.channelId === serverConfig?.server?.channels?.time) {
+        else if (serverConfig?.server?.channels?.time?.includes(message.channelId)) {
             passYear(message.guild, parseInt((await getCurrentDate(message.guild)).match(/\d+/)?.[0]), parseInt(message.cleanContent.match(/\d+/)?.[0]));
         }
 
@@ -306,7 +309,6 @@ export default {
                 message.content.length >= (serverConfig?.server?.preferences?.min_diplomacy_length || 200) ||
                 simplifyString(message.content).includes(simplifyString(serverConfig?.server?.preferences?.action_keyword || 'acao'))
             )
-            && message.guild.channels.cache.has(serverConfig?.server?.channels?.war)
         ) {
 
             if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e essa ação não será analisada. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg?.delete(), 5000));
@@ -509,9 +511,15 @@ export default {
         else if (
             message.content.includes(`<@${client.user.id}>`) &&
             serverConfig?.server_tier >= 2 &&
-            serverConfig?.server?.preferences?.global_palpites
+            serverConfig?.server?.preferences?.global_palpites &&
+            (
+                message.channel.type === ChannelType.GuildText ||
+                message.channel.type === ChannelType.PublicThread ||
+                message.channel.type === ChannelType.PrivateThread ||
+                message.channel.type === ChannelType.GuildAnnouncement
+            )
         ) {
-            message.channel.sendTyping();
+            await message.channel.sendTyping();
 
             if(timedOutAskers.has(message.author.id)) {
                 return message.reply(`-# Foi mal... Aguarde o cooldown individual de 10 minutos para falar comigo de novo.`)
