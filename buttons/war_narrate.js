@@ -23,7 +23,7 @@ export default {
         const pings = interaction.message.embeds[0]?.fields.map(field => `<@${field.name.split(' ')[0]}>`).join(' ');
         
         const actionContext = await getContext(interaction.guild);
-        const warHistory = (await interaction.channel.messages.fetch({ limit: 100 })).map(msg => msg.cleanContent).join('\n\n');
+        const warHistory = (await interaction.channel.messages.fetch({ limit: 100 })).sort((a, b) => a.createdTimestamp - b.createdTimestamp).map(msg => msg.cleanContent).join('\n\n');
         const serverOwnedCountries = await getAllPlayers(interaction.guild);
         const serverRoleplayDate = await getCurrentDate(interaction.guild);
         const serverCurrentWars = await getWars(interaction.guild);
