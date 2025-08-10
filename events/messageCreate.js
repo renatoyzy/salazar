@@ -177,15 +177,41 @@ export default {
                     console.error("-- Erro ao gerar narração:", error);
                 });
 
-                if (simplifyString(response.text).startsWith("irrelevante")) return msg.delete();
+                var json;
+                try {
+                    var json = JSON.parse("{"+response.text?.split("{")[1]?.split("}")[0]+"}");
+                } catch (error) {
+                    return console.error('Algo deu errado em narração de ação: '+response.text);
+                }
+
+                if(
+                    !json || json['valido'] === undefined ||
+                    (
+                        json['valido'] == true &&
+                        (
+                            !json['narracao'] ||
+                            !json['contexto']
+                        ) 
+                    ) || (
+                        json['valido'] == false &&
+                        !json['motivo']
+                    )
+                ) return console.error('Algo deu errado em narração de ação: '+response.text);
+
+                if (!json['valido']) {
+                    collected.forEach(msg => msg.reactions.removeAll());
+                    message?.reactions.removeAll();
+                    waitMessage?.deletable && waitMessage.delete();
+                    return console.log(`-- ${json['motivo']}`);
+                }
 
                 // Se houver bloco diff, ele fica em um chunk separado
-                const diffStart = response.text.indexOf('```diff');
-                let mainText = response.text;
+                const diffStart = json['narracao'].indexOf('```diff');
+                let mainText = json['narracao'];
                 let diffChunk = null;
                 if (diffStart !== -1) {
-                    mainText = response.text.slice(0, diffStart);
-                    diffChunk = response.text.slice(diffStart);
+                    mainText = json['narracao'].slice(0, diffStart);
+                    diffChunk = json['narracao'].slice(diffStart);
                 };
 
                 let finalText = `# Ação de ${message.member.displayName}\n- Ação original: ${message.url}\n- Menções: <@${message.author.id}>\n${mainText}`;
@@ -196,8 +222,8 @@ export default {
                 const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
                 
                 if (
-                    serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.id) ||
-                    serverConfig?.server?.channels?.countries_category == (message.channel?.parent?.parent?.id)
+                    serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.id) ||
+                    serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.parent?.id)
                 ) {
                     chunks.forEach(chunk => {
                         narrationsChannel?.send(chunk);
@@ -212,13 +238,7 @@ export default {
                 message?.reactions.removeAll();
                 waitMessage?.deletable && waitMessage.delete().catch(() => {});
 
-                const contextPrompt = eval("`" + process.env.PROMPT_CONTEXT + "`");
-
-                const newContext = await aiGenerate(contextPrompt).catch(error => {
-                    console.error("Erro ao gerar contexto:", error);
-                });
-
-                await addContext(newContext.text, message.guild);
+                await addContext(json['contexto'], message.guild);
 
             });
         }
@@ -500,8 +520,14 @@ export default {
             )
             &&
             (
-                !message.content.includes('###') &&
-                !message.content.includes('**')
+                (
+                    !message.content.includes('###') &&
+                    !message.content.includes('**')
+                )
+                ||
+                (
+                    !message.content.includes('-#')
+                )
             )
         ) {
             message?.deletable && message.delete().catch(() => {});

@@ -61,10 +61,9 @@ export async function addContext(text, guild) {
     const contextChannel = guild.channels.cache.get(serverConfig?.server?.channels?.context);
     if(!contextChannel) return undefined;
 
-    return chunkifyText(text).forEach(async chunk => {
+    return chunkifyText(text).length < 5 && chunkifyText(text).forEach(async chunk => {
         await contextChannel.threads.cache.sort((a, b) => b.createdTimestamp - a.createdTimestamp).first().send(chunk);
     })
-
 }
 
 /**
