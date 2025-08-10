@@ -199,8 +199,8 @@ export default {
                 ) return console.error('Algo deu errado em narração de ação: '+response.text);
 
                 if (!json['valido']) {
-                    collected.forEach(msg => msg.reactions.removeAll());
-                    message?.reactions.removeAll();
+                    collected.forEach(msg => msg?.reactions?.removeAll());
+                    message?.reactions?.removeAll();
                     waitMessage?.deletable && waitMessage.delete();
                     return console.log(`-- ${json['motivo']}`);
                 }
@@ -234,8 +234,8 @@ export default {
                     });
                 } 
 
-                collected.forEach(msg => msg.reactions.removeAll());
-                message?.reactions.removeAll();
+                collected.forEach(msg => msg?.reactions?.removeAll());
+                message?.reactions?.removeAll();
                 waitMessage?.deletable && waitMessage.delete().catch(() => {});
 
                 await addContext(json['contexto'], message.guild);
@@ -304,8 +304,8 @@ export default {
                     console.error("Erro ao gerar contexto de evento:", error);
                 });
 
-                collected.forEach(msg => msg.reactions.removeAll());
-                message?.reactions.removeAll();
+                collected.forEach(msg => msg?.reactions?.removeAll());
+                message?.reactions?.removeAll();
                 waitMessage?.deletable && waitMessage.delete();
 
                 if (response.text === "IRRELEVANTE!!!") return;
@@ -573,7 +573,7 @@ export default {
             const imageUrls = message.attachments.filter(m => m.contentType.startsWith('image')).map(m => m.url);
 
             const response = await sendRequisition(prompt, botConfig.model[2], imageUrls).catch(error => {
-                console.error("-- Erro ao gerar palpite de jogador:", error.message);
+                return console.error("-- Erro ao gerar palpite de jogador:", error.message);
             });
 
             const responseTexts = chunkifyText(response.text);
