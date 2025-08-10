@@ -576,7 +576,9 @@ export default {
                 return console.error("-- Erro ao gerar palpite de jogador:", error.message);
             });
 
-            const responseTexts = chunkifyText(response.text);
+            if(!response.text) return;
+
+            const responseTexts = chunkifyText(response?.text);
             let lastMessage = message;
 
             if(responseTexts.length > 1) {
