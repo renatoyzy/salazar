@@ -93,15 +93,15 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
         const validUrls = urlArray.filter(url => url && typeof url === 'string');
         
         if (validUrls.length === 0) {
-          return contents = createUserContent(prompt);
+          contents = createUserContent(prompt);
+        } else {
+          // Processa imagens
+          const processedImages = await processImages(validUrls);
+          
+          // Cria conteúdo com texto e imagens
+          const userContent = [prompt, ...processedImages];
+          contents = createUserContent(userContent);
         }
-
-        // Processa imagens
-        const processedImages = await processImages(validUrls);
-        
-        // Cria conteúdo com texto e imagens
-        const userContent = [prompt, ...processedImages];
-        contents = createUserContent(userContent);
 
       } catch (err) {
         // Apenas texto
@@ -123,8 +123,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
 
     return response;
   } catch (error) {
-    //console.error(`-- Erro na requisição para o modelo ${model}`);
-    throw error;
+    console.error(`-- Erro na requisição para o modelo ${model}`, error);
   }
 }
 
