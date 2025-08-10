@@ -123,7 +123,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
 
     return response;
   } catch (error) {
-    console.error(`-- Erro na requisição para o modelo ${model}`, error);
+    throw error;
   }
 }
 
