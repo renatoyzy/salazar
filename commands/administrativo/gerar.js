@@ -6,10 +6,8 @@ import {
     PermissionFlagsBits, 
     EmbedBuilder,
     ChatInputCommandInteraction,
-    MessageFlags,
     Colors
 } from "discord.js";
-import Canvas from "canvas";
 import * as Server from "../../src/Server.js";
 import { makeRoundFlag, isImageSafe } from "../../src/VisualUtils.js";
 import { simplifyString } from "../../src/StringUtils.js";
@@ -46,20 +44,17 @@ export default {
         const serverConfig = await Server.config(interaction.guildId);
 
         if(!serverConfig) return interaction.editReply({
-            content: `Esse servidor não está configurado corretamente. Contate um administrador.`,
-            flags: [MessageFlags.Ephemeral]
+            content: `Esse servidor não está configurado corretamente. Contate um administrador.`
         });
 
         if(!serverConfig?.server_tier >= 2) return interaction.editReply({
-            content: `Este servidor não possui o tier necessário para usar esse comando.`,
-            flags: [MessageFlags.Ephemeral]
+            content: `Este servidor não possui o tier necessário para usar esse comando.`
         });
 
         if (interaction.options.getSubcommand() === "bandeira") {
             if (!interaction.member.permissions.has(PermissionFlagsBits.CreateGuildExpressions)) {
                 return interaction.editReply({
-                    content: `Você precisa ser um administrador para utilizar esse comando.`,
-                    flags: [MessageFlags.Ephemeral]
+                    content: `Você precisa ser um administrador para utilizar esse comando.`
                 });
             }
 

@@ -7,6 +7,7 @@ import {
     ChatInputCommandInteraction,
     Colors,
     EmbedBuilder,
+    PermissionFlagsBits,
     SlashCommandBooleanOption,
     SlashCommandBuilder,
     SlashCommandChannelOption,
@@ -92,6 +93,12 @@ export default {
      * @param {ChatInputCommandInteraction} interaction 
      */
     async execute(interaction) {
+        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+            return interaction.editReply({
+                content: `Você precisa ser um administrador para utilizar esse comando.`
+            });
+        }
+
         const serverConfig = await Server.config(interaction.guildId);
         const option = interaction.options.get('opção')?.value;
 

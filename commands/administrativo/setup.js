@@ -11,7 +11,8 @@ import {
     TextInputStyle,
     ButtonBuilder,
     ButtonStyle,
-    ChannelType
+    ChannelType,
+    PermissionFlagsBits
 } from "discord.js";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import botConfig from "../../config.json" with { type: "json" };
@@ -30,6 +31,12 @@ export default {
      * @param {ChatInputCommandInteraction} interaction
      */
     async execute(interaction) {
+
+        if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+            return interaction.editReply({
+                content: `Você precisa ser um administrador para utilizar esse comando.`
+            });
+        }
 
         // Comece pedindo o nome do servidor via modal
         await interaction.showModal(
