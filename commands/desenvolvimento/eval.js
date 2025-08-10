@@ -31,7 +31,7 @@ import {
 import gis from "g-i-s";
 
 // Constantes para configuração
-const MAX_FIELD_LENGTH = 1024;
+const MAX_FIELD_LENGTH = 1014;
 const SYNC_TIMEOUT = 30_000; // 30 segundos
 const ASYNC_TIMEOUT = 60_000; // 60 segundos
 
@@ -188,7 +188,7 @@ function createSuccessEmbed(code, output, executionTime, isAsync) {
             }
         ])
         .setTimestamp()
-        .setFooter({ text: `${output === null ? 'null' : typeof output} obtido em ${executionTime.toFixed(2)}ms` });
+        .setFooter({ text: `${output === null ? 'null' : typeof output} obtido em ${executionTime*100}ms` });
 }
 
 /**
@@ -215,7 +215,7 @@ function createErrorEmbed(code, error, executionTime) {
             }
         ])
         .setTimestamp()
-        .setFooter({ text: `${error?.name || 'Erro desconhecido'} detectado em ${executionTime.toFixed(2)}ms.` });
+        .setFooter({ text: `${error?.name || 'Erro desconhecido'} detectado em ${executionTime*100}ms.` });
 }
 
 export default {
