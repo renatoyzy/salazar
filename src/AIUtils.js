@@ -93,7 +93,7 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
         const validUrls = urlArray.filter(url => url && typeof url === 'string');
         
         if (validUrls.length === 0) {
-          throw new Error("Nenhuma URL de imagem válida fornecida");
+          return contents = createUserContent(prompt);
         }
 
         // Processa imagens
@@ -114,11 +114,12 @@ export async function sendRequisition(prompt, model, imageUrls = undefined) {
       contents = createUserContent(prompt);
     }
 
-    console.log(`-- ${botConfig.name} está usando o modelo ${model}`);
     const response = await ai.models.generateContent({
       model,
       contents,
     });
+
+    console.log(`-- ${botConfig.name} está usando o modelo ${model}`);
 
     return response;
   } catch (error) {
