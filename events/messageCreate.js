@@ -222,8 +222,8 @@ export default {
                 const narrationsChannel = message.guild.channels.cache.get(serverConfig?.server?.channels?.narrations);
                 
                 if (
-                    serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.id) ||
-                    serverConfig?.server?.channels?.countries_category?.includes(message.channel?.parent?.parent?.id)
+                    serverConfig?.server?.channels?.country_category?.includes(message.channel?.parent?.id) ||
+                    serverConfig?.server?.channels?.country_category?.includes(message.channel?.parent?.parent?.id)
                 ) {
                     chunks.forEach(chunk => {
                         narrationsChannel?.send(chunk);
