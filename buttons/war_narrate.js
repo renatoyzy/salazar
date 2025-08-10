@@ -58,7 +58,7 @@ export default {
 
         addContext(json['contexto'], interaction.guild);
 
-        interaction.message.deletable && interaction.message.delete();
+        interaction.message?.deletable && interaction.message.delete();
 
     }
 

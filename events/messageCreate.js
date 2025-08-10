@@ -242,7 +242,7 @@ export default {
             )
         ) {
 
-            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e não produzirá contexto para esse evento. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg.deletable && msg.delete(), 5000));
+            if(process.env.MAINTENANCE) return message.reply(`-# O ${botConfig.name} está em manutenção e não produzirá contexto para esse evento. Aguarde a finalização da manutenção e reenvie se possível.`).then(msg => setTimeout(() => msg?.deletable && msg.delete(), 5000));
 
             const filter = msg => msg.author.id == message.author.id;
             const collector = await message.channel.createMessageCollector({ filter, time: (serverConfig?.server?.preferences?.action_timing * 1000) || 20_000 });
@@ -422,7 +422,7 @@ export default {
                             }
                         }).then(warThread => {
                             warThread.send(warActionSendEmbed);
-                            warThread.send(`<@${message.author.id}>`).then(msg => msg.deletable && msg.delete());
+                            warThread.send(`<@${message.author.id}>`).then(msg => msg?.deletable && msg.delete());
                         });
                         
                         break;
@@ -504,7 +504,7 @@ export default {
                 !message.content.includes('**')
             )
         ) {
-            message.deletable && message.delete();
+            message?.deletable && message.delete().catch(() => {});
         }
 
         // Palpite de jogador
