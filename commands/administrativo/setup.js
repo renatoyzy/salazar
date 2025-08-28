@@ -146,7 +146,9 @@ export default {
                             if (acceptedType === String && typeof val === "string") return true;
                             if (acceptedType === Number && typeof val === "number") return true;
                             if (acceptedType === Boolean && typeof val === "boolean") return true;
-                            if (acceptedType.name && i.guild && i.guild.channels.cache.get(val)?.type === acceptedType) return true;
+                            // Para canais: acceptedType é um número (ChannelType), compare diretamente
+                            if (typeof acceptedType === "number" && i.guild && i.guild.channels.cache.get(val)?.type === acceptedType) return true;
+                            // Para cargos: acceptedType.name existe
                             if (acceptedType.name && i.guild && i.guild.roles.cache.get(val)?.constructor?.name === acceptedType.name) return true;
                             return false;
                         });
