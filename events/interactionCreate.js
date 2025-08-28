@@ -115,9 +115,7 @@ async function handleButton(interaction) {
 
     const baseId = interaction.customId.split(":")[0];
     const buttonHandler = client.buttons.get(baseId);
-    if (!buttonHandler) {
-        return interaction.reply({ content: `Botão desconhecido.`, flags: [MessageFlags.Ephemeral] });
-    }
+    if (!buttonHandler) return;
 
     await buttonHandler.execute(interaction);
 
