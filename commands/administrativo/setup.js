@@ -304,6 +304,13 @@ export default {
                                 .setPlaceholder("Escolha o canal de ações secretas")
                                 .setMinValues(1)
                                 .setMaxValues(1)
+                            ),
+                            new ActionRowBuilder()
+                            .addComponents(
+                                new ButtonBuilder()
+                                .setCustomId("setup_skip_secret_actions_log_channel")
+                                .setLabel("Pular (não quero ações secretas)")
+                                .setStyle(ButtonStyle.Secondary)
                             )
                         ]
                     });
@@ -326,12 +333,6 @@ export default {
                                 .setPlaceholder("Escolha o registro de ações secretas")
                                 .setMinValues(1)
                                 .setMaxValues(1)
-                            )
-                            .addComponents(
-                                new ButtonBuilder()
-                                .setCustomId("setup_skip_secret_actions_log_channel")
-                                .setLabel("Pular (não quero ações secretas)")
-                                .setStyle(ButtonStyle.Secondary)
                             )
                         ]
                     });
@@ -396,7 +397,8 @@ export default {
                                 .setPlaceholder("Categoria dos canais de países")
                                 .setMinValues(1)
                                 .setMaxValues(1)
-                            )
+                            ),
+                            new ActionRowBuilder()
                             .addComponents(
                                 new ButtonBuilder()
                                 .setCustomId("setup_skip_countries_category")
@@ -423,7 +425,8 @@ export default {
                                 .setPlaceholder("Canal de escolha de país")
                                 .setMinValues(1)
                                 .setMaxValues(1)
-                            )
+                            ),
+                            new ActionRowBuilder()
                             .addComponents(
                                 new ButtonBuilder()
                                 .setCustomId("setup_skip_country_picking_channel")
@@ -450,7 +453,8 @@ export default {
                                 .setPlaceholder("Canal de escolha de país")
                                 .setMinValues(1)
                                 .setMaxValues(1)
-                            )
+                            ),
+                            new ActionRowBuilder()
                             .addComponents(
                                 new ButtonBuilder()
                                 .setCustomId("setup_skip_country_picking_channel")
