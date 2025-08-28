@@ -40,7 +40,7 @@ async function cleanAllConfigs() {
 };
 
 export default {
-    name: 'ready',
+    name: 'clientReady',
     once: true,
 
     /**

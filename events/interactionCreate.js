@@ -172,9 +172,7 @@ async function handleSelectMenu(interaction) {
     // Handler pelo customId
     const baseId = interaction.customId.split(":")[0];
     const selectHandler = client.selects?.get(baseId);
-    if (!selectHandler) {
-        return interaction.reply({ content: `Select menu desconhecido.`, flags: [MessageFlags.Ephemeral] });
-    }
+    if (!selectHandler) return;
 
     await selectHandler.execute(interaction);
 
@@ -220,9 +218,7 @@ async function handleModalSubmit(interaction) {
     // Handler pelo customId
     const baseId = interaction.customId.split(":")[0];
     const modalHandler = client.modals?.get(baseId);
-    if (!modalHandler) {
-        return interaction.reply({ content: `Modal desconhecido.`, flags: [MessageFlags.Ephemeral] });
-    }
+    if (!modalHandler) return;
 
     await modalHandler.execute(interaction);
 
