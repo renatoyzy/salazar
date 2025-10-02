@@ -12,10 +12,8 @@ export default function Dashboard() {
   return (
     <div>
       <Header />
-      
-      <div className={styles.container}>
-        <GuildList />
-      </div>
+
+      <GuildList />
     </div>
   );
 }

@@ -12,8 +12,9 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <Link href="/">
-        <h1 className={styles.title}>Salazar</h1>
+      <Link href="/" className={styles.logo}>
+        <Image src='/salazar.png' alt="Salazar Avatar" width={50} height={50} />
+        <h1>Salazar</h1>
       </Link>
 
       <nav className={styles.nav}>
@@ -37,7 +38,7 @@ export default function Header() {
               <button onClick={() => signOut()}>Sair</button>
             </>}
           >
-            <Image src={session.user.image} alt="User Avatar" width={50} height={50} style={{ borderRadius: '50%' }} />
+            <Image src={session.user.image} alt="User Avatar" width={50} height={50} />
           </Tippy>
         ) : (
           <FaUser size={50} style={{ color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} onClick={() => signIn('discord')} />

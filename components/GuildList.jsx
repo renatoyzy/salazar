@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from "react"
 import LoadingWheel from "./LoadingWheel"
-
-const guildImage = (guild) => {
-  if (!guild.icon) return undefined // placeholder se não tiver ícone
-  const ext = guild.icon.startsWith("a_") ? "gif" : "png"
-  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=128`
-}
+import styles from "./GuildList.module.css"
+import Link from "next/link"
 
 export default function GuildList() {
   const [guilds, setGuilds] = useState(null)
@@ -30,17 +26,17 @@ export default function GuildList() {
   if (!guilds) return <LoadingWheel />
 
   return (
-    <ul>
+    <ul className={styles.guildList}>
       {guilds.filter(g => g.owner || g.isAdmin || g.manageGuild).map(g => (
-        <li key={g.id}>
-          <strong>{g.name}</strong>
+        <Link key={g.id} className={styles.guild} href={`/dashboard/${g.id}`}>
           {g.iconUrl ? (
-            <img src={g.iconUrl} alt={`${g.name} icon`} width={32} height={32} />
+            <img src={g.iconUrl} className={styles.guildIcon} alt={`Ícone de ${g.name}`} width={32} height={32} />
           ) : (
-            <span style={{ width: 32, height: 32, display: "inline-block", backgroundColor: "#eeeeee51" }} />
+            <span className={styles.guildIcon} />
           )}
+          <strong>{g.name}</strong>
           {g.owner ? " (Dono)" : g.isAdmin ? " (Administrador)" : g.manageGuild ? " (Gerente)" : " (Membro)"}
-        </li>
+        </Link>
       ))}
     </ul>
   )
