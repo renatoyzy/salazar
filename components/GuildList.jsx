@@ -34,8 +34,10 @@ export default function GuildList() {
           ) : (
             <span className={styles.guildIcon} />
           )}
-          <strong>{g.name}</strong>
-          {g.owner ? " (Dono)" : g.isAdmin ? " (Administrador)" : g.manageGuild ? " (Gerente)" : " (Membro)"}
+          <span className={styles.guildInfo}>
+            <strong>{g.name}</strong>
+            {g.owner ? "Dono" : g.isAdmin ? "Administrador" : g.manageGuild ? "Gerente" : "Membro"}
+          </span>
         </Link>
       ))}
     </ul>

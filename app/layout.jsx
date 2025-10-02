@@ -11,7 +11,7 @@ export const viewport = {
 }
 export const metadata = {
   title: "Salazar",
-  description: "Bot do mal para o seu servidor do Discord",
+  description: "Bot para o seu roleplay geopolítico do Discord",
 };
 
 export default function RootLayout({ children }) {

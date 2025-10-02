@@ -18,4 +18,8 @@ body {
   user-select: none;
   font-family: monospace;
   color: white;
+
+  @media (max-width: 600px) {
+    margin-bottom: 70px;
+  }
 }

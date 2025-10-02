@@ -1,11 +1,10 @@
 .guildList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 10px;
-    padding: 10px;
     margin: 0;
     flex-wrap: wrap;
-    max-width: 100%;
+    max-width: 100dvw;
 
     .guild {
         background-color: rgba(255, 255, 255, 0.157);
@@ -14,12 +13,24 @@
         padding: 10px;
         display: flex;
         backdrop-filter: blur(5px);
+        gap: 10px;
+        transition: 0.2s ease-in-out;
 
         .guildIcon {
             background-color: #eeeeee51;
             width: 32px;
             height: 32px;
-            border-radius: 2px;
+            border-radius: 4px;
         }
+
+        .guildInfo {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .guild:hover {
+        background-color: rgba(255, 255, 255, 0.275);
+        scale: 1.01;
     }
 }

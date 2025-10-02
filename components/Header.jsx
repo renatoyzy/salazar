@@ -20,35 +20,59 @@ export default function Header() {
       </Link>
 
       <nav className={styles.nav}>
-        <Link href="https://discord.com/oauth2/authorize?client_id=767858186676994070" target="_blank">
+        <Link className={styles.section} href="https://discord.com/oauth2/authorize?client_id=767858186676994070" target="_blank">
           <FaPlus size={32} className={styles.icon} />
           <span className={styles.label}>
             Adicionar
           </span>
         </Link>
         {session && 
-          <Link href="/dashboard">
+          <Link className={[styles.section, styles.pcOnly].join(' ')} href="/dashboard">
             <RiDashboardFill size={32} className={styles.icon} />
             <span className={styles.label}>
               Dashboard
             </span>
           </Link>
         }
-        <Link href="tos">
+        <Link className={styles.section} href="tos">
           <FaBook size={32} className={styles.icon} />
           <span className={styles.label}>
             TOS
           </span>
         </Link>
-        <Link href="privacy">
+        <Link className={styles.section} href="privacy">
           <FaLock size={32} className={styles.icon} />
           <span className={styles.label}>
             Privacidade
           </span>
         </Link>
+        {session ? (
+          <Tippy
+            animation="scale-extreme"
+            theme="dropdown"
+            arrow={false}
+            trigger="click"
+            placement="auto"
+            interactive={true}
+            content={<>
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/">Início</Link>
+              <button onClick={() => signOut()}>Sair</button>
+            </>}
+          >
+            <div className={[styles.section, styles.mobileOnly].join(' ')}>
+              <Image className={styles.icon} src={session.user.image} alt="User Avatar" width={32} height={32} />
+              <span className={styles.label}>
+                {session.user.name}
+              </span>
+            </div>
+          </Tippy>
+        ) : (
+          <FaUser className={styles.mobileOnly} size={50} style={{ color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} onClick={() => signIn('discord')} />
+        )}
       </nav>
 
-      <nav className={styles.auth}>
+      <nav className={[styles.auth, styles.pcOnly].join(' ')}>
         {session ? (
           <Tippy
             animation="scale-extreme"
