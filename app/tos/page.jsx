@@ -5,7 +5,7 @@ export default function Tos() {
   return (
     <div>
       <h1>Termos de serviço (TOS)</h1>
-      <div class={styles.container}>
+      <div className={styles.container}>
         <main>
           <section>
             <h3>1. Aceitação dos Termos</h3>

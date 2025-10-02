@@ -1,4 +1,5 @@
-import "./globals.css";
+import "@/app/globals.css";
+import Providers from "@/components/Providers";
 
 export const metadata = {
   title: "Salazar",
@@ -12,7 +13,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-br">
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

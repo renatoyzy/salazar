@@ -6,7 +6,7 @@ export default function Privacy() {
     <div>
       <h1>Política de Privacidade</h1>
       
-      <div class={styles.container}>
+      <div className={styles.container}>
         <main>
           <section>
             <h3>1. Informações coletadas</h3>
