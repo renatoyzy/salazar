@@ -5,6 +5,7 @@ import styles from "./Header.module.css";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { FaUser } from "react-icons/fa";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -36,7 +37,7 @@ export default function Header() {
               <button onClick={() => signOut()}>Sair</button>
             </>}
           >
-            <img src={session.user.image} alt="User Avatar" width={50} height={50} style={{ borderRadius: '50%' }} />
+            <Image src={session.user.image} alt="User Avatar" width={50} height={50} style={{ borderRadius: '50%' }} />
           </Tippy>
         ) : (
           <FaUser size={50} style={{ color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} onClick={() => signIn('discord')} />
