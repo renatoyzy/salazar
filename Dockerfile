@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libgif-dev \
     librsvg2-dev \
     libexpat1-dev \
-    && rm -rf /var/lib/apt/lists*
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
