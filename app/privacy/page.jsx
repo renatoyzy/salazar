@@ -1,9 +1,12 @@
 import Link from "next/link";
 import styles from "@/app/page.module.css";
+import Header from "@/components/Header";
 
 export default function Privacy() {
   return (
     <div>
+      <Header />
+      
       <h1>Política de Privacidade</h1>
       
       <div className={styles.container}>

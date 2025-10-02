@@ -2,6 +2,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  border: 0;
 }
 
 a {
@@ -34,28 +35,4 @@ h1 {
   color: white;
   margin-bottom: 10px;
   text-align: center;
-}
-
-a,
-button {
-  text-decoration: none;
-  color: white;
-  padding: 10px;
-  background: #f0f0f84a;
-  border-radius: 12px;
-  box-shadow: inset 0px 0px 8px 1px #ffffff1a;
-  border: 1px solid hsla(0deg, 0%, 100%, 10%);
-  display: flex;
-  gap: 10px;
-  backdrop-filter: blur(5px);
-  visibility: visible;
-  text-align: center;
-  justify-content: center;
-  transition: all .3s ease;
-  cursor: pointer;
-}
-
-a:hover,
-button:hover {
-  scale: 1.05;
 }

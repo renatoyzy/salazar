@@ -1,0 +1,32 @@
+.header {
+    display: flex;
+    width: 100dvw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    line-height: 1;
+    color: white;
+
+    .title {
+        margin: 0;
+    }
+
+    .nav {
+        display: flex;
+        gap: 20px;
+
+        a:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .auth {
+        img {
+            cursor: pointer;
+        }
+    }
+}

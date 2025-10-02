@@ -1,4 +1,7 @@
-import "@/app/globals.css";
+import "@/styles/globals.css";
+import "@/styles/tippy.css";
+import 'tippy.js/animations/scale-extreme.css';
+import 'tippy.js/animations/shift-toward-extreme.css';
 import Providers from "@/components/Providers";
 
 export const metadata = {

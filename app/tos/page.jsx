@@ -1,9 +1,11 @@
 import Link from "next/link";
 import styles from "@/app/page.module.css";
+import Header from "@/components/Header";
 
 export default function Tos() {
   return (
     <div>
+      <Header />
       <h1>Termos de serviço (TOS)</h1>
       <div className={styles.container}>
         <main>
