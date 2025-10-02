@@ -37,7 +37,7 @@ export default function Header() {
         <Link href="tos">
           <FaBook size={32} className={styles.icon} />
           <span className={styles.label}>
-            Termos de serviço
+            TOS
           </span>
         </Link>
         <Link href="privacy">
