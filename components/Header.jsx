@@ -82,7 +82,6 @@ export default function Header() {
             interactive={true}
             content={<>
               <section>{session.user.name}</section>
-              <section>{session.user.email}</section>
               <button onClick={() => signOut()}>Sair</button>
             </>}
           >

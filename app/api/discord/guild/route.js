@@ -1,5 +1,14 @@
 import { authOptions } from "../../auth/[...nextauth]/route"
 import { getServerSession } from "next-auth/next"
+import { MongoClient, ServerApiVersion } from "mongodb"
+
+const client = new MongoClient(process.env.DB_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+})
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url)
@@ -23,12 +32,17 @@ export async function GET(req) {
     return new Response(JSON.stringify({ error: "Discord API error", detail: text }), { status: 502 })
   }
 
-  const guilds = await res.json()
+  const guilds = await res.json();
+
+  await client.connect();
+  const configurationDb = await client.db('Salazar').collection("configuration").findOne({server_id: guildId});
+  const setupDb = await client.db('Salazar').collection("setup").findOne({server_id: guildId});
+  await client.close();
 
   // Filtra pelo ID
   const guild = guilds.find(g => g.id === guildId)
   if (!guild) return new Response(JSON.stringify({ error: "Guild not found or user not in guild" }), { status: 404 })
-
+  
   // Monta URL do ícone
   const ext = guild.icon?.startsWith("a_") ? "gif" : "png"
   const iconUrl = guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${ext}?size=128` : null
@@ -40,6 +54,8 @@ export async function GET(req) {
     isAdmin: !!(parseInt(guild.permissions || "0", 10) & (1 << 3)),
     manageGuild: !!(parseInt(guild.permissions || "0", 10) & (1 << 5)),
     iconUrl,
+    guildConfigExists: typeof configurationDb !== "undefined",
+    guildSetupExists: typeof setupDb !== "undefined",
   }), {
     headers: { "Content-Type": "application/json" },
   })

@@ -94,14 +94,20 @@
                 text-decoration: none;
                 background: rgba(255,255,255,10%);
                 border: 1px solid rgba(255,255,255,9%);
+
+                .icon {
+                    color: white;
+                }
             }
         }
 
         .icon {
             display: none;
+            transition: 0.2s ease-in-out;
 
             @media (max-width: 600px) {
                 display: block;
+                color: rgba(255, 255, 255, 0.544);
             }
         }
     }

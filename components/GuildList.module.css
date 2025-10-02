@@ -29,6 +29,10 @@
         }
     }
 
+    .disabled {
+        opacity: 50%;
+    }
+
     .guild:hover {
         background-color: rgba(255, 255, 255, 0.275);
         scale: 1.01;
