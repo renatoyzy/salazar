@@ -1,0 +1,9 @@
+.selected {
+    background: rgba(255, 255, 255, 0.265);
+    color: white;
+}
+
+.unselected {
+    background: none;
+    color: white;
+}

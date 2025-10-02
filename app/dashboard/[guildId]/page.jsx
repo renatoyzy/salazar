@@ -2,10 +2,11 @@ import Header from "@/components/Header";
 import styles from "./page.module.css";
 import LoadingWheel from "@/components/LoadingWheel";
 import GuildInfo from "@/components/GuildInfo";
+import CategorySelector from "@/components/CategorySelector";
 
 export default async function Dashboard({ params }) {
   const { guildId } = await params;
-  const [selectedCategory, setSelectedCategory] = useState("countries");
+  const selectedCategory = "countries";
 
   return (
     <div className={styles.body}>
@@ -14,11 +15,7 @@ export default async function Dashboard({ params }) {
         <nav className={styles.nav}>
           <GuildInfo guildId={guildId} />
           <hr />
-          <span onClick={() => setSelectedCategory("countries")}>Países</span>
-          <span onClick={() => setSelectedCategory("members")}>Membros</span>
-          <span onClick={() => setSelectedCategory("events")}>Eventos</span>
-          <span onClick={() => setSelectedCategory("reports")}>Relatórios</span>
-          <span onClick={() => setSelectedCategory("settings")}>Configurações</span>
+          <CategorySelector category={selectedCategory} />
         </nav>
         <main className={styles.config}>
           
