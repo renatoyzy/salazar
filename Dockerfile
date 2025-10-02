@@ -1,4 +1,4 @@
-FROM docker.io/node:22-alpine AS runner
+FROM node:22-slim
 
 WORKDIR /app
 
