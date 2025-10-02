@@ -12,6 +12,17 @@
     z-index: 10;
     border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 
+    @media (max-width: 600px) {
+        top: unset;
+        position: fixed;
+        bottom: 0;
+        margin: 10px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,9%);
+        overflow: hidden;
+        width: calc(100dvw - 20px);
+    }
+
     img {
         border-radius: 50%;
         width: 50px;
@@ -26,20 +37,47 @@
         h1 {
             margin: 0;
         }
+
+        @media (max-width: 600px) {
+            display: none;
+        }
     }
 
     .nav {
         display: flex;
         gap: 20px;
 
+        a {
+            @media (max-width: 600px) {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px !important;
+                gap: 8px;
+            }
+        }
+
         a:hover {
             text-decoration: underline;
+        }
+
+        .icon {
+            display: none;
+
+            @media (max-width: 600px) {
+                display: block;
+            }
         }
     }
 
     .auth {
         img {
             cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            /*display: none;*/
         }
     }
 }

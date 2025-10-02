@@ -3,7 +3,9 @@
 import Tippy from "@tippyjs/react";
 import styles from "./Header.module.css";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaPlus, FaBook } from "react-icons/fa";
+import { FaLock } from "react-icons/fa6";
+import { RiDashboardFill } from "react-icons/ri";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -18,10 +20,32 @@ export default function Header() {
       </Link>
 
       <nav className={styles.nav}>
-        <Link href="https://discord.com/oauth2/authorize?client_id=767858186676994070" target="_blank">Adicione no seu servidor</Link>
-        {session && <Link href="/dashboard">Dashboard</Link>}
-        <Link href="tos">Termos de serviço</Link>
-        <Link href="privacy">Política de privacidade</Link>
+        <Link href="https://discord.com/oauth2/authorize?client_id=767858186676994070" target="_blank">
+          <FaPlus size={32} className={styles.icon} />
+          <span className={styles.label}>
+            Adicionar
+          </span>
+        </Link>
+        {session && 
+          <Link href="/dashboard">
+            <RiDashboardFill size={32} className={styles.icon} />
+            <span className={styles.label}>
+              Dashboard
+            </span>
+          </Link>
+        }
+        <Link href="tos">
+          <FaBook size={32} className={styles.icon} />
+          <span className={styles.label}>
+            Termos de serviço
+          </span>
+        </Link>
+        <Link href="privacy">
+          <FaLock size={32} className={styles.icon} />
+          <span className={styles.label}>
+            Privacidade
+          </span>
+        </Link>
       </nav>
 
       <nav className={styles.auth}>
