@@ -68,7 +68,12 @@ export default function Header() {
             </div>
           </Tippy>
         ) : (
-          <FaUser className={styles.mobileOnly} size={50} style={{ color: 'white', cursor: 'pointer', padding: '10px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} onClick={() => signIn('discord')} />
+          <div className={[styles.section, styles.mobileOnly].join(' ')}>
+            <FaUser className={[styles.mobileOnly, styles.icon].join(' ')} size={32} style={{ padding: '10px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} onClick={() => signIn('discord')} />
+            <span className={styles.label}>
+              Login
+            </span>
+          </div>
         )}
       </nav>
 
