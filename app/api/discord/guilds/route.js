@@ -1,5 +1,15 @@
 import { authOptions } from "../../auth/[...nextauth]/route"
 import { getServerSession } from "next-auth/next"
+import { MongoClient, ServerApiVersion } from "mongodb"
+
+const uri = process.env.MONGODB_URI
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+})
 
 export async function GET(req) {
   const session = await getServerSession(authOptions)
@@ -19,6 +29,20 @@ export async function GET(req) {
   }
 
   const guilds = await res.json() // array de guild objects
+  let configExisting;
+  let setupExisting;
+
+  try {
+    await client.connect();
+    const configurationDb = client.db().collection("configuration");
+    configExisting = await configurationDb.find().toArray();
+    const setupDb = client.db().collection("setup");
+    setupExisting = await setupDb.find().toArray();
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error)
+  } finally {
+    await client.close();
+  }
 
   // identifica se o user é dono (owner) ou tem permissão de admin
   // permissão ADMINISTRATOR = bit 0x8 (8)
@@ -42,7 +66,9 @@ export async function GET(req) {
       isAdmin: !!(perms & ADMIN_BIT),
       iconUrl,
       // se quiser considerar MANAGE_GUILD como admin:
-      manageGuild: !!(perms & (1 << 5))
+      manageGuild: !!(perms & (1 << 5)),
+      guildConfigExists: configExisting.some(guild => guild.server_id === g.id),
+      guildSetupExists: setupExisting.some(guild => guild.server_id === g.id)
     }
   })
 
