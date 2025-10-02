@@ -1,15 +1,14 @@
 import Link from "next/link";
-import styles from "@/app/page.module.css";
+import styles from "./page.module.css";
 import Header from "@/components/Header";
 
 export default function Privacy() {
   return (
     <div>
       <Header />
-      
-      <h1>Política de Privacidade</h1>
-      
-      <div className={styles.container}>
+
+      <main className={styles.main}>
+        <h1>Política de Privacidade</h1>
         <main>
           <section>
             <h3>1. Informações coletadas</h3>
@@ -76,7 +75,7 @@ export default function Privacy() {
             <p>Esta Política é válida a partir de: 6 de julho de 2025.</p>
           </section>
         </main>
-      </div>
+      </main>
     </div>
   );
 }

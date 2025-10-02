@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import LoadingWheel from "./LoadingWheel"
 
 export default function GuildInfo({ guildId }) {
   const [guild, setGuild] = useState(null)
@@ -24,7 +25,7 @@ export default function GuildInfo({ guildId }) {
       .finally(() => setLoading(false))
   }, [guildId])
 
-  if (loading) return <p>Carregando servidor...</p>
+  if (loading) return <LoadingWheel />
   if (error) return <p>Erro: {error.error || JSON.stringify(error)}</p>
   if (!guild) return <p>Servidor não encontrado</p>
 

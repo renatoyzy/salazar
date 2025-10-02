@@ -1,15 +1,11 @@
 .guildList {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
     gap: 10px;
-    list-style: none;
-    padding: 0;
+    padding: 10px;
     margin: 0;
     flex-wrap: wrap;
-    width: 100dvw;
-    height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: scroll;
+    max-width: 100%;
 
     .guild {
         background-color: rgba(255, 255, 255, 0.157);
@@ -17,6 +13,7 @@
         border-radius: 12px;
         padding: 10px;
         display: flex;
+        backdrop-filter: blur(5px);
 
         .guildIcon {
             background-color: #eeeeee51;

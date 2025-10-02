@@ -12,27 +12,10 @@ a {
 
 body {
   box-sizing: border-box;
-  width: 100dvw;
-  height: 100dvh;
   background-image: url(/cursodoimperio.png);
   background-size: cover;
-  background-position-x: 85%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
+  background-attachment: fixed;
   user-select: none;
-  overflow: hidden;
   font-family: monospace;
-  padding: 10px;
-}
-
-* {
-  margin: 0;
-}
-
-h1 {
   color: white;
-  margin-bottom: 10px;
-  text-align: center;
 }
