@@ -55,8 +55,14 @@ for (const file of timedFiles) {
 app.listen(port, () => {
     console.log(`Simple API listening at http://localhost:${port}`);
 });
-app.get('/api/hello', (req, res) => {
-    res.json({ message: 'Hello from your simple API!' });
+app.get('/api/get_channels', (req, res) => {
+
+    const guildId = req.query.guildId;
+    const memberId = req.query.memberId;
+    
+    if(!guildId || !memberId) return res.json({ message: 'erro' }).status(400);
+
+    res.json({ channels: client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON()) });
 });
 
 // Crash handle
