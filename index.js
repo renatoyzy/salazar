@@ -62,7 +62,7 @@ app.get('/api/get_channels', (req, res) => {
     
     if(!guildId || !memberId) return res.json({ message: 'erro' }).status(400);
 
-    res.json({ channels: client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON()) });
+    res.send(client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON())).json(client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON())).status(200);
 });
 
 // Crash handle
