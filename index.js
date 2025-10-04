@@ -9,7 +9,7 @@ import "dotenv/config";
 
 // API
 const app = express();
-const port = 3000;
+const port = 55003;
 
 // Simular __dirname e __filename no ES module
 const __filename = fileURLToPath(import.meta.url);
