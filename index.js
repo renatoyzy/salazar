@@ -4,7 +4,12 @@ import { fileURLToPath } from "url";
 import botConfig from "./config.json" with { type: "json" };
 import client from "./src/Client.js";
 import cron from "node-cron";
+import express from "express";
 import "dotenv/config";
+
+// API
+const app = express();
+const port = 3000;
 
 // Simular __dirname e __filename no ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -46,11 +51,18 @@ for (const file of timedFiles) {
     }
 }
 
+// API
+app.listen(port, () => {
+    console.log(`Simple API listening at http://localhost:${port}`);
+});
+app.get('/api/hello', (req, res) => {
+    res.json({ message: 'Hello from your simple API!' });
+});
+
 // Crash handle
 process.on('uncaughtException', async (err, origin) => {
     console.error(`Exceção não capturada.`, err, origin);
 });
-
 process.on('unhandledRejection', async (reason, promise) => {
     console.error(`Rejeição não manuseada.`, reason, promise);
 });
