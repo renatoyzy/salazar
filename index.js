@@ -5,6 +5,7 @@ import botConfig from "./config.json" with { type: "json" };
 import client from "./src/Client.js";
 import cron from "node-cron";
 import express from "express";
+import cors from "cors";
 import "dotenv/config";
 
 // API
@@ -52,6 +53,17 @@ for (const file of timedFiles) {
 }
 
 // API
+app.use(cors({
+    origin: '*', // Temporariamente aceita qualquer origem
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}))
+// Middleware para logs
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`)
+    next()
+})
 app.listen(port, () => {
     console.log(`Simple API listening at http://localhost:${port}`);
 });
