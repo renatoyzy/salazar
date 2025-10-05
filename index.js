@@ -56,13 +56,30 @@ app.listen(port, () => {
     console.log(`Simple API listening at http://localhost:${port}`);
 });
 app.get('/api/get_channels', (req, res) => {
-
     const guildId = req.query.guildId;
-    const memberId = req.query.memberId;
     
-    if(!guildId || !memberId) return res.json({ message: 'erro' }).status(400);
+    // Correção 1: status() antes de json()
+    if(!guildId) {
+        return res.status(400).json({ message: 'Erro: guildId não definida no query' });
+    }
 
-    res.send(client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON())).json(client.guilds.cache.get(guildId).channels.cache.map(c => c.toJSON())).status(200);
+    try {
+        const guild = client.guilds.cache.get(guildId);
+        
+        // Correção 2: verificar se a guild existe
+        if (!guild) {
+            return res.status(404).json({ message: 'Guild não encontrada' });
+        }
+
+        const channels = guild.channels.cache.map(c => c.toJSON());
+        
+        // Correção 3: usar apenas .json() OU .send(), não os dois
+        return res.status(200).json(channels);
+        
+    } catch (error) {
+        console.error('Erro ao buscar canais:', error);
+        return res.status(500).json({ message: 'Erro interno', error: error.message });
+    }
 });
 
 // Crash handle
