@@ -7,6 +7,7 @@ import cron from "node-cron";
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import { ChannelType } from "discord.js";
 
 // API
 const app = express();
@@ -69,6 +70,27 @@ app.listen(port, () => {
 });
 app.get('/api/get_channels', (req, res) => {
     const guildId = req.query.guildId;
+
+    if(!guildId) {
+        return res.status(400).json({ message: 'Erro: guildId não definida no query' });
+    }
+
+    try {
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            return res.status(404).json({ message: 'Guild não encontrada' });
+        }
+
+        const channels = guild.channels.cache.map(c => c.toJSON());
+        return res.status(200).json(channels);
+        
+    } catch (error) {
+        console.error('Erro ao buscar canais:', error);
+        return res.status(500).json({ message: 'Erro interno', error: error.message });
+    }
+});
+app.get('/api/get_roles', (req, res) => {
+    const guildId = req.query.guildId;
     
     // Correção 1: status() antes de json()
     if(!guildId) {
@@ -77,19 +99,15 @@ app.get('/api/get_channels', (req, res) => {
 
     try {
         const guild = client.guilds.cache.get(guildId);
-        
-        // Correção 2: verificar se a guild existe
         if (!guild) {
             return res.status(404).json({ message: 'Guild não encontrada' });
         }
 
-        const channels = guild.channels.cache.map(c => c.toJSON());
-        
-        // Correção 3: usar apenas .json() OU .send(), não os dois
-        return res.status(200).json(channels);
+        const roles = guild.roles.cache.map(r => r.toJSON());
+        return res.status(200).json(roles);
         
     } catch (error) {
-        console.error('Erro ao buscar canais:', error);
+        console.error('Erro ao buscar cargos:', error);
         return res.status(500).json({ message: 'Erro interno', error: error.message });
     }
 });
